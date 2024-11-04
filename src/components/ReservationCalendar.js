@@ -1,114 +1,169 @@
-// src/components/ReservationCalendar.js
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import {
+  format,
+  addDays,
+  startOfWeek,
+  endOfWeek,
+  isBefore,
+  isAfter,
+  min,
+  max,
+  isDate,
+  parseISO,
+} from "date-fns";
+import "./ReservationCalendar.css";
 
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
-import styled from 'styled-components';
+const ReservationCalendar = () => {
+  const [currentWeek, setCurrentWeek] = useState(
+    startOfWeek(new Date(), { weekStartsOn: 0 })
+  );
+  const [apartments, setApartments] = useState([]);
+  const [reservations, setReservations] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-// Styled container for calendar
-const CalendarContainer = styled.div`
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-`;
-
-const ReservationInfo = styled.div`
-    font-size: 14px;
-    color: #333;
-    text-align: center;
-    margin-top: 1rem;
-`;
-
-const calendarStyles = `
-.react-calendar__tile.highlight {
-    background-color: #fdecea;
-    border-radius: 50%;
-    color: #333;
-}
-`;
-
-function ReservationCalendar() {
-    const [reservations, setReservations] = useState([]);
-    const [selectedDate, setSelectedDate] = useState(new Date());
-    const [reservationsForSelectedDate, setReservationsForSelectedDate] = useState([]);
-
-    useEffect(() => {
-        const fetchReservations = async () => {
-            const token = localStorage.getItem('accessToken');
-            try {
-                const response = await axios.get('http://127.0.0.1:8000/api/reservations/', {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                setReservations(response.data);
-            } catch (error) {
-                console.error('Error fetching reservations:', error);
-            }
-        };
-        fetchReservations();
-    }, []);
-
-    // Filter reservations for the selected date
-    useEffect(() => {
-        const filteredReservations = reservations.filter(reservation => {
-            const checkinDate = new Date(reservation.checkin);
-            const checkoutDate = new Date(reservation.checkout);
-
-            return (
-                selectedDate >= checkinDate &&
-                selectedDate <= checkoutDate
-            );
+  // Fetch apartments and reservations from the API
+  useEffect(() => {
+    const fetchApartments = async () => {
+      const token = localStorage.getItem("accessToken");
+      try {
+        const response = await axios.get("http://127.0.0.1:8000/api/apartments/", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
-        setReservationsForSelectedDate(filteredReservations);
-    }, [selectedDate, reservations]);
-
-    // Check if a date is within any reservation range
-    const isDateWithinReservation = date => {
-        return reservations.some(reservation => {
-            const checkinDate = new Date(reservation.checkin);
-            const checkoutDate = new Date(reservation.checkout);
-            return date >= checkinDate && date <= checkoutDate;
-        });
+        // Set apartments based on the response
+        setApartments(response.data.map(apartment => `Apartment ${apartment.id}`));
+      } catch (error) {
+        console.error("Error fetching apartments:", error);
+      }
     };
 
-    return (
-        <>
-            <style>{calendarStyles}</style> {/* Add the styles here */}
-            <CalendarContainer>
-                <Calendar
-                    onChange={setSelectedDate}
-                    value={selectedDate}
-                    tileClassName={({ date, view }) => {
-                        if (view === 'month' && isDateWithinReservation(date)) {
-                            return 'highlight';
-                        }
-                    }}
-                />
-                <ReservationInfo>
-                    {reservationsForSelectedDate.length > 0 ? (
-                        <div>
-                            <h3>Reservas para {selectedDate.toDateString()}</h3>
-                            <ul>
-                                {reservationsForSelectedDate.map(reservation => (
-                                    <li key={reservation.id}>
-                                        Hospede: {reservation.guest_name} <br />
-                                        Apartamento: {reservation.apartment} <br />
-                                        Check-in: {new Date(reservation.checkin).toLocaleDateString()} <br />
-                                        Check-out: {new Date(reservation.checkout).toLocaleDateString()}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    ) : (
-                        <p>Sem reservas para essa data.</p>
-                    )}
-                </ReservationInfo>
-            </CalendarContainer>
-        </>
-    );
-}
+    const fetchReservations = async () => {
+      const token = localStorage.getItem("accessToken");
+      try {
+        const response = await axios.get("http://127.0.0.1:8000/api/reservations/", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setReservations(
+          response.data.map(reservation => ({
+            name: reservation.guest_name,
+            apartment: `Apartment ${reservation.apartment}`,
+            beginDate: parseISO(reservation.checkin.split("T")[0]),
+            endDate: parseISO(reservation.checkout.split("T")[0]),
+          }))
+        );
+      } catch (error) {
+        console.error("Error fetching reservations:", error);
+      }
+    };
+
+    const loadData = async () => {
+      await Promise.all([fetchApartments(), fetchReservations()]);
+      setLoading(false);
+    };
+
+    loadData();
+  }, []);
+
+  const handlePrevWeek = () => setCurrentWeek(addDays(currentWeek, -7));
+  const handleNextWeek = () => setCurrentWeek(addDays(currentWeek, 7));
+
+  const daysOfWeek = Array.from({ length: 7 }, (_, index) =>
+    addDays(currentWeek, index)
+  );
+  const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 0 });
+
+  const getReservationSpan = (reservation, day) => {
+    const startDate = isDate(day) ? day : parseISO(day);
+    const reservationStartDate = isDate(reservation.beginDate)
+      ? reservation.beginDate
+      : parseISO(reservation.beginDate);
+    const reservationEndDate = isDate(reservation.endDate)
+      ? reservation.endDate
+      : parseISO(reservation.endDate);
+
+    const displayStart = max([startDate, reservationStartDate]);
+    const displayEnd = min([weekEnd, reservationEndDate]);
+
+    return (displayEnd - displayStart) / (1000 * 60 * 60 * 24) + 1;
+  };
+
+  const getReservationsForDateAndApartment = (day, apartment) => {
+    return reservations
+      .filter(
+        (reservation) =>
+          reservation.apartment === apartment &&
+          isBefore(reservation.beginDate, addDays(day, 7)) &&
+          isAfter(reservation.endDate, day)
+      )
+      .map((reservation) => {
+        return { ...reservation, span: getReservationSpan(reservation, day) };
+      });
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div className="calendar">
+      <header className="calendar-header">
+        <button onClick={handlePrevWeek}>Previous Week</button>
+        <h2>{`${format(currentWeek, "MMM dd")} - ${format(
+          addDays(currentWeek, 6),
+          "MMM dd"
+        )}`}</h2>
+        <button onClick={handleNextWeek}>Next Week</button>
+      </header>
+
+      <div className="calendar-grid">
+        <div className="calendar-days">
+          <div className="calendar-empty-cell"></div>
+          {daysOfWeek.map((day, index) => (
+            <div key={index} className="calendar-day">
+              <div>{format(day, "EEEE")}</div>
+              <div>{format(day, "MMM dd")}</div>
+            </div>
+          ))}
+        </div>
+
+        {apartments.map((apartment, index) => (
+          <div key={index} className="calendar-row">
+            <div className="calendar-apartment">{apartment}</div>
+            {daysOfWeek.map((day, dayIndex) => {
+              const reservationForCell = getReservationsForDateAndApartment(
+                day,
+                apartment
+              ).find(
+                (reservation) =>
+                  format(reservation.beginDate, "yyyy-MM-dd") ===
+                    format(day, "yyyy-MM-dd") ||
+                  (isBefore(reservation.beginDate, day) &&
+                    isAfter(reservation.endDate, day))
+              );
+              
+              if (reservationForCell) {
+                return (
+                  <div
+                    key={dayIndex}
+                    className="calendar-cell reservation"
+                    style={{ gridColumn: `span ${reservationForCell.span}` }}
+                  >
+                    {reservationForCell.name}
+                  </div>
+                );
+              }
+
+              return <div key={dayIndex} className="calendar-cell"></div>;
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export default ReservationCalendar;
