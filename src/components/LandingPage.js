@@ -35,23 +35,48 @@ const HeaderContent = styled.div`
 const Logo = styled.h1`
     font-size: 24px;
     font-weight: bold;
-    color: #6772e5;
+    color: #DE7066;
 `;
 
 const Nav = styled.nav`
     display: flex;
     gap: 2rem;
+    align-items: center;
 `;
 
 const NavLink = styled.a`
-    color: #333;
+    color: #DE7066;
     font-size: 16px;
     text-decoration: none;
     cursor: pointer;
     transition: color 0.3s;
+    font-weight: 500;
 
     &:hover {
-        color: #6772e5;
+        color: #3C3C3C;
+    }
+`;
+
+const LoginButton = styled.a`
+    font-size: 16px;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 500;
+    padding: 0.75rem 2rem;
+    background: linear-gradient(135deg, #DE7066, #F16D61);
+    border: none;
+    border-radius: 40px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+        background: linear-gradient(135deg, #F16D61, #DE7066);
+    }
+
+    @media (max-width: 768px) {
+        font-size: 16px;
+        padding: 0.75rem 1.0rem;
     }
 `;
 
@@ -72,11 +97,17 @@ const HeroContent = styled.div`
 `;
 
 const HeroTitle = styled.h1`
-    font-size: 64px;
-    font-weight: bold;
-    color: #32325d;
+    font-size: 50px;
+    font-weight: 400;
     margin-bottom: 1rem;
+    text-align: start;
+    color: #3C3C3C;
     line-height: 1.2;
+    
+    > b {
+        color: #DE7066 ;
+        
+    }
 
     @media (max-width: 768px) {
         font-size: 48px;
@@ -85,8 +116,9 @@ const HeroTitle = styled.h1`
 
 const HeroSubtitle = styled.p`
     font-size: 20px;
-    color: #525f7f;
-    margin-bottom: 2rem;
+    color: #3C3C3C;
+    margin-bottom: -35px;
+    text-align: start;
 
     @media (max-width: 768px) {
         font-size: 18px;
@@ -95,7 +127,7 @@ const HeroSubtitle = styled.p`
 
 const GradientButton = styled.button`
     padding: 1rem 2rem;
-    background: linear-gradient(135deg, #6772e5, #9b51e0);
+    background: linear-gradient(135deg, #DE7066, #F16D61);
     border: none;
     border-radius: 40px;
     color: white;
@@ -104,7 +136,7 @@ const GradientButton = styled.button`
     transition: background-color 0.3s ease;
 
     &:hover {
-        background: linear-gradient(135deg, #5469d4, #8e44ad);
+        background: linear-gradient(135deg, #F16D61, #DE7066);
     }
 
     @media (max-width: 768px) {
@@ -162,7 +194,7 @@ const FeatureDescription = styled.p`
 const Footer = styled.footer`
     width: 100%;
     padding: 2rem;
-    background-color: #32325d;
+    background-color: #3C3C3C;
     color: white;
     text-align: center;
 `;
@@ -170,6 +202,12 @@ const Footer = styled.footer`
 const FooterText = styled.p`
     font-size: 14px;
     margin: 0;
+
+    > a {
+        text-decoration: none;
+        color: white;
+        cursor: pointer;
+    }
 `;
 
 const LandingPage = () => {
@@ -186,18 +224,17 @@ const LandingPage = () => {
                 <HeaderContent>
                     <Logo>iGestão</Logo>
                     <Nav>
-                        <NavLink onClick={() => navigate('/signup')}>Fale com nossa equipe</NavLink>
-                        <NavLink onClick={() => navigate('/login')}>Entrar</NavLink>
+                        <LoginButton onClick={() => navigate('/login')}>Entrar</LoginButton>
                     </Nav>
                 </HeaderContent>
             </Header>
 
             <HeroSection>
                 <HeroContent>
-                    <HeroTitle>Gestão de condomínio sem dor de cabeça</HeroTitle>
                     <HeroSubtitle>
-                        Antecipe Problemas e Garanta a Tranquilidade no Seu Condomínio!
+                        Gestão de condomínio sem dor de cabeça
                     </HeroSubtitle>
+                    <HeroTitle><b>Antecipe Problemas e</b> <br />  Garanta a Tranquilidade no Seu Condomínio!</HeroTitle>
                     <GradientButton onClick={handleLoginClick}>Fale com nossa equipe</GradientButton>
                 </HeroContent>
             </HeroSection>
@@ -205,28 +242,28 @@ const LandingPage = () => {
             <FeaturesSection>
                 <FeaturesGrid>
                     <FeatureCard>
-                        <FeatureTitle>Effortless Management</FeatureTitle>
+                        <FeatureTitle>Gestão de Reservas</FeatureTitle>
                         <FeatureDescription>
-                            Keep track of your apartments with our intuitive dashboard.
+                            -
                         </FeatureDescription>
                     </FeatureCard>
                     <FeatureCard>
-                        <FeatureTitle>User Permissions</FeatureTitle>
+                        <FeatureTitle>Controle de Ocupação</FeatureTitle>
                         <FeatureDescription>
-                            Assign and manage user roles effortlessly with built-in controls.
+                            -
                         </FeatureDescription>
                     </FeatureCard>
                     <FeatureCard>
-                        <FeatureTitle>Detailed Analytics</FeatureTitle>
+                        <FeatureTitle>Relatórios</FeatureTitle>
                         <FeatureDescription>
-                            Get real-time insights and reports on your apartment data.
+                            -
                         </FeatureDescription>
                     </FeatureCard>
                 </FeaturesGrid>
             </FeaturesSection>
 
             <Footer>
-                <FooterText>© {new Date().getFullYear()} Desenvolvido por <a href='https://www.instagram.com/amnosapps/'>Amnos Apps</a></FooterText>
+                <FooterText>© {new Date().getFullYear()} Desenvolvido por <a href='https://www.instagram.com/amnosapps/'>Amnos Apps 🚀</a></FooterText>
             </Footer>
         </Container>
     );

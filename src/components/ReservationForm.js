@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
+import DashboardLayout from './DashboardLayout';
 
 function ReservationForm() {
     const [apartmentId, setApartmentId] = useState('');
@@ -28,7 +29,7 @@ function ReservationForm() {
     };
 
     return (
-        <div>
+        <>
             <h2>Make a Reservation</h2>
             <form onSubmit={handleSubmit}>
                 <div>
@@ -53,7 +54,7 @@ function ReservationForm() {
                 </div>
                 <button type="submit">Submit</button>
             </form>
-        </div>
+        </>
     );
 }
 

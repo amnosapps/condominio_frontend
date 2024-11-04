@@ -3,46 +3,53 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
-import DashboardLayout from './DashboardLayout';
 
-// Styled components for ApartmentList
-const ApartmentListContainer = styled.ul`
-    list-style: none;
-    padding: 0;
-    margin: 0;
+// Styled components for ApartmentList as cards
+const ApartmentListContainer = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
 `;
 
-const ApartmentItem = styled.li`
-    background-color: #f9fafc;
-    padding: 1rem;
+// Conditional styling based on apartment status
+const ApartmentCard = styled.div`
+    background-color: ${({ status }) => (status === 0 ? '#e0f7e9' : '#fdecea')}; /* Light green for 0, light red for 1 */
+    padding: 1.5rem;
     border: 1px solid #e3e7ed;
-    border-radius: 6px;
-    margin-bottom: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    border-radius: 8px;
+    width: 250px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s, box-shadow 0.3s;
 
     &:hover {
-        background-color: #f1f3f5;
-        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.05);
+        background-color: ${({ status }) => (status === 0 ? '#d1f0da' : '#f8d7da')}; /* Slightly darker on hover */
+        box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.15);
     }
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 `;
 
 const ApartmentInfo = styled.div`
-    font-size: 16px;
-    color: #555;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 0.5rem;
 `;
 
 const MaxOccupancy = styled.span`
     font-size: 14px;
-    color: #888;
+    color: #555;
 `;
 
 const Loader = styled.div`
     text-align: center;
     font-size: 18px;
     color: #007bff;
+    margin-top: 2rem;
 `;
 
 function ApartmentList() {
@@ -69,20 +76,22 @@ function ApartmentList() {
     }, []);
 
     return (
-        <DashboardLayout>
+        <>
             {loading ? (
                 <Loader>Loading Apartments...</Loader>
             ) : (
                 <ApartmentListContainer>
                     {apartments.map(apartment => (
-                        <ApartmentItem key={apartment.id}>
-                            <ApartmentInfo>Apartment ID: {apartment.id}</ApartmentInfo>
-                            <MaxOccupancy>Max Occupancy: {apartment.max_occupation}</MaxOccupancy>
-                        </ApartmentItem>
+                        <ApartmentCard key={apartment.id} status={apartment.status}>
+                            <ApartmentInfo>Apartamento: {apartment.id}</ApartmentInfo>
+                            <MaxOccupancy>Status de Ocupação: {apartment.status}</MaxOccupancy>
+                            <MaxOccupancy>Tipo de Ocupação: {apartment.type}</MaxOccupancy>
+                            <MaxOccupancy>Capacidade: {apartment.max_occupation}</MaxOccupancy>
+                        </ApartmentCard>
                     ))}
                 </ApartmentListContainer>
             )}
-        </DashboardLayout>
+        </>
     );
 }
 

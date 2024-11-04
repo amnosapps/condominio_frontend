@@ -14,20 +14,33 @@ const Container = styled.div`
 `;
 
 const LoginBox = styled.div`
+    align-items: center;
     background-color: white;
-    padding: 2rem;
-    border-radius: 8px;
+    padding: 3rem 2rem;
+    border-radius: 12px;
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 400px;
     box-sizing: border-box;
 `;
 
-const Title = styled.h2`
+const Title = styled.a`
     margin-bottom: 1.5rem;
     font-size: 24px;
     text-align: center;
-    color: #333;
+    color: #DE7066;
+    text-decoration: none;
+    font-weight: 600;
+    text-align: center;
+    padding: 7.5rem;
+
+    @media (max-width: 768px) {
+        padding: 5rem;
+    }
+
+    &:hover {
+        cursor: pointer;
+    }
 `;
 
 const Form = styled.form`
@@ -56,23 +69,23 @@ const Input = styled.input`
     transition: border-color 0.2s;
 
     &:focus {
-        border-color: #007bff;
+        border-color: #DE7066;
         outline: none;
     }
 `;
 
 const Button = styled.button`
-    background-color: #007bff;
+    background-color: #DE7066;
     color: white;
     padding: 0.75rem;
     border: none;
-    border-radius: 4px;
+    border-radius: 12px;
     cursor: pointer;
     font-size: 16px;
     transition: background-color 0.3s;
 
     &:hover {
-        background-color: #0056b3;
+        background-color: #E35144;
     }
 
     &:disabled {
@@ -80,6 +93,18 @@ const Button = styled.button`
         cursor: not-allowed;
     }
 `;
+
+const FooterCallToAction = styled.div`
+    display: flex;
+    align-items: center;
+    align-content: center;
+    padding-left: 1.5rem;
+
+    > p {
+        text-align: center;
+        opacity: 60%;
+    }
+`
 
 const ErrorMessage = styled.p`
     color: red;
@@ -106,7 +131,7 @@ function Login({ onLoginSuccess }) {
             localStorage.setItem('accessToken', response.data.access);
             localStorage.setItem('refreshToken', response.data.refresh);
             onLoginSuccess();  // Call the login success callback
-            navigate('/apartments'); // Redirect to the apartments route after login success
+            navigate('/occupation'); // Redirect to the apartments route after login success
         } catch (err) {
             setError('Erro ao fazer login, procure o suporte.');
         }
@@ -115,10 +140,10 @@ function Login({ onLoginSuccess }) {
     return (
         <Container>
             <LoginBox>
-                <Title>Login</Title>
+                <Title href='/'>iGestão</Title>
                 <Form onSubmit={handleSubmit}>
                     <InputGroup>
-                        <Label>Username:</Label>
+                        <Label>Usuário:</Label>
                         <Input
                             type="text"
                             value={username}
@@ -127,7 +152,7 @@ function Login({ onLoginSuccess }) {
                         />
                     </InputGroup>
                     <InputGroup>
-                        <Label>Password:</Label>
+                        <Label>Senha:</Label>
                         <Input
                             type="password"
                             value={password}
@@ -136,8 +161,13 @@ function Login({ onLoginSuccess }) {
                         />
                     </InputGroup>
                     {error && <ErrorMessage>{error}</ErrorMessage>}
-                    <Button type="submit">Login</Button>
+                    <Button type="submit">Entrar</Button>
                 </Form>
+                <FooterCallToAction>
+                    <p>
+                        Ainda não é nosso cliente? Fale conosco
+                    </p>
+                </FooterCallToAction>
             </LoginBox>
         </Container>
     );

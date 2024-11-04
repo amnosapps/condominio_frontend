@@ -3,6 +3,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import Sidebar from './Sidebar';
+import { Outlet } from 'react-router-dom';
 
 // Styled components for the layout
 const LayoutContainer = styled.div`
@@ -12,7 +13,7 @@ const LayoutContainer = styled.div`
 `;
 
 const MainContent = styled.main`
-    margin-left: 250px;
+    margin-left: 18rem;
     padding: 2rem;
     flex: 1;
     background-color: #f7f9fc;
@@ -22,12 +23,12 @@ const MainContent = styled.main`
     }
 `;
 
-const DashboardLayout = ({ children }) => {
+const DashboardLayout = () => {
     return (
         <LayoutContainer>
             <Sidebar />
             <MainContent>
-                {children}
+                <Outlet /> {/* This renders the nested route components */}
             </MainContent>
         </LayoutContainer>
     );

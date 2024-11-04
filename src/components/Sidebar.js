@@ -6,7 +6,7 @@ import styled from 'styled-components';
 
 // Styled components for Sidebar
 const SidebarContainer = styled.div`
-    background-color: #2c3e50;
+    background-color: #fff;
     width: 250px;
     height: 100vh;
     position: fixed;
@@ -17,6 +17,7 @@ const SidebarContainer = styled.div`
     padding: 1.5rem;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     color: white;
+    align-items: center;
 
     @media (max-width: 768px) {
         width: 200px;
@@ -25,27 +26,55 @@ const SidebarContainer = styled.div`
 
 const Logo = styled.h2`
     font-size: 24px;
-    color: #ecf0f1;
+    color: #DE7066;
     margin-bottom: 2rem;
+`;
+
+const ImgSidebar = styled.img`
+    width: 20px;
+    margin-right: 10px;
 `;
 
 const NavList = styled.ul`
     list-style: none;
     padding: 0;
+    display: flex;
+    flex-direction: column;
 `;
 
 const NavItem = styled.li`
-    margin-bottom: 1.5rem;
+    display: flex;
+    margin-bottom: 1rem;
+    align-items: center;
 `;
 
 const NavLink = styled.a`
-    color: #ecf0f1;
+    color: #737373;
     text-decoration: none;
     font-size: 18px;
     transition: color 0.3s;
 
     &:hover {
-        color: #3498db;
+        color: #DE7066;
+        cursor: pointer;
+    }
+`;
+
+const LogoutButton = styled.a`
+    color: #fff;
+    text-decoration: none;
+    font-size: 15px;
+    transition: color 0.3s;
+    background: linear-gradient(135deg, #DE7066, #F16D61);
+    border: none;
+    border-radius: 40px;
+    text-align: center;
+    padding: 0.50rem 2rem;
+
+    &:hover {
+        color: #fff;
+        cursor: pointer;
+        background: linear-gradient(135deg, #F16D61, #DE7066);
     }
 `;
 
@@ -60,17 +89,24 @@ const Sidebar = (IsAuthenticated) => {
 
     return (
         <SidebarContainer>
-            <Logo>Dashboard</Logo>
+            <Logo>iGestão</Logo>
             <NavList>
                 <NavItem>
-                    <NavLink to="/apartments">Apartments</NavLink>
+                    <ImgSidebar src='calendar.png' />
+                    <NavLink href="/occupation">Mapa de Ocupação</NavLink>
                 </NavItem>
                 <NavItem>
-                    <NavLink onClick={handleLogout} to="/">
-                        <button>logout</button>
-                    </NavLink>
+                    <ImgSidebar src='apartament.png' />
+                    <NavLink href="/apartments">Apartamentos</NavLink>
+                </NavItem>
+                <NavItem>
+                    <ImgSidebar src='report.png' />
+                    <NavLink href="/">Relatórios</NavLink>
                 </NavItem>
             </NavList>
+            <LogoutButton onClick={handleLogout} to="/">
+                Sair
+            </LogoutButton>
         </SidebarContainer>
     );
 };
