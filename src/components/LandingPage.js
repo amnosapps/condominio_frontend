@@ -44,18 +44,6 @@ const Nav = styled.nav`
     align-items: center;
 `;
 
-const NavLink = styled.a`
-    color: #DE7066;
-    font-size: 16px;
-    text-decoration: none;
-    cursor: pointer;
-    transition: color 0.3s;
-    font-weight: 500;
-
-    &:hover {
-        color: #3C3C3C;
-    }
-`;
 
 const LoginButton = styled.a`
     font-size: 16px;

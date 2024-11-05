@@ -6,7 +6,6 @@ import Login from './components/Login';
 import ApartmentList from './components/ApartmentList';
 import DashboardLayout from './components/DashboardLayout';
 import LandingPage from './components/LandingPage';
-import ReservationForm from './components/ReservationForm';
 import ReservationCalendar from './components/ReservationCalendar';
 
 function App() {

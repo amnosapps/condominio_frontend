@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
-import DashboardLayout from './DashboardLayout';
 
 function ReservationForm() {
     const [apartmentId, setApartmentId] = useState('');
