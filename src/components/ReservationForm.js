@@ -13,7 +13,7 @@ function ReservationForm() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.post('http://127.0.0.1:8000/api/reservations/', {
+        axios.post(`${process.env.API_URL}/api/reservations/`, {
             apartment: apartmentId,
             guest_name: guestName,
             guest_document: guestDocument,
