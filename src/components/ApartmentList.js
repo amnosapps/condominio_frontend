@@ -60,7 +60,7 @@ function ApartmentList() {
         const fetchData = async () => {
             const token = localStorage.getItem('accessToken');
             try {
-                const response = await axios.get(`${process.env.API_URL}/api/apartments/`, {
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },

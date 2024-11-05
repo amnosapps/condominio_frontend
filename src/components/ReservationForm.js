@@ -12,7 +12,7 @@ function ReservationForm() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.post(`${process.env.API_URL}/api/reservations/`, {
+        axios.post(`${process.env.REACT_APP_API_URL}/api/reservations/`, {
             apartment: apartmentId,
             guest_name: guestName,
             guest_document: guestDocument,

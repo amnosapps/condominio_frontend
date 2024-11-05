@@ -120,10 +120,11 @@ function Login({ onLoginSuccess }) {
     const [error, setError] = useState(null);
     const navigate = useNavigate(); // Using React Router's useNavigate for navigation
 
+    console.log(process.env.REACT_APP_API_URL)
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(`${process.env.API_URL}/api/token/`, {
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/token/`, {
                 username,
                 password,
             });
