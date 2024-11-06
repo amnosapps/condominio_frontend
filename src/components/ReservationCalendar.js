@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import styled, { css } from "styled-components";
+import styled, { css, keyframes } from "styled-components";
 import {
   format,
   addDays,
@@ -14,12 +14,117 @@ import {
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+const slideDown = keyframes`
+  from {
+    transform: translateY(-30%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+`;
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: start;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const ModalContainer = styled.div`
+  margin-top: 300px;
+  margin-left: 100px;
+  background-color: white;
+  width: 80%;
+  max-width: 400px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  animation: ${slideDown} 0.5s ease forwards;
+  position: relative;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+`;
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  max-width: 100vw;
+`
+
+const HeaderContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: 90%;
+  margin: auto;
+  align-items: center;
+  align-content: center;
+  margin-bottom: 20px;
+  font-family: Arial, sans-serif;
+`;
+
+const Title = styled.h1`
+  font-size: 18px;
+  color: #e46f65;
+  margin: 0;
+  padding: 10px;
+`;
+
+const SearchWrapper = styled.div`
+  display: flex;
+  /* align-items: center; */
+  margin-left: 50%;
+`;
+
+const SearchInput = styled.input`
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-right: 8px;
+  width: 200px;
+
+  &::placeholder {
+    color: #888;
+  }
+`;
+
+const SearchButton = styled.button`
+  padding: 8px 12px;
+  background-color: #E46F65;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #3579a6;
+  }
+`;
+
 const CalendarContainer = styled.div`
   display: flex;
-  max-width: 90%;
+  width: 90%;
   margin: auto;
   font-family: Arial, sans-serif;
   background-color: #fff;
+  border: 1px solid #ddd;
 `;
 
 const Calendar = styled.div`
@@ -135,7 +240,6 @@ const CalendarCell = styled.div`
 const Reservation = styled.div`
   display: flex;
   align-items: center;
-  /* justify-content: center; */
   width: 100%;
   height: 100%;
   background-color: #4c92d0;
@@ -149,24 +253,6 @@ const Reservation = styled.div`
     font-weight: 500;
     padding: 0px 15px;
   }
-`;
-
-const ReservationSidebar = styled.div`
-  width: 300px;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-left: 1px solid #ddd;
-  position: relative;
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
 `;
 
 const ReservationCalendar = () => {
@@ -238,7 +324,7 @@ const ReservationCalendar = () => {
     setSelectedReservation(reservation);
   };
 
-  const closeSidebar = () => {
+  const closeModal = () => {
     setSelectedReservation(null);
   };
 
@@ -247,89 +333,100 @@ const ReservationCalendar = () => {
   }
 
   return (
-    <CalendarContainer>
-      <Calendar>
-        <CalendarHeader>
-          <button onClick={handlePrevWeek}>{'<'}</button>
-          <h2 className="header-title">{`${format(currentWeek, "dd MMM yyyy", { locale: ptBR })} - ${format(
-            addDays(currentWeek, 6),
-            "dd MMM yyyy",
-            { locale: ptBR }
-          )}`}</h2>
-          <button onClick={handleNextWeek}>{'>'}</button>
-        </CalendarHeader>
+    <Container>
+      <HeaderContainer>
+        <Title>Calendário de Ocupação</Title>
+        <SearchWrapper>
+          <SearchInput placeholder="Buscar Hóspede" />
+          <SearchButton>Buscar</SearchButton>
+        </SearchWrapper>
+      </HeaderContainer>
+      <CalendarContainer>
+        <Calendar>
+          <CalendarHeader>
+            <button onClick={handlePrevWeek}>{'<'}</button>
+            <h2 className="header-title">{`${format(currentWeek, "dd MMM yyyy", { locale: ptBR })} - ${format(
+              addDays(currentWeek, 6),
+              "dd MMM yyyy",
+              { locale: ptBR }
+            )}`}</h2>
+            <button onClick={handleNextWeek}>{'>'}</button>
+          </CalendarHeader>
 
-        <CalendarGrid>
-          <CalendarDays>
-            <CalendarEmptyCell />
-            {daysOfWeek.map((day, index) => (
-              <CalendarDay
-                key={index}
-                isCurrentDay={isToday(day)}
-                isWeekend={isWeekend(day)}
-              >
-                <h1>{format(day, "dd", { locale: ptBR })}</h1>
-                <h2>{format(day, "EE", { locale: ptBR })}</h2>
-              </CalendarDay>
-            ))}
-          </CalendarDays>
+          <CalendarGrid>
+            <CalendarDays>
+              <CalendarEmptyCell />
+              {daysOfWeek.map((day, index) => (
+                <CalendarDay
+                  key={index}
+                  isCurrentDay={isToday(day)}
+                  isWeekend={isWeekend(day)}
+                >
+                  <h1>{format(day, "dd", { locale: ptBR })}</h1>
+                  <h2>{format(day, "EE", { locale: ptBR })}</h2>
+                </CalendarDay>
+              ))}
+            </CalendarDays>
 
-          {apartments.map((apartment, index) => (
-            <CalendarRow key={index}>
-              <CalendarApartment>{apartment}</CalendarApartment>
-              {daysOfWeek.map((day, dayIndex) => {
-                const reservationForCell = reservations.find(
-                  (reservation) =>
-                    reservation.apartment === apartment &&
-                    day >= reservation.beginDate &&
-                    day <= reservation.endDate
-                );
+            {apartments.map((apartment, index) => (
+              <CalendarRow key={index}>
+                <CalendarApartment>{apartment}</CalendarApartment>
+                {daysOfWeek.map((day, dayIndex) => {
+                  const reservationForCell = reservations.find(
+                    (reservation) =>
+                      reservation.apartment === apartment &&
+                      day >= reservation.beginDate &&
+                      day <= reservation.endDate
+                  );
 
-                const isCurrentDay = isToday(day);
-                const isWeekendDay = isWeekend(day);
+                  const isCurrentDay = isToday(day);
+                  const isWeekendDay = isWeekend(day);
 
-                if (reservationForCell) {
-                  const isReservationStartOfWeek =
-                    dayIndex === 0 ||
-                    day.getTime() === reservationForCell.beginDate.getTime() ||
-                    day.getTime() === startOfWeek(day).getTime();
+                  if (reservationForCell) {
+                    const isReservationStartOfWeek =
+                      dayIndex === 0 ||
+                      day.getTime() === reservationForCell.beginDate.getTime() ||
+                      day.getTime() === startOfWeek(day).getTime();
 
-                  if (isReservationStartOfWeek) {
-                    const span = calculateReservationSpan(reservationForCell, day);
-                    return (
-                      <CalendarCell
-                        key={dayIndex}
-                        isCurrentDay={isCurrentDay}
-                        isWeekend={isWeekendDay}
-                        style={{ gridColumn: `span ${span}` }}
-                      >
-                        <Reservation onClick={() => handleReservationClick(reservationForCell)}>
-                          <h1>{reservationForCell.name}</h1>
-                        </Reservation>
-                      </CalendarCell>
-                    );
+                    if (isReservationStartOfWeek) {
+                      const span = calculateReservationSpan(reservationForCell, day);
+                      return (
+                        <CalendarCell
+                          key={dayIndex}
+                          isCurrentDay={isCurrentDay}
+                          isWeekend={isWeekendDay}
+                          style={{ gridColumn: `span ${span}` }}
+                        >
+                          <Reservation onClick={() => handleReservationClick(reservationForCell)}>
+                            <h1>{reservationForCell.name}</h1>
+                          </Reservation>
+                        </CalendarCell>
+                      );
+                    }
                   }
-                }
 
-                return <CalendarCell key={dayIndex} isCurrentDay={isCurrentDay} isWeekend={isWeekendDay}></CalendarCell>;
-              })}
-            </CalendarRow>
-          ))}
-        </CalendarGrid>
-      </Calendar>
+                  return <CalendarCell key={dayIndex} isCurrentDay={isCurrentDay} isWeekend={isWeekendDay}></CalendarCell>;
+                })}
+              </CalendarRow>
+            ))}
+          </CalendarGrid>
+        </Calendar>
 
-      {selectedReservation && (
-        <ReservationSidebar>
-          <CloseButton onClick={closeSidebar}>X</CloseButton>
-          <h3>Detalhes da Reserva</h3>
-          <p><strong>Nome do Hóspede:</strong> {selectedReservation.name}</p>
-          <p><strong>Apartamento:</strong> {selectedReservation.apartment}</p>
-          <p><strong>Data de Início:</strong> {format(selectedReservation.beginDate, "dd MMM yyyy", { locale: ptBR })}</p>
-          <p><strong>Data de Fim:</strong> {format(selectedReservation.endDate, "dd MMM yyyy", { locale: ptBR })}</p>
-          <p><button>Checkin</button><button>Checkout</button></p>
-        </ReservationSidebar>
-      )}
-    </CalendarContainer>
+        {selectedReservation && (
+          <ModalOverlay onClick={closeModal}>
+            <ModalContainer onClick={(e) => e.stopPropagation()}>
+              <CloseButton onClick={closeModal}>X</CloseButton>
+              <h3>Detalhes da Reserva</h3>
+              <p><strong>Nome do Hóspede:</strong> {selectedReservation.name}</p>
+              <p><strong>Apartamento:</strong> {selectedReservation.apartment}</p>
+              <p><strong>Data de Início:</strong> {format(selectedReservation.beginDate, "dd MMM yyyy", { locale: ptBR })}</p>
+              <p><strong>Data de Fim:</strong> {format(selectedReservation.endDate, "dd MMM yyyy", { locale: ptBR })}</p>
+              <p><button>Checkin</button><button>Checkout</button></p>
+            </ModalContainer>
+          </ModalOverlay>
+        )}
+      </CalendarContainer>
+    </Container>
   );
 };
 
