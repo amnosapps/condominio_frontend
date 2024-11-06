@@ -1,69 +1,134 @@
+.calendar-container {
+  display: flex;
+  max-width: 90%;
+  margin: auto;
+  font-family: Arial, sans-serif;
+  background-color: #fff;
+}
+
 .calendar {
-    max-width: 1000px;
-    margin: auto;
-    font-family: Arial, sans-serif;
-  }
+  flex: 1;
+  background-color: #E46F65;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #E46F65;
+  padding: 1px 50px;
   
-  .calendar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+  .header-title {
+    font-size: 18px;
+    font-weight: 300;
+    color: #fff;
   }
-  
-  .calendar-grid {
-    display: flex;
-    flex-direction: column;
+
+  > button {
+    background-color: #E46F65;
+    color: #fff;
+    border: None;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 18px;
+    border-radius: 10px;
   }
-  
-  .calendar-days {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
+}
+
+
+.calendar-grid {
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+}
+
+.calendar-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  font-weight: bold;
+  background-color: #fff;
+  border: 1px solid #ddd;
+
+  > h1 {
+    font-weight: 300;
+    font-size: 15px;
+    margin-bottom: -11px;
   }
-  
-  .calendar-day {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
-    font-weight: bold;
-    background-color: #f0f0f0;
+
+  > h2 {
+    font-weight: 300;
+    font-size: 15px;
   }
+}
+
+.calendar-empty-cell {
+  background-color: #fff;
   
-  .calendar-empty-cell {
-    background-color: #f0f0f0;
-  }
-  
-  .calendar-row {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-  }
-  
-  .calendar-apartment {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
-    font-weight: bold;
-    background-color: #f0f0f0;
-  }
-  
-  .calendar-cell {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #ddd;
-    /* height: 60px; */
-    background-color: #fff;
-    position: relative;
-  }
-  
-  .reservation {
-    background-color: #4caf50;
-    color: white;
-    border-radius: 3px;
-    font-size: 0.9em;
-    text-align: center;
-    /* height: 100%; */
-  }
-  
+}
+
+.calendar-row {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+
+}
+
+.calendar-apartment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  font-weight: bold;
+  background-color: #f4f4f4;
+  border: 1px solid #ddd;
+}
+
+.calendar-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  position: relative;
+}
+
+.reservation {
+  background-color: #4c92d0;
+  color: white;
+  border-radius: 3px;
+  font-size: 0.9em;
+  text-align: center;
+}
+
+/* Sidebar styling */
+.reservation-sidebar {
+  width: 300px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-left: 1px solid #ddd;
+  position: relative;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.reservation-sidebar h3 {
+  margin-top: 0;
+}
+
+.reservation-sidebar p {
+  margin: 10px 0;
+}

@@ -120,7 +120,6 @@ function Login({ onLoginSuccess }) {
     const [error, setError] = useState(null);
     const navigate = useNavigate(); // Using React Router's useNavigate for navigation
 
-    console.log(process.env.REACT_APP_API_URL)
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -128,12 +127,14 @@ function Login({ onLoginSuccess }) {
                 username,
                 password,
             });
+            console.log(`${process.env.REACT_APP_API_URL}/api/token/`)
             // Store the JWT token in localStorage
             localStorage.setItem('accessToken', response.data.access);
             localStorage.setItem('refreshToken', response.data.refresh);
             onLoginSuccess();  // Call the login success callback
             navigate('/occupation'); // Redirect to the apartments route after login success
         } catch (err) {
+            console.log(err)
             setError('Erro ao fazer login, procure o suporte.');
         }
     };
