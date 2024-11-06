@@ -5,9 +5,12 @@ import {
   format,
   addDays,
   startOfWeek,
+  endOfWeek,
   isToday,
   isWeekend,
   parseISO,
+  differenceInCalendarDays,
+  min,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -127,24 +130,12 @@ const CalendarCell = styled.div`
   border: 1px solid #ddd;
   background-color: #fff;
   position: relative;
-
-  ${(props) =>
-    props.isCurrentDay &&
-    css`
-      background-color: #ffe2e2;
-    `}
-
-  ${(props) =>
-    props.isWeekend &&
-    css`
-      background-color: #e5f2ff;
-    `}
 `;
 
 const Reservation = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
+  /* justify-content: center; */
   width: 100%;
   height: 100%;
   background-color: #4c92d0;
@@ -160,7 +151,6 @@ const Reservation = styled.div`
   }
 `;
 
-/* Sidebar styling */
 const ReservationSidebar = styled.div`
   width: 300px;
   padding: 20px;
@@ -239,6 +229,11 @@ const ReservationCalendar = () => {
     addDays(currentWeek, index)
   );
 
+  const calculateReservationSpan = (reservation, day) => {
+    const displayEnd = min([reservation.endDate, endOfWeek(day)]);
+    return differenceInCalendarDays(displayEnd, day) + 1;
+  };
+
   const handleReservationClick = (reservation) => {
     setSelectedReservation(reservation);
   };
@@ -256,9 +251,9 @@ const ReservationCalendar = () => {
       <Calendar>
         <CalendarHeader>
           <button onClick={handlePrevWeek}>{'<'}</button>
-          <h2 className="header-title">{`${format(currentWeek, "dd MMM yyy", { locale: ptBR })} - ${format(
+          <h2 className="header-title">{`${format(currentWeek, "dd MMM yyyy", { locale: ptBR })} - ${format(
             addDays(currentWeek, 6),
-            "dd MMM yyy",
+            "dd MMM yyyy",
             { locale: ptBR }
           )}`}</h2>
           <button onClick={handleNextWeek}>{'>'}</button>
@@ -281,12 +276,7 @@ const ReservationCalendar = () => {
 
           {apartments.map((apartment, index) => (
             <CalendarRow key={index}>
-              <CalendarApartment
-                isCurrentDay={isToday(daysOfWeek[0])}
-                isWeekend={isWeekend(daysOfWeek[0])}
-              >
-                {apartment}
-              </CalendarApartment>
+              <CalendarApartment>{apartment}</CalendarApartment>
               {daysOfWeek.map((day, dayIndex) => {
                 const reservationForCell = reservations.find(
                   (reservation) =>
@@ -298,19 +288,30 @@ const ReservationCalendar = () => {
                 const isCurrentDay = isToday(day);
                 const isWeekendDay = isWeekend(day);
 
-                return (
-                  <CalendarCell
-                    key={dayIndex}
-                    isCurrentDay={isCurrentDay}
-                    isWeekend={isWeekendDay}
-                  >
-                    {reservationForCell && (
-                      <Reservation onClick={() => handleReservationClick(reservationForCell)}>
-                        <h1>{reservationForCell.name}</h1>
-                      </Reservation>
-                    )}
-                  </CalendarCell>
-                );
+                if (reservationForCell) {
+                  const isReservationStartOfWeek =
+                    dayIndex === 0 ||
+                    day.getTime() === reservationForCell.beginDate.getTime() ||
+                    day.getTime() === startOfWeek(day).getTime();
+
+                  if (isReservationStartOfWeek) {
+                    const span = calculateReservationSpan(reservationForCell, day);
+                    return (
+                      <CalendarCell
+                        key={dayIndex}
+                        isCurrentDay={isCurrentDay}
+                        isWeekend={isWeekendDay}
+                        style={{ gridColumn: `span ${span}` }}
+                      >
+                        <Reservation onClick={() => handleReservationClick(reservationForCell)}>
+                          <h1>{reservationForCell.name}</h1>
+                        </Reservation>
+                      </CalendarCell>
+                    );
+                  }
+                }
+
+                return <CalendarCell key={dayIndex} isCurrentDay={isCurrentDay} isWeekend={isWeekendDay}></CalendarCell>;
               })}
             </CalendarRow>
           ))}
@@ -325,6 +326,7 @@ const ReservationCalendar = () => {
           <p><strong>Apartamento:</strong> {selectedReservation.apartment}</p>
           <p><strong>Data de Início:</strong> {format(selectedReservation.beginDate, "dd MMM yyyy", { locale: ptBR })}</p>
           <p><strong>Data de Fim:</strong> {format(selectedReservation.endDate, "dd MMM yyyy", { locale: ptBR })}</p>
+          <p><button>Checkin</button><button>Checkout</button></p>
         </ReservationSidebar>
       )}
     </CalendarContainer>
