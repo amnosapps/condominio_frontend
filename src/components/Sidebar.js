@@ -101,7 +101,7 @@ const Sidebar = (IsAuthenticated) => {
                 </NavItem>
                 <NavItem>
                     <ImgSidebar src='report.png' />
-                    <NavLink href="/">Relatórios</NavLink>
+                    <NavLink href="/services">Serviços</NavLink>
                 </NavItem>
             </NavList>
             <LogoutButton onClick={handleLogout} to="/">

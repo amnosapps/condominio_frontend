@@ -35,6 +35,7 @@ function App() {
                 >
                     <Route path="occupation" element={<ReservationCalendar />} />
                     <Route path="apartments" element={<ApartmentList />} />
+                    <Route path="services" element={<ApartmentList />} />
                 </Route>
 
                 <Route path="*" element={<Navigate to={isAuthenticated ? "/occupation" : "/"} />} />
