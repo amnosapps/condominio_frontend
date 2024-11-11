@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import styled, { css } from "styled-components";
 import {
   format,
@@ -77,11 +78,11 @@ const ReservationBar = styled.div`
   background-color: ${(props) =>
     props.isCheckedOut ? "#A9A9A9" : !props.checkinAt ? "#FFA500" : "#5cb85c"};
   color: white;
-  padding: 5px;
-  border-radius: 3px;
-  height: 20px;
+  padding: 2px;
+  /* border-radius: 3px; */
+  height: 30px;
   font-size: 12px;
-  text-align: center;
+  text-align: start;
   white-space: nowrap;
   overflow: hidden;
   cursor: pointer;
@@ -131,53 +132,51 @@ const monthNames = [
 const ReservationCalendar = () => {
   const [viewType, setViewType] = useState("7");
   const [currentStartDate, setCurrentStartDate] = useState(new Date());
-  const [rooms, setRooms] = useState([]);
+  const [apartments, setApartments] = useState([]);
   const [reservations, setReservations] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [guestNameFilter, setGuestNameFilter] = useState("");
   const [startDateFilter, setStartDateFilter] = useState("");
   const [endDateFilter, setEndDateFilter] = useState("");
 
   useEffect(() => {
-    const mockRooms = [
-      { id: 1, number: "101" },
-      { id: 2, number: "102" },
-      { id: 3, number: "103" },
-    ];
+    const fetchApartments = async () => {
+      const token = localStorage.getItem("accessToken");
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setApartments(response.data.map(apartment => `${apartment.number}`));
+      } catch (error) {
+        console.error("Error fetching apartments:", error);
+      }
+    };
 
-    const mockReservations = [
-      {
-        id: 1,
-        guestName: "João da Silva",
-        room_number: "101",
-        checkin: "2024-11-10T14:00",
-        checkout: "2024-11-13T12:00",
-        checkin_at: "2024-11-10T14:00",
-        checkout_at: "2024-11-13T11:00",
-      },
-      {
-        id: 2,
-        guestName: "Maria Oliveira",
-        room_number: "101",
-        checkin: "2024-11-13T14:00",
-        checkout: "2024-11-15T12:00",
-        checkin_at: "",
-        checkout_at: "2024-11-15T12:00",
-      },
-    ];
+    const fetchReservations = async () => {
+      const token = localStorage.getItem("accessToken");
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reservations/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setReservations(response.data.map(reservation => ({
+          id: reservation.id,
+          guestName: reservation.guest_name,
+          apartment: `${reservation.apt_number}`,
+          checkin: parseISO(reservation.checkin),
+          checkout: parseISO(reservation.checkout),
+        })));
+      } catch (error) {
+        console.error("Error fetching reservations:", error);
+      }
+    };
 
-    setRooms(mockRooms.map(room => room.number));
-    setReservations(
-      mockReservations.map(reservation => ({
-        id: reservation.id,
-        guestName: reservation.guestName,
-        room: reservation.room_number,
-        checkin: parseISO(reservation.checkin),
-        checkout: parseISO(reservation.checkout),
-        checkin_at: reservation.checkin_at ? parseISO(reservation.checkin_at) : null,
-        checkout_at: reservation.checkout_at ? parseISO(reservation.checkout_at) : null,
-      }))
-    );
+    const loadData = async () => {
+      await Promise.all([fetchApartments(), fetchReservations()]);
+      setLoading(false);
+    };
+
+    loadData();
   }, []);
 
   const daysInView = Array.from({ length: parseInt(viewType, 10) }, (_, i) => addDays(currentStartDate, i));
@@ -199,9 +198,9 @@ const ReservationCalendar = () => {
     return matchesGuestName && matchesDateRange;
   });
 
-  const getReservationBars = (room, day) => {
+  const getReservationBars = (apartment, day) => {
     const roomReservations = filteredReservations
-      .filter(reservation => reservation.room === room)
+      .filter(reservation => reservation.apartment === apartment)
       .filter(reservation =>
         reservation.checkin <= endOfDay(day) && reservation.checkout >= startOfDay(day)
       )
@@ -209,7 +208,7 @@ const ReservationCalendar = () => {
 
     const occupiedSlots = [];
     const gapPercentage = 2;
-    const gapBetweenDifferentReservations = 7; // Additional gap between different reservations
+    const gapBetweenDifferentReservations = 20;
 
     return roomReservations.map((reservation, index, reservations) => {
       const startHour = reservation.checkin > startOfDay(day) ? differenceInHours(reservation.checkin, day) : 0;
@@ -220,10 +219,8 @@ const ReservationCalendar = () => {
       const hoursSpan = endHour - startHour;
       const offset = (startHour / 24) * 100;
 
-      // Adjust width to add a small gap between stacked bars
       const width = ((hoursSpan / 24) * 100) - gapPercentage;
 
-      // Add extra gap if the reservation does not overlap with the previous one
       const additionalOffset = index > 0 && reservations[index - 1].checkout < reservation.checkin
         ? gapBetweenDifferentReservations
         : 0;
@@ -241,7 +238,7 @@ const ReservationCalendar = () => {
 
       const showName = differenceInHours(reservation.checkin, day) === startHour;
 
-      const isCheckedOut = reservation.checkout_at && isBefore(reservation.checkout_at, new Date());
+      const isCheckedOut = reservation.checkout && isBefore(reservation.checkout, new Date());
       const checkinAt = reservation.checkin_at;
 
       return {
@@ -258,82 +255,88 @@ const ReservationCalendar = () => {
 
   return (
     <CalendarContainer>
-      <CalendarHeader>
-        <button onClick={handlePrev}>{"<"}</button>
-        <span>{`${format(currentStartDate, "dd MMM yyyy", { locale: pt })} - ${format(addDays(currentStartDate, daysInView.length - 1), "dd MMM yyyy", { locale: pt })}`}</span>
-        <button onClick={handleNext}>{">"}</button>
-        
-        <select onChange={(e) => setViewType(e.target.value)} value={viewType}>
-          <option value="7">Vista de 7 Dias</option>
-          <option value="15">Vista de 15 Dias</option>
-          <option value="30">Vista de 30 Dias</option>
-        </select>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <>
+          <CalendarHeader>
+            <button onClick={handlePrev}>{"<"}</button>
+            <span>{`${format(currentStartDate, "dd MMM yyyy", { locale: pt })} - ${format(addDays(currentStartDate, daysInView.length - 1), "dd MMM yyyy", { locale: pt })}`}</span>
+            <button onClick={handleNext}>{">"}</button>
 
-        <select onChange={handleMonthChange} value={currentStartDate.getMonth()}>
-          {monthNames.map((month, index) => (
-            <option key={month} value={index}>
-              {month}
-            </option>
-          ))}
-        </select>
-      </CalendarHeader>
+            <select onChange={(e) => setViewType(e.target.value)} value={viewType}>
+              <option value="7">Vista de 7 Dias</option>
+              <option value="15">Vista de 15 Dias</option>
+              <option value="30">Vista de 30 Dias</option>
+            </select>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px' }}>
-        <input
-          type="text"
-          placeholder="Filtrar por nome"
-          value={guestNameFilter}
-          onChange={(e) => setGuestNameFilter(e.target.value)}
-        />
-        <input
-          type="date"
-          placeholder="Data de início"
-          value={startDateFilter}
-          onChange={(e) => setStartDateFilter(e.target.value)}
-        />
-        <input
-          type="date"
-          placeholder="Data de fim"
-          value={endDateFilter}
-          onChange={(e) => setEndDateFilter(e.target.value)}
-        />
-      </div>
-
-      <DaysRow>
-        <RoomLabel>Quarto</RoomLabel>
-        {daysInView.map((day, dayIndex) => (
-          <DayCell key={dayIndex} isCurrentDay={isToday(day)} isWeekend={isWeekend(day)}>
-            <strong>{format(day, "EEE dd", { locale: pt })}</strong>
-          </DayCell>
-        ))}
-      </DaysRow>
-
-      {rooms.map(room => (
-        <RoomRow key={room}>
-          <RoomLabel>{`Quarto ${room}`}</RoomLabel>
-          {daysInView.map((day, dayIndex) => (
-            <DayCell key={dayIndex}>
-              {getReservationBars(room, day).map((reservation) => (
-                <ReservationBar
-                  key={reservation.id}
-                  offset={reservation.offset}
-                  width={reservation.width}
-                  stackIndex={reservation.stackIndex}
-                  isCheckedOut={reservation.isCheckedOut}
-                  checkinAt={reservation.checkinAt}
-                >
-                  {reservation.showName ? reservation.guestName : ""}
-                  <Tooltip className="tooltip">
-                    <strong>Hóspede:</strong> {reservation.guestName}<br />
-                    <strong>Check-in:</strong> {format(reservation.checkin, "dd MMM yyyy HH:mm", { locale: pt })}<br />
-                    <strong>Check-out:</strong> {format(reservation.checkout, "dd MMM yyyy HH:mm", { locale: pt })}
-                  </Tooltip>
-                </ReservationBar>
+            <select onChange={handleMonthChange} value={currentStartDate.getMonth()}>
+              {monthNames.map((month, index) => (
+                <option key={month} value={index}>
+                  {month}
+                </option>
               ))}
-            </DayCell>
+            </select>
+          </CalendarHeader>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px' }}>
+            <input
+              type="text"
+              placeholder="Filtrar por nome"
+              value={guestNameFilter}
+              onChange={(e) => setGuestNameFilter(e.target.value)}
+            />
+            <input
+              type="date"
+              placeholder="Data de início"
+              value={startDateFilter}
+              onChange={(e) => setStartDateFilter(e.target.value)}
+            />
+            <input
+              type="date"
+              placeholder="Data de fim"
+              value={endDateFilter}
+              onChange={(e) => setEndDateFilter(e.target.value)}
+            />
+          </div>
+
+          <DaysRow>
+            <RoomLabel>Quarto</RoomLabel>
+            {daysInView.map((day, dayIndex) => (
+              <DayCell key={dayIndex} isCurrentDay={isToday(day)} isWeekend={isWeekend(day)}>
+                <strong>{format(day, "EEE dd", { locale: pt })}</strong>
+              </DayCell>
+            ))}
+          </DaysRow>
+
+          {apartments.map(apartment => (
+            <RoomRow key={apartment}>
+              <RoomLabel>{`Quarto ${apartment}`}</RoomLabel>
+              {daysInView.map((day, dayIndex) => (
+                <DayCell key={dayIndex}>
+                  {getReservationBars(apartment, day).map((reservation) => (
+                    <ReservationBar
+                      key={reservation.id}
+                      offset={reservation.offset}
+                      width={reservation.width}
+                      stackIndex={reservation.stackIndex}
+                      isCheckedOut={reservation.isCheckedOut}
+                      checkinAt={reservation.checkinAt}
+                    >
+                      {reservation.showName ? reservation.guestName : ""}
+                      <Tooltip className="tooltip">
+                        <strong>Hóspede:</strong> {reservation.guestName}<br />
+                        <strong>Check-in:</strong> {format(reservation.checkin, "dd MMM yyyy", { locale: pt })}<br />
+                        <strong>Check-out:</strong> {format(reservation.checkout, "dd MMM yyyy", { locale: pt })}
+                      </Tooltip>
+                    </ReservationBar>
+                  ))}
+                </DayCell>
+              ))}
+            </RoomRow>
           ))}
-        </RoomRow>
-      ))}
+        </>
+      )}
     </CalendarContainer>
   );
 };
