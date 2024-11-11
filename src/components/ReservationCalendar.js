@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef  } from "react";
 import axios from "axios";
 import styled, { css, keyframes } from "styled-components";
 import {
@@ -256,22 +256,22 @@ const Reservation = styled.div`
 `;
 
 const ReservationCalendar = () => {
-  const [currentWeek, setCurrentWeek] = useState(
-    startOfWeek(new Date(), { weekStartsOn: 0 })
-  );
+  const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 0 }));
   const [apartments, setApartments] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedReservation, setSelectedReservation] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [cameraActive, setCameraActive] = useState(false);
+  const videoRef = useRef(null);
+  const [capturedPhoto, setCapturedPhoto] = useState(null);
 
   useEffect(() => {
     const fetchApartments = async () => {
       const token = localStorage.getItem("accessToken");
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         setApartments(response.data.map(apartment => `${apartment.number}`));
       } catch (error) {
@@ -283,19 +283,18 @@ const ReservationCalendar = () => {
       const token = localStorage.getItem("accessToken");
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reservations/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-        setReservations(
-          response.data.map(reservation => ({
-            name: reservation.guest_name,
-            apt_owner_name: reservation.apt_owner_name,
-            apartment: `${reservation.apt_number}`,
-            beginDate: parseISO(reservation.checkin.split("T")[0]),
-            endDate: parseISO(reservation.checkout.split("T")[0]),
-          }))
-        );
+        setReservations(response.data.map(reservation => ({
+          id: reservation.id,
+          name: reservation.guest_name,
+          guests_qty: reservation.guests_qty,
+          apt_owner_name: reservation.apt_owner_name,
+          photo: reservation.photo,
+          apartment: `${reservation.apt_number}`,
+          beginDate: parseISO(reservation.checkin.split("T")[0]),
+          endDate: parseISO(reservation.checkout.split("T")[0]),
+        })));
       } catch (error) {
         console.error("Error fetching reservations:", error);
       }
@@ -312,9 +311,7 @@ const ReservationCalendar = () => {
   const handlePrevWeek = () => setCurrentWeek(addDays(currentWeek, -7));
   const handleNextWeek = () => setCurrentWeek(addDays(currentWeek, 7));
 
-  const daysOfWeek = Array.from({ length: 7 }, (_, index) =>
-    addDays(currentWeek, index)
-  );
+  const daysOfWeek = Array.from({ length: 7 }, (_, index) => addDays(currentWeek, index));
 
   const calculateReservationSpan = (reservation, day) => {
     const displayEnd = min([reservation.endDate, endOfWeek(day)]);
@@ -325,13 +322,112 @@ const ReservationCalendar = () => {
     setSelectedReservation(reservation);
   };
 
-  const closeModal = () => {
-    setSelectedReservation(null);
+  const handleImagePick = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedImage(URL.createObjectURL(file)); // Preview the selected image
+      uploadPhoto(file); // Upload the photo to the server
+    }
   };
 
-  if (loading) {
-    return <div>Carregando...</div>;
-  }
+  useEffect(() => {
+    if (cameraActive && videoRef.current) {
+      // Start camera stream when cameraActive is true and videoRef is available
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+          videoRef.current.srcObject = stream;
+        })
+        .catch((error) => {
+          console.error("Error accessing camera:", error);
+          setCameraActive(false); // Disable camera if there's an error
+        });
+    }
+
+    return () => {
+      // Cleanup function to stop the camera stream when modal closes
+      if (videoRef.current && videoRef.current.srcObject) {
+        videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [cameraActive]); // Run this effect only when cameraActive changes
+
+  const handleCameraShot = () => {
+    setCameraActive(true); // Enable camera, triggering useEffect
+  };
+
+  const capturePhoto = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    canvas.getContext("2d").drawImage(videoRef.current, 0, 0);
+    canvas.toBlob((blob) => {
+      const file = new File([blob], "captured_photo.png", { type: "image/png" });
+      setCapturedPhoto(URL.createObjectURL(blob)); // Display the captured photo
+      setCameraActive(false); // Close the camera
+      uploadPhoto(file); // Upload the photo to the server
+    });
+  };
+
+  const closeModal = () => {
+    setSelectedReservation(null);
+    setSelectedImage(null);
+    setCapturedPhoto(null);
+    setCameraActive(false); // Close the camera if open
+  };
+
+  const uploadPhoto = async (file) => {
+    if (!selectedReservation) return;
+  
+    const formData = new FormData();
+    formData.append("photo", file);
+  
+    try {
+      const response = await axios.patch(
+        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
+  
+      // Update the selectedReservation state with the new photo URL
+      setSelectedReservation({
+        ...selectedReservation,
+        photo: response.data.photo,
+      });
+    } catch (error) {
+      console.error("Error uploading photo:", error);
+    }
+  };
+
+  const updateReservationTime = async (type) => {
+    if (!selectedReservation) return;
+
+    const timestamp = new Date().toISOString();
+    const updateData = type === "checkin" ? { checkin_at: timestamp } : { checkout_at: timestamp };
+
+    try {
+      await axios.patch(
+        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
+        updateData,
+        { headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` } }
+      );
+      setSelectedReservation({ ...selectedReservation, ...updateData });
+    } catch (error) {
+      console.error("Error updating reservation:", error);
+    }
+  };
+
+  if (loading) return <div>Carregando...</div>;
+
+  const getReservationsCountForDay = (day) => {
+    return reservations.filter(
+      (reservation) => day >= reservation.beginDate && day <= reservation.endDate
+    ).length;
+  };
 
   return (
     <Container>
@@ -347,10 +443,7 @@ const ReservationCalendar = () => {
           <CalendarHeader>
             <button onClick={handlePrevWeek}>{'<'}</button>
             <h2 className="header-title">{`${format(currentWeek, "dd MMM yyyy", { locale: ptBR })} - ${format(
-              addDays(currentWeek, 6),
-              "dd MMM yyyy",
-              { locale: ptBR }
-            )}`}</h2>
+              addDays(currentWeek, 6), "dd MMM yyyy", { locale: ptBR })}`}</h2>
             <button onClick={handleNextWeek}>{'>'}</button>
           </CalendarHeader>
 
@@ -358,11 +451,7 @@ const ReservationCalendar = () => {
             <CalendarDays>
               <CalendarEmptyCell />
               {daysOfWeek.map((day, index) => (
-                <CalendarDay
-                  key={index}
-                  isCurrentDay={isToday(day)}
-                  isWeekend={isWeekend(day)}
-                >
+                <CalendarDay key={index} isCurrentDay={isToday(day)} isWeekend={isWeekend(day)}>
                   <h1>{format(day, "dd", { locale: ptBR })}</h1>
                   <h2>{format(day, "EE", { locale: ptBR })}</h2>
                 </CalendarDay>
@@ -374,30 +463,22 @@ const ReservationCalendar = () => {
                 <CalendarApartment>{apartment}</CalendarApartment>
                 {daysOfWeek.map((day, dayIndex) => {
                   const reservationForCell = reservations.find(
-                    (reservation) =>
-                      reservation.apartment === apartment &&
-                      day >= reservation.beginDate &&
-                      day <= reservation.endDate
+                    (reservation) => reservation.apartment === apartment &&
+                    day >= reservation.beginDate && day <= reservation.endDate
                   );
 
                   const isCurrentDay = isToday(day);
                   const isWeekendDay = isWeekend(day);
 
                   if (reservationForCell) {
-                    const isReservationStartOfWeek =
-                      dayIndex === 0 ||
+                    const isReservationStartOfWeek = dayIndex === 0 ||
                       day.getTime() === reservationForCell.beginDate.getTime() ||
                       day.getTime() === startOfWeek(day).getTime();
 
                     if (isReservationStartOfWeek) {
                       const span = calculateReservationSpan(reservationForCell, day);
                       return (
-                        <CalendarCell
-                          key={dayIndex}
-                          isCurrentDay={isCurrentDay}
-                          isWeekend={isWeekendDay}
-                          style={{ gridColumn: `span ${span}` }}
-                        >
+                        <CalendarCell key={dayIndex} isCurrentDay={isCurrentDay} isWeekend={isWeekendDay} style={{ gridColumn: `span ${span}` }}>
                           <Reservation onClick={() => handleReservationClick(reservationForCell)}>
                             <h1>{reservationForCell.name}</h1>
                           </Reservation>
@@ -405,11 +486,19 @@ const ReservationCalendar = () => {
                       );
                     }
                   }
-
                   return <CalendarCell key={dayIndex} isCurrentDay={isCurrentDay} isWeekend={isWeekendDay}></CalendarCell>;
                 })}
+                <CalendarCell></CalendarCell>
               </CalendarRow>
             ))}
+            <CalendarRow>
+              <CalendarApartment><strong>Total</strong></CalendarApartment>
+              {daysOfWeek.map((day, dayIndex) => (
+                <CalendarCell key={dayIndex}>
+                  <h2>{getReservationsCountForDay(day)}</h2>
+                </CalendarCell>
+              ))}
+            </CalendarRow>
           </CalendarGrid>
         </Calendar>
 
@@ -418,11 +507,36 @@ const ReservationCalendar = () => {
             <ModalContainer onClick={(e) => e.stopPropagation()}>
               <CloseButton onClick={closeModal}>X</CloseButton>
               <h3>Detalhes da Reserva</h3>
-              <p><strong>Apartamento:</strong> {selectedReservation.apartment} <strong>Proprietário:</strong> {selectedReservation.apt_owner_name} </p>
+              <p><strong>Apartamento:</strong> {selectedReservation.apartment} <strong>Proprietário:</strong> {selectedReservation.apt_owner_name}</p>
               <p><strong>Nome do Hóspede:</strong> {selectedReservation.name}</p>
+              <p><strong>Quantidade de Hóspedes:</strong> {selectedReservation.guests_qty}</p>
               <p><strong>Data de Início:</strong> {format(selectedReservation.beginDate, "dd MMM yyyy", { locale: ptBR })}</p>
               <p><strong>Data de Fim:</strong> {format(selectedReservation.endDate, "dd MMM yyyy", { locale: ptBR })}</p>
-              <p><button>Checkin</button><button>Checkout</button></p>
+          
+              <button onClick={() => updateReservationTime("checkin")}>Checkin</button>
+              <button onClick={() => updateReservationTime("checkout")}>Checkout</button>
+          
+              {/* Image Picker */}
+              <p><strong>Upload Image:</strong></p>
+              <input type="file" accept="image/*" onChange={handleImagePick} />
+              {selectedImage && <img src={selectedImage} alt="Selected" style={{ width: "100%", marginTop: "10px" }} />}
+          
+              {/* Camera Shot */}
+              <p><strong>Take a Photo:</strong></p>
+              {cameraActive ? (
+                <div>
+                  <video ref={videoRef} autoPlay style={{ width: "100%" }}></video>
+                  <button onClick={capturePhoto}>Capture Photo</button>
+                </div>
+              ) : (
+                <button onClick={handleCameraShot}>Open Camera</button>
+              )}
+              {capturedPhoto && <img src={capturedPhoto} alt="Captured" style={{ width: "100%", marginTop: "10px" }} />}
+          
+              {/* Display saved photo */}
+              {selectedReservation.photo && (
+                <img src={selectedReservation.photo} alt="Reservation Photo" style={{ width: "100%", marginTop: "10px" }} />
+              )}
             </ModalContainer>
           </ModalOverlay>
         )}
