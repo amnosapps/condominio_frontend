@@ -273,7 +273,7 @@ const ReservationCalendar = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        setApartments(response.data.map(apartment => `Apto ${apartment.id}`));
+        setApartments(response.data.map(apartment => `${apartment.number}`));
       } catch (error) {
         console.error("Error fetching apartments:", error);
       }
@@ -290,7 +290,8 @@ const ReservationCalendar = () => {
         setReservations(
           response.data.map(reservation => ({
             name: reservation.guest_name,
-            apartment: `Apto ${reservation.apartment}`,
+            apt_owner_name: reservation.apt_owner_name,
+            apartment: `${reservation.apt_number}`,
             beginDate: parseISO(reservation.checkin.split("T")[0]),
             endDate: parseISO(reservation.checkout.split("T")[0]),
           }))
@@ -417,8 +418,8 @@ const ReservationCalendar = () => {
             <ModalContainer onClick={(e) => e.stopPropagation()}>
               <CloseButton onClick={closeModal}>X</CloseButton>
               <h3>Detalhes da Reserva</h3>
+              <p><strong>Apartamento:</strong> {selectedReservation.apartment} <strong>Proprietário:</strong> {selectedReservation.apt_owner_name} </p>
               <p><strong>Nome do Hóspede:</strong> {selectedReservation.name}</p>
-              <p><strong>Apartamento:</strong> {selectedReservation.apartment}</p>
               <p><strong>Data de Início:</strong> {format(selectedReservation.beginDate, "dd MMM yyyy", { locale: ptBR })}</p>
               <p><strong>Data de Fim:</strong> {format(selectedReservation.endDate, "dd MMM yyyy", { locale: ptBR })}</p>
               <p><button>Checkin</button><button>Checkout</button></p>

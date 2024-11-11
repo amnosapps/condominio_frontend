@@ -127,7 +127,6 @@ function Login({ onLoginSuccess }) {
                 username,
                 password,
             });
-            console.log(`${process.env.REACT_APP_API_URL}/api/token/`)
             // Store the JWT token in localStorage
             localStorage.setItem('accessToken', response.data.access);
             localStorage.setItem('refreshToken', response.data.refresh);
