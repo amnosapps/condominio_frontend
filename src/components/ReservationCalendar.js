@@ -33,72 +33,124 @@ const slideDown = keyframes`
 const CalendarContainer = styled.div`
   width: 90%;
   margin: auto;
-  font-family: Arial, sans-serif;
-  background-color: #fdfdfd;
-  border: 1px solid #ddd;
+  font-family: 'Roboto', Arial, sans-serif;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 `;
 
 const CalendarHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  padding: 10px;
+  align-items: center;
+  padding: 15px 20px;
   background-color: #DE7066;
   color: white;
+  font-weight: bold;
+  border-bottom: 1px solid #1565c0;
+
+  button {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin: 0 5px;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  select {
+    background: #DE7066;
+    color: white;
+    border: 1px solid #DE7066;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
 `;
 
 const DaysRow = styled.div`
   display: flex;
-  background-color: #f4f4f4;
+  background-color: #f9f9f9;
+  padding: 10px 0;
+  border-bottom: 1px solid #e0e0e0;
 `;
 
 const DayCell = styled.div`
   flex: 1;
-  padding: 5px;
-  border: 1px solid #ddd;
-  min-height: 20px;
-  position: relative; /* Set position relative to contain ReservationBar */
-  overflow: hidden; /* Prevents ReservationBar from escaping */
-  ${(props) =>
-    props.isCurrentDay &&
-    css`
-      background-color: #e0ffe0;
-    `}
-  ${(props) =>
-    props.isWeekend &&
-    css`
-      background-color: #fafafa;
-    `}
+  text-align: center;
+  font-size: 0.9rem;
+  color: #555;
+  position: relative;
+  padding: 10px;
+  border-right: 1px solid #e0e0e0;
+  background-color: ${(props) =>
+    props.isCurrentDay ? '#e3f2fd' : props.isWeekend ? '#fef9f9' : 'white'};
+  transition: background-color 0.3s;
+
+  &:last-child {
+    border-right: none;
+  }
+
+  &:hover {
+    background-color: #f1f1f1;
+  }
+
+  strong {
+    color: #333;
+  }
 `;
 
 const RoomRow = styled.div`
   display: flex;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid #e0e0e0;
+
+  &:nth-child(even) {
+    background-color: #fafafa;
+  }
 `;
 
 const RoomLabel = styled.div`
-  width: 6%;
-  padding: 10px;
-  background-color: #d3d3d3;
+  width: 8%;
+  padding: 15px;
+  background-color: #f5f5f5;
   text-align: center;
   font-weight: bold;
-  border-right: 1px solid #ddd;
+  color: #666;
+  border-right: 1px solid #e0e0e0;
 `;
 
 const ReservationBar = styled.div`
   position: absolute;
-  top: ${(props) => (props.stackIndex || 0) * 20}px;
-  left: ${(props) => Math.min(props.offset, 100)}%; /* Ensure left offset stays within DayCell */
-  width: ${(props) => Math.min(props.width, 100)}%; /* Ensure width doesn’t exceed 100% of DayCell */
+  top: ${(props) => (props.stackIndex || 0) * 35}px;
+  left: ${(props) => Math.min(props.offset, 100)}%;
+  width: ${(props) => Math.min(props.width, 100)}%;
   background-color: ${(props) =>
-    props.isCheckedOut ? "#A9A9A9" : !props.checkinAt ? "#FFA500" : "#5cb85c"};
+    props.isCheckedOut ? '#b0bec5' : props.checkinAt ? '#4caf50' : '#ffca28'};
   color: white;
-  padding: 2px;
-  height: 30px;
-  font-size: 12px;
-  text-align: start;
+  padding: 5px 8px;
+  font-size: 0.8rem;
+  height: 28px;
+  border-radius: 4px;
   white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: ${(props) =>
+      props.isCheckedOut ? '#90a4ae' : props.checkinAt ? '#388e3c' : '#ffb300'};
+  }
 
   &:hover .tooltip {
     visibility: visible;
@@ -110,30 +162,89 @@ const Tooltip = styled.div`
   visibility: hidden;
   opacity: 0;
   width: 220px;
-  background-color: #333;
-  color: #fff;
-  text-align: left;
+  background-color: #424242;
+  color: white;
   padding: 10px;
-  border-radius: 5px;
+  border-radius: 4px;
+  font-size: 0.85rem;
   position: absolute;
   z-index: 10;
-  top: -75px;
+  top: -85px;
   left: 50%;
   transform: translateX(-50%);
   transition: opacity 0.3s ease;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     bottom: -5px;
     left: 50%;
     transform: translateX(-50%);
     border-width: 5px;
     border-style: solid;
-    border-color: #333 transparent transparent transparent;
+    border-color: #424242 transparent transparent transparent;
   }
 `;
+
+const FilterContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+  border-radius: 8px 8px 0 0;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 15px;
+  }
+`;
+
+const FilterInput = styled.input`
+  padding: 8px 15px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+
+  &:focus {
+    border-color: #1e88e5;
+    box-shadow: 0 0 8px rgba(30, 136, 229, 0.2);
+  }
+
+  &::placeholder {
+    color: #888;
+    font-size: 0.9rem;
+  }
+`;
+
+const DateInputContainer = styled.div`
+  display: flex;
+  gap: 10px;
+
+  input[type="date"] {
+    padding: 5px 15px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+
+    &:focus {
+      border-color: #1e88e5;
+      box-shadow: 0 0 8px rgba(30, 136, 229, 0.2);
+    }
+
+    &::placeholder {
+      color: #888;
+      font-size: 0.9rem;
+    }
+  }
+`;
+
 
 // List of month names in Portuguese
 const monthNames = [
@@ -156,53 +267,74 @@ const ReservationCalendar = () => {
 
   const [selectedReservation, setSelectedReservation] = useState(null);
 
+  const fetchApartments = async () => {
+    const token = localStorage.getItem("accessToken");
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setApartments(response.data.map(apartment => `${apartment.number}`));
+    } catch (error) {
+      console.error("Error fetching apartments:", error);
+    }
+  };
+
+  const fetchReservations = async () => {
+    const token = localStorage.getItem("accessToken");
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reservations/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setReservations(response.data.map(reservation => ({
+        id: reservation.id,
+        guest_name: reservation.guest_name,
+        guest_document: reservation.guest_document,
+        guest_phone: reservation.guest_phone || "", // Handle null values
+        guests_qty: `${reservation.guests_qty}`, // Ensure it's a string
+        apartment: reservation.apt_number,
+        apartment_owner: reservation.apt_owner_name,
+        photos: reservation.photo, // Main photo URL
+        additional_photos: reservation.additional_photos, // Extract additional photo URLs
+        checkin: reservation.checkin ? parseISO(reservation.checkin) : null, // Parse checkin if exists
+        checkout: reservation.checkout ? parseISO(reservation.checkout) : null, // Parse checkout if exists
+        checkin_at: reservation.checkin_at ? parseISO(reservation.checkin_at) : null, // Parse checkin_at
+        checkout_at: reservation.checkout_at ? parseISO(reservation.checkout_at) : null, // Parse checkout_at
+        has_children: reservation.has_children,
+      })));
+    } catch (error) {
+      console.error("Error fetching reservations:", error);
+    }
+  };
+
+  const loadData = async () => {
+    await Promise.all([fetchApartments(), fetchReservations()]);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchApartments = async () => {
-      const token = localStorage.getItem("accessToken");
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setApartments(response.data.map(apartment => `${apartment.number}`));
-      } catch (error) {
-        console.error("Error fetching apartments:", error);
-      }
-    };
-
-    const fetchReservations = async () => {
-      const token = localStorage.getItem("accessToken");
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reservations/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setReservations(response.data.map(reservation => ({
-          id: reservation.id,
-          guestName: reservation.guest_name,
-          guest_document: reservation.guest_document,
-          guests_qty: `${reservation.guests_qty}`,
-          apartment: `${reservation.apt_number}`,
-          apartment_owner: `${reservation.apt_owner_name}`,
-          photos: `${reservation.photo}`,
-          checkin: parseISO(reservation.checkin),
-          checkout: parseISO(reservation.checkout),
-        })));
-      } catch (error) {
-        console.error("Error fetching reservations:", error);
-      }
-    };
-
-    const loadData = async () => {
-      await Promise.all([fetchApartments(), fetchReservations()]);
-      setLoading(false);
-    };
-
     loadData();
   }, []);
 
-  const getReservationsCountForDay = (day) => {
-    return reservations.filter(
-      (reservation) => day >= reservation.beginDate && day <= reservation.endDate
-    ).length;
+  useEffect(() => {
+    const reopenModalId = sessionStorage.getItem("reopenModalId");
+    if (reopenModalId) {
+      sessionStorage.removeItem("reopenModalId"); // Clear it to prevent reopening on every reload
+      const reservation = reservations.find(
+        (res) => res.id === parseInt(reopenModalId, 10)
+      );
+      if (reservation) {
+        setSelectedReservation(reservation);
+      }
+    }
+  }, [reservations]);
+
+  const getTotalGuestsForDay = (day) => {
+    return reservations
+      .filter(
+        (reservation) =>
+          day >= reservation.checkin && day <= reservation.checkout
+      )
+      .reduce((totalGuests, reservation) => totalGuests + parseInt(reservation.guests_qty, 10), 0);
   };
 
   const handleReservationClick = (reservation) => {
@@ -222,7 +354,7 @@ const ReservationCalendar = () => {
   };
 
   const filteredReservations = reservations.filter((reservation) => {
-    const matchesGuestName = reservation.guestName.toLowerCase().includes(guestNameFilter.toLowerCase());
+    const matchesGuestName = reservation.guest_name.toLowerCase().includes(guestNameFilter.toLowerCase());
     const matchesDateRange =
       (!startDateFilter || reservation.checkout >= parseISO(startDateFilter)) &&
       (!endDateFilter || reservation.checkin <= parseISO(endDateFilter));
@@ -238,8 +370,8 @@ const ReservationCalendar = () => {
       .sort((a, b) => a.checkin - b.checkin);
 
     const occupiedSlots = [];
-    const gapPercentage = 2;
-    const gapBetweenDifferentReservations = 20;
+    const gapPercentage = 4;
+    const gapBetweenDifferentReservations = 40;
 
     return roomReservations.map((reservation, index, reservations) => {
       const startHour = reservation.checkin > startOfDay(day) ? differenceInHours(reservation.checkin, day) : 0;
@@ -302,6 +434,20 @@ const ReservationCalendar = () => {
     }
   };
 
+  const generateYearRange = () => {
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - 5; // Adjust range as needed
+    const endYear = currentYear + 5;
+    return Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
+  };
+  
+  // Function to handle year change
+  const handleYearChange = (event) => {
+    const selectedYear = parseInt(event.target.value, 10);
+    const newStartDate = new Date(selectedYear, currentStartDate.getMonth(), 1); // Keep current month
+    setCurrentStartDate(newStartDate);
+  };
+
   const closeModal = () => {
     setSelectedReservation(null);
   };
@@ -312,48 +458,55 @@ const ReservationCalendar = () => {
         <p>Loading...</p>
       ) : (
         <>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px' }}>
-            <input
+          <FilterContainer>
+            <FilterInput
               type="text"
               placeholder="Filtrar por nome"
               value={guestNameFilter}
               onChange={(e) => setGuestNameFilter(e.target.value)}
             />
-            <div>
+            <DateInputContainer>
               <input
                 type="date"
                 placeholder="Data de início"
                 value={startDateFilter}
                 onChange={(e) => setStartDateFilter(e.target.value)}
-                />
+              />
               <input
                 type="date"
                 placeholder="Data de fim"
                 value={endDateFilter}
                 onChange={(e) => setEndDateFilter(e.target.value)}
-                />
-            </div>
-          </div>
+              />
+            </DateInputContainer>
+          </FilterContainer>
           <CalendarHeader>
             <div>
               <div>
               <select onChange={(e) => setViewType(e.target.value)} value={viewType}>
-                <option value="7">Vista de 7 Dias</option>
-                <option value="15">Vista de 15 Dias</option>
-                <option value="30">Vista de 30 Dias</option>
+                <option value="7">Semana</option>
+                <option value="15">Quinzena</option>
+                <option value="30">Mês</option>
               </select>
               </div>
             </div>
             <div>
-              <button onClick={handlePrev}>{"<"}</button>
-                <span>{`${format(currentStartDate, "dd MMM yyyy", { locale: ptBR  })} - ${format(addDays(currentStartDate, daysInView.length - 1), "dd MMM yyyy", { locale: ptBR  })}`}</span>
-              <button onClick={handleNext}>{">"}</button>
+              <button style={{ marginRight: '100px' }} onClick={handlePrev}>{"<"}</button>
+              <span>{`${format(currentStartDate, "dd MMM yyyy", { locale: ptBR  })} - ${format(addDays(currentStartDate, daysInView.length - 1), "dd MMM yyyy", { locale: ptBR  })}`}</span>
+              <button style={{ marginLeft: '100px' }} onClick={handleNext}>{">"}</button>
             </div>
-            <div>
+            <div style={{ display: "flex", gap: "10px" }}>
               <select onChange={handleMonthChange} value={currentStartDate.getMonth()}>
                 {monthNames.map((month, index) => (
                   <option key={month} value={index}>
                     {month}
+                  </option>
+                ))}
+              </select>
+              <select onChange={handleYearChange} value={currentStartDate.getFullYear()}>
+                {generateYearRange().map((year) => (
+                  <option key={year} value={year}>
+                    {year}
                   </option>
                 ))}
               </select>
@@ -383,12 +536,7 @@ const ReservationCalendar = () => {
                       checkinAt={reservation.checkinAt}
                       onClick={() => handleReservationClick(reservation)}
                     >
-                      {reservation.showName ? reservation.guestName : ""}
-                      <Tooltip className="tooltip">
-                        <strong>Hóspede:</strong> {reservation.guestName}<br />
-                        <strong>Check-in:</strong> {format(reservation.checkin, "dd MMM yyyy", { locale: ptBR  })}<br />
-                        <strong>Check-out:</strong> {format(reservation.checkout, "dd MMM yyyy", { locale: ptBR  })}
-                      </Tooltip>
+                      {reservation.showName ? reservation.guest_name : ""}
                     </ReservationBar>
                   ))}
                 </DayCell>
@@ -396,10 +544,10 @@ const ReservationCalendar = () => {
             </RoomRow>
           ))}
             <RoomRow>
-              <RoomLabel><strong>Total</strong></RoomLabel>
-              {daysOfWeek.map((day, dayIndex) => (
+              <RoomLabel>Ocupação</RoomLabel>
+              {daysInView.map((day, dayIndex) => (
                 <DayCell key={dayIndex}>
-                  <h2>{getReservationsCountForDay(day)}</h2>
+                  <p>{getTotalGuestsForDay(day)}</p>
                 </DayCell>
               ))}
             </RoomRow>
@@ -410,6 +558,7 @@ const ReservationCalendar = () => {
             closeModal={closeModal}
             selectedReservation={selectedReservation}
             updateReservationTime={updateReservationTime}
+            loadData={loadData}
           />
         )}
     </CalendarContainer>
