@@ -1,134 +1,63 @@
-.calendar-container {
-  display: flex;
-  max-width: 90%;
-  margin: auto;
+.reservation-calendar {
+  padding: 20px;
   font-family: Arial, sans-serif;
-  background-color: #fff;
 }
 
-.calendar {
-  flex: 1;
-  background-color: #E46F65;
-}
-
-.calendar-header {
+header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid #E46F65;
-  padding: 1px 50px;
-  
-  .header-title {
-    font-size: 18px;
-    font-weight: 300;
-    color: #fff;
-  }
-
-  > button {
-    background-color: #E46F65;
-    color: #fff;
-    border: None;
-    padding: 5px 10px;
-    cursor: pointer;
-    font-size: 18px;
-    border-radius: 10px;
-  }
 }
-
 
 .calendar-grid {
-  display: flex;
-  flex-direction: column;
-  background-color: #fff;
-}
-
-.calendar-days {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: 1fr 30fr; /* Adjust based on room column size */
+  gap: 10px;
+  margin-top: 20px;
 }
 
-.calendar-day {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px;
-  font-weight: bold;
-  background-color: #fff;
-  border: 1px solid #ddd;
-
-  > h1 {
-    font-weight: 300;
-    font-size: 15px;
-    margin-bottom: -11px;
-  }
-
-  > h2 {
-    font-weight: 300;
-    font-size: 15px;
-  }
-}
-
-.calendar-empty-cell {
-  background-color: #fff;
-  
-}
-
-.calendar-row {
+.calendar-header {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-
-}
-
-.calendar-apartment {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-  font-weight: bold;
-  background-color: #f4f4f4;
-  border: 1px solid #ddd;
-}
-
-.calendar-cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #ddd;
-  background-color: #fff;
-  position: relative;
-}
-
-.reservation {
-  background-color: #4c92d0;
-  color: white;
-  border-radius: 3px;
-  font-size: 0.9em;
+  grid-template-columns: repeat(30, 1fr);
+  gap: 2px;
   text-align: center;
 }
 
-/* Sidebar styling */
-.reservation-sidebar {
-  width: 300px;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-left: 1px solid #ddd;
+.calendar-day {
+  padding: 5px;
+  background: #f0f0f0;
+  font-weight: bold;
+}
+
+.calendar-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-room-row {
+  display: grid;
+  grid-template-columns: 1fr 30fr; /* Adjust based on room name and reservation columns */
+  gap: 10px;
+  align-items: center;
+}
+
+.room-number {
+  font-weight: bold;
+  background-color: #d3d3d3;
+  text-align: center;
+}
+
+.reservation-row {
+  display: grid;
+  grid-template-columns: repeat(30, 1fr); /* Grid for days */
+  gap: 2px;
   position: relative;
 }
 
-.close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.reservation-sidebar h3 {
-  margin-top: 0;
-}
-
-.reservation-sidebar p {
-  margin: 10px 0;
+.reservation-bar {
+  height: 20px;
+  border-radius: 4px;
+  color: #fff;
+  text-align: center;
+  font-size: 12px;
 }
