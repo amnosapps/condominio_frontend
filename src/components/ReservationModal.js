@@ -540,7 +540,9 @@ const ReservationModal = ({
           )}
 
           <div style={{ marginTop: "20px" }}>
-            <strong>Fotos:</strong>
+            {reservationData.additional_photos.length > 0 && (
+              <strong>Fotos:</strong>
+            )}
             <div
               style={{
                 display: "flex",

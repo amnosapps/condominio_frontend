@@ -75,8 +75,16 @@ const CalendarHeader = styled.div`
     padding: 5px 10px;
     font-size: 1rem;
     cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:focus {
+      background-color: #C95C58; /* Darker shade of red when active */
+      border-color: #C95C58; /* Match the border to the new background */
+      outline: none; /* Remove the default outline */
+    }
   }
 `;
+
 
 const DaysRow = styled.div`
   display: flex;
@@ -87,11 +95,10 @@ const DaysRow = styled.div`
 
 const DayCell = styled.div`
   flex: 1;
-  text-align: center;
+  position: relative; /* To position bars inside */
   font-size: 0.9rem;
   color: #555;
-  position: relative;
-  padding: 10px;
+  padding: 8px; /* Consistent padding */
   border-right: 1px solid #e0e0e0;
   background-color: ${(props) =>
     props.isCurrentDay ? '#e3f2fd' : props.isWeekend ? '#fef9f9' : 'white'};
@@ -104,23 +111,25 @@ const DayCell = styled.div`
   &:hover {
     background-color: #f1f1f1;
   }
-
-  strong {
-    color: #333;
-  }
 `;
+
+
+
 
 const RoomRow = styled.div`
   display: flex;
+  align-items: center;
   border-top: 1px solid #e0e0e0;
+  align-items: stretch; /* Ensure content aligns properly */
 
   &:nth-child(even) {
     background-color: #fafafa;
   }
 `;
 
+
 const RoomLabel = styled.div`
-  width: 8%;
+  flex: 0 0 120px; /* Fixed width of 120px */
   padding: 15px;
   background-color: #f5f5f5;
   text-align: center;
@@ -129,23 +138,24 @@ const RoomLabel = styled.div`
   border-right: 1px solid #e0e0e0;
 `;
 
+
 const ReservationBar = styled.div`
   position: absolute;
-  top: ${(props) => (props.stackIndex || 0) * 35}px;
-  left: ${(props) => Math.min(props.offset, 100)}%;
-  width: ${(props) => Math.min(props.width, 100)}%;
+  left: ${(props) => `calc(${props.startOffset}% + 5px)`}; /* Add slight offset for visual space */
+  top: ${(props) => (props.stackIndex || 0) * 40}px; /* Adjust vertical positioning */
   background-color: ${(props) =>
-    props.isCheckedOut ? '#b0bec5' : props.checkinAt ? '#4caf50' : '#ffca28'};
+    props.isCheckedOut ? '#b0bec5' : props.checkinAt ? '#4CAF50' : '#FFC107'};
   color: white;
   padding: 5px 8px;
-  font-size: 0.8rem;
-  height: 28px;
-  border-radius: 4px;
+  font-size: 0.85rem;
+  height: 30px;
+  /* border-radius: 4px; */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
-  transition: background-color 0.3s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
 
   &:hover {
     background-color: ${(props) =>
@@ -158,22 +168,23 @@ const ReservationBar = styled.div`
   }
 `;
 
+
+
 const Tooltip = styled.div`
   visibility: hidden;
   opacity: 0;
-  width: 220px;
-  background-color: #424242;
+  background-color: rgba(0, 0, 0, 0.7);
   color: white;
   padding: 10px;
+  font-size: 0.8rem;
   border-radius: 4px;
-  font-size: 0.85rem;
   position: absolute;
   z-index: 10;
-  top: -85px;
+  top: -50px;
   left: 50%;
   transform: translateX(-50%);
-  transition: opacity 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: opacity 0.3s;
 
   &::after {
     content: '';
@@ -183,7 +194,7 @@ const Tooltip = styled.div`
     transform: translateX(-50%);
     border-width: 5px;
     border-style: solid;
-    border-color: #424242 transparent transparent transparent;
+    border-color: rgba(0, 0, 0, 0.7) transparent transparent transparent;
   }
 `;
 
@@ -244,6 +255,23 @@ const DateInputContainer = styled.div`
     }
   }
 `;
+
+
+const ClearButton = styled.button`
+  background-color: #DE7066;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #C95C58;
+  }
+`;
+
 
 
 // List of month names in Portuguese
@@ -338,11 +366,11 @@ const ReservationCalendar = () => {
   };
 
   const handleReservationClick = (reservation) => {
+    console.log(reservation)
     setSelectedReservation(reservation);
   };
 
   const daysInView = Array.from({ length: parseInt(viewType, 10) }, (_, i) => addDays(currentStartDate, i));
-  const daysOfWeek = Array.from({ length: 7 }, (_, index) => addDays(currentWeek, index));
 
   const handlePrev = () => setCurrentStartDate(addDays(currentStartDate, -parseInt(viewType, 10)));
   const handleNext = () => setCurrentStartDate(addDays(currentStartDate, parseInt(viewType, 10)));
@@ -363,58 +391,64 @@ const ReservationCalendar = () => {
 
   const getReservationBars = (apartment, day) => {
     const roomReservations = filteredReservations
-      .filter(reservation => reservation.apartment === apartment)
-      .filter(reservation =>
-        reservation.checkin <= endOfDay(day) && reservation.checkout >= startOfDay(day)
+      .filter((reservation) => reservation.apartment === apartment)
+      .filter(
+        (reservation) =>
+          reservation.checkin <= endOfDay(day) &&
+          reservation.checkout >= startOfDay(day)
       )
       .sort((a, b) => a.checkin - b.checkin);
-
+  
     const occupiedSlots = [];
-    const gapPercentage = 4;
-    const gapBetweenDifferentReservations = 40;
-
-    return roomReservations.map((reservation, index, reservations) => {
-      const startHour = reservation.checkin > startOfDay(day) ? differenceInHours(reservation.checkin, day) : 0;
-      const endHour = reservation.checkout < endOfDay(day)
-        ? differenceInHours(reservation.checkout, day)
-        : 24;
-
-      const hoursSpan = endHour - startHour;
-      const offset = (startHour / 24) * 100;
-
-      const width = ((hoursSpan / 24) * 100) - gapPercentage;
-
-      const additionalOffset = index > 0 && reservations[index - 1].checkout < reservation.checkin
-        ? gapBetweenDifferentReservations
-        : 0;
-
+    const bars = [];
+  
+    roomReservations.forEach((reservation) => {
+      const startOffset = Math.max(
+        0,
+        ((reservation.checkin - startOfDay(day)) / (24 * 60 * 60 * 1000)) * 100
+      ); // Prevent negative values
+      
+      const endOffset = Math.min(
+        100,
+        ((reservation.checkout - startOfDay(day)) / (24 * 60 * 60 * 1000)) * 100
+      ); // Prevent exceeding 100%
+      const width = endOffset - startOffset;
+  
       let stackIndex = 0;
-      while (occupiedSlots[stackIndex] && occupiedSlots[stackIndex].some(
-        slot => (startHour < slot.end && endHour > slot.start))) {
+  
+      while (
+        occupiedSlots[stackIndex] &&
+        occupiedSlots[stackIndex].some(
+          (slot) =>
+            reservation.checkin < slot.end && reservation.checkout > slot.start
+        )
+      ) {
         stackIndex++;
       }
-
+  
       if (!occupiedSlots[stackIndex]) {
         occupiedSlots[stackIndex] = [];
       }
-      occupiedSlots[stackIndex].push({ start: startHour, end: endHour });
-
-      const showName = differenceInHours(reservation.checkin, day) === startHour;
-
-      const isCheckedOut = reservation.checkout && isBefore(reservation.checkout, new Date());
-      const checkinAt = reservation.checkin_at;
-
-      return {
+  
+      occupiedSlots[stackIndex].push({
+        start: reservation.checkin,
+        end: reservation.checkout,
+      });
+  
+      bars.push({
         ...reservation,
-        offset: offset + additionalOffset,
+        startOffset,
         width,
         stackIndex,
-        showName,
-        isCheckedOut,
-        checkinAt,
-      };
+        isCheckedOut:
+          reservation.checkout && isBefore(reservation.checkout, new Date()),
+        checkinAt: reservation.checkin_at,
+      });
     });
+  
+    return bars;
   };
+  
 
   const updateReservationTime = async (type) => {
     if (!selectedReservation) return;
@@ -448,6 +482,12 @@ const ReservationCalendar = () => {
     setCurrentStartDate(newStartDate);
   };
 
+  const clearFilters = () => {
+    setGuestNameFilter("");
+    setStartDateFilter("");
+    setEndDateFilter("");
+  };
+
   const closeModal = () => {
     setSelectedReservation(null);
   };
@@ -478,6 +518,7 @@ const ReservationCalendar = () => {
                 value={endDateFilter}
                 onChange={(e) => setEndDateFilter(e.target.value)}
               />
+              <ClearButton onClick={() => clearFilters()}>Limpar Filtros</ClearButton>
             </DateInputContainer>
           </FilterContainer>
           <CalendarHeader>
@@ -526,19 +567,25 @@ const ReservationCalendar = () => {
               <RoomLabel>{`Quarto ${apartment}`}</RoomLabel>
               {daysInView.map((day, dayIndex) => (
                 <DayCell key={dayIndex}>
-                  {getReservationBars(apartment, day).map((reservation) => (
+                  {getReservationBars(apartment, day).map((bar) => (
                     <ReservationBar
-                      key={reservation.id}
-                      offset={reservation.offset}
-                      width={reservation.width}
-                      stackIndex={reservation.stackIndex}
-                      isCheckedOut={reservation.isCheckedOut}
-                      checkinAt={reservation.checkinAt}
-                      onClick={() => handleReservationClick(reservation)}
+                      key={bar.id}
+                      style={{
+                        left: `${bar.startOffset}%`, // Relative to DayCell
+                        width: `${bar.width}%`,      // Fit within DayCell
+                        top: `${bar.stackIndex * 40}px`,
+                      }}
+                      isCheckedOut={bar.isCheckedOut}
+                      checkinAt={bar.checkinAt}
+                      onClick={() => handleReservationClick(bar)}
                     >
-                      {reservation.showName ? reservation.guest_name : ""}
+                      <strong>{bar.guest_name}</strong>
+                      <Tooltip className="tooltip">
+                        <p><strong>Hóspede:</strong> {bar.guest_name}</p>
+                      </Tooltip>
                     </ReservationBar>
                   ))}
+
                 </DayCell>
               ))}
             </RoomRow>
