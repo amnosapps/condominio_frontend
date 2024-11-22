@@ -38,7 +38,7 @@ const CalendarContainer = styled.div`
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  overflow-x: hidden;
 `;
 
 const CalendarHeader = styled.div`
@@ -94,6 +94,9 @@ const DaysRow = styled.div`
 `;
 
 const DayCell = styled.div`
+  align-items: center;
+  justify-content: center;
+  display: flex;
   flex: 1;
   position: relative; /* To position bars inside */
   font-size: 0.9rem;
@@ -272,6 +275,34 @@ const ClearButton = styled.button`
   }
 `;
 
+const ScrollableContainer = styled.div`
+  white-space: nowrap; /* Prevent wrapping */
+  display: flex;
+  flex-direction: column;
+`;
+
+const spin = keyframes`
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`;
+
+const LoadingSpinner = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  border: 8px solid #f3f3f3; /* Light grey */
+  border-top: 8px solid #DE7066; /* Blue */
+  border-radius: 50%;
+  animation: ${spin} 1s linear infinite;
+  z-index: 1000;
+`;
 
 
 // List of month names in Portuguese
@@ -282,7 +313,8 @@ const monthNames = [
 
 // Main component
 const ReservationCalendar = () => {
-  const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 0 }));
+  const [loadingNavigation, setLoadingNavigation] = useState(false);
+
   const [viewType, setViewType] = useState("7");
   const [currentStartDate, setCurrentStartDate] = useState(new Date());
   const [apartments, setApartments] = useState([]);
@@ -482,6 +514,27 @@ const ReservationCalendar = () => {
     setCurrentStartDate(newStartDate);
   };
 
+  const navigateToReservation = (reservation) => {
+    if (reservation && reservation.checkin) {
+      setLoadingNavigation(true); // Start loading
+      setTimeout(() => {
+        setCurrentStartDate(startOfWeek(reservation.checkin, { weekStartsOn: 0 }));
+        setLoadingNavigation(false); // Stop loading
+      }, 500); // Simulate a delay for the animation
+    }
+  };
+
+  useEffect(() => {
+    if (guestNameFilter.trim()) {
+      const matchingReservation = reservations.find((reservation) =>
+        reservation.guest_name.toLowerCase().includes(guestNameFilter.toLowerCase())
+      );
+      if (matchingReservation) {
+        navigateToReservation(matchingReservation);
+      }
+    }
+  }, [guestNameFilter, reservations]);
+
   const clearFilters = () => {
     setGuestNameFilter("");
     setStartDateFilter("");
@@ -495,7 +548,7 @@ const ReservationCalendar = () => {
   return (
     <CalendarContainer>
       {loading ? (
-        <p>Loading...</p>
+        <LoadingSpinner />
       ) : (
         <>
           <FilterContainer>
@@ -553,43 +606,46 @@ const ReservationCalendar = () => {
               </select>
             </div>
           </CalendarHeader>
-          <DaysRow>
-            <RoomLabel>Quarto</RoomLabel>
-            {daysInView.map((day, dayIndex) => (
-              <DayCell key={dayIndex} isCurrentDay={isToday(day)} isWeekend={isWeekend(day)}>
-                <strong>{format(day, "EEE dd", { locale: ptBR  })}</strong>
-              </DayCell>
-            ))}
-          </DaysRow>
-
-          {apartments.map(apartment => (
-            <RoomRow key={apartment}>
-              <RoomLabel>{`Quarto ${apartment}`}</RoomLabel>
+          <ScrollableContainer>
+          {loadingNavigation && <LoadingSpinner />}
+            <DaysRow>
+              <RoomLabel>Quarto</RoomLabel>
               {daysInView.map((day, dayIndex) => (
-                <DayCell key={dayIndex}>
-                  {getReservationBars(apartment, day).map((bar) => (
-                    <ReservationBar
-                      key={bar.id}
-                      style={{
-                        left: `${bar.startOffset}%`, // Relative to DayCell
-                        width: `${bar.width}%`,      // Fit within DayCell
-                        top: `${bar.stackIndex * 40}px`,
-                      }}
-                      isCheckedOut={bar.isCheckedOut}
-                      checkinAt={bar.checkinAt}
-                      onClick={() => handleReservationClick(bar)}
-                    >
-                      <strong>{bar.guest_name}</strong>
-                      <Tooltip className="tooltip">
-                        <p><strong>Hóspede:</strong> {bar.guest_name}</p>
-                      </Tooltip>
-                    </ReservationBar>
-                  ))}
-
+                <DayCell key={dayIndex} isCurrentDay={isToday(day)} isWeekend={isWeekend(day)}>
+                  <strong>{format(day, "EEE dd", { locale: ptBR }).slice(0, 3) + " " + format(day, "dd")}</strong>
                 </DayCell>
               ))}
-            </RoomRow>
-          ))}
+            </DaysRow>
+
+            {apartments.map(apartment => (
+              <RoomRow key={apartment}>
+                <RoomLabel>{`Quarto ${apartment}`}</RoomLabel>
+                {daysInView.map((day, dayIndex) => (
+                  <DayCell key={dayIndex}>
+                    {getReservationBars(apartment, day).map((bar) => (
+                      <ReservationBar
+                        key={bar.id}
+                        style={{
+                          left: `${bar.startOffset}%`, // Relative to DayCell
+                          width: `${bar.width}%`,      // Fit within DayCell
+                          top: `${bar.stackIndex * 40}px`,
+                        }}
+                        isCheckedOut={bar.isCheckedOut}
+                        checkinAt={bar.checkinAt}
+                        onClick={() => handleReservationClick(bar)}
+                      >
+                        <strong>{bar.guest_name}</strong>
+                        <Tooltip className="tooltip">
+                          <p><strong>Hóspede:</strong> {bar.guest_name}</p>
+                        </Tooltip>
+                      </ReservationBar>
+                    ))}
+
+                  </DayCell>
+                ))}
+              </RoomRow>
+            ))}
+            
             <RoomRow>
               <RoomLabel>Ocupação</RoomLabel>
               {daysInView.map((day, dayIndex) => (
@@ -598,6 +654,7 @@ const ReservationCalendar = () => {
                 </DayCell>
               ))}
             </RoomRow>
+          </ScrollableContainer>
         </>
       )}
       {selectedReservation && (

@@ -1,14 +1,13 @@
-// src/components/Sidebar.js
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
+import axios from 'axios';
 
 // Styled components for Sidebar
 const SidebarContainer = styled.div`
     background-color: #fff;
     width: 250px;
-    height: 100vh;
+    height: 100%;
     position: fixed;
     top: 0;
     left: 0;
@@ -16,8 +15,8 @@ const SidebarContainer = styled.div`
     flex-direction: column;
     padding: 1.5rem;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    color: white;
     align-items: center;
+    z-index: 10;
 
     @media (max-width: 768px) {
         width: 200px;
@@ -28,6 +27,51 @@ const Logo = styled.h2`
     font-size: 24px;
     color: #DE7066;
     margin-bottom: 2rem;
+`;
+
+const ProfileAndLogoutContainer = styled.div`
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 4rem;
+`;
+
+const ProfileContainer = styled.div`
+    display: flex;
+    align-items: center;
+    text-align: center;
+`;
+
+const Avatar = styled.div`
+    width: 50px;
+    height: 50px;
+    background-color: #DE7066;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 18px;
+    margin-right: 15px;
+`;
+
+const ProfileInfo = styled.div`
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+`;
+
+const CondoName = styled.span`
+    font-size: 14px;
+    color: #737373;
+`;
+
+const UserName = styled.span`
+    font-size: 16px;
+    color: #333;
+    font-weight: bold;
 `;
 
 const ImgSidebar = styled.img`
@@ -60,9 +104,8 @@ const NavLink = styled.a`
     }
 `;
 
-const LogoutButton = styled.a`
+const LogoutButton = styled.button`
     color: #fff;
-    text-decoration: none;
     font-size: 15px;
     transition: color 0.3s;
     background: linear-gradient(135deg, #DE7066, #F16D61);
@@ -72,14 +115,48 @@ const LogoutButton = styled.a`
     padding: 0.50rem 2rem;
 
     &:hover {
-        color: #fff;
         cursor: pointer;
         background: linear-gradient(135deg, #F16D61, #DE7066);
     }
 `;
 
-const Sidebar = (IsAuthenticated) => {
+const spin = keyframes`
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`;
+
+const LoadingSpinner = styled.div`
+  width: 20px;
+  height: 20px;
+  border: 8px solid #f3f3f3; /* Light grey */
+  border-top: 8px solid #DE7066; /* Red */
+  border-radius: 50%;
+  animation: ${spin} 1s linear infinite;
+`;
+
+const Sidebar = () => {
     const navigate = useNavigate();
+    const [profile, setProfile] = useState(null);
+
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            const token = localStorage.getItem('accessToken');
+            try {
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/profile/`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setProfile(response.data); // Assuming a single profile is returned
+            } catch (error) {
+                console.error("Error fetching user profile:", error);
+            }
+        };
+
+        fetchUserProfile();
+    }, []);
 
     const handleLogout = () => {
         localStorage.removeItem('accessToken');
@@ -92,21 +169,36 @@ const Sidebar = (IsAuthenticated) => {
             <Logo>iGestão</Logo>
             <NavList>
                 <NavItem>
-                    <ImgSidebar src='calendar.png' />
+                    <ImgSidebar src="calendar.png" />
                     <NavLink href="/occupation">Mapa de Ocupação</NavLink>
                 </NavItem>
                 <NavItem>
-                    <ImgSidebar src='apartament.png' />
+                    <ImgSidebar src="apartament.png" />
                     <NavLink href="/apartments">Apartamentos</NavLink>
                 </NavItem>
                 <NavItem>
-                    <ImgSidebar src='report.png' />
+                    <ImgSidebar src="report.png" />
                     <NavLink href="/">Relatórios</NavLink>
                 </NavItem>
             </NavList>
-            <LogoutButton onClick={handleLogout} to="/">
-                Sair
-            </LogoutButton>
+            <ProfileAndLogoutContainer>
+                {profile ? (
+                    <ProfileContainer>
+                        <Avatar>
+                            {profile.user.charAt(0).toUpperCase()} {/* First letter of username */}
+                        </Avatar>
+                        <ProfileInfo>
+                            <UserName>{profile.user}</UserName>
+                            <CondoName>{profile.condominium.join(", ")}</CondoName>
+                        </ProfileInfo>
+                    </ProfileContainer>
+                ) : (
+                    <LoadingSpinner />
+                )}
+                <LogoutButton onClick={handleLogout}>
+                    Sair
+                </LogoutButton>
+            </ProfileAndLogoutContainer>
         </SidebarContainer>
     );
 };
