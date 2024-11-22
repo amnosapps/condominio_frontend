@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
 
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
 // Styled Components
 const ModalOverlay = styled.div`
   position: fixed;
@@ -166,6 +169,8 @@ const ReservationModal = ({
     hasChildren: selectedReservation?.hasChildren || "no",
     photos: selectedReservation?.photos || "", // Main photo URL
     additional_photos: selectedReservation?.additional_photos || [], // Additional photos array
+    checkin: selectedReservation?.checkin || null, // Check-in timestamp
+    checkout: selectedReservation?.checkout || null, // Checkout timestamp
     checkin_at: selectedReservation?.checkin_at || null, // Check-in timestamp
     checkout_at: selectedReservation?.checkout_at || null, // Checkout timestamp
   });
@@ -416,13 +421,14 @@ const ReservationModal = ({
 
   if (!selectedReservation) return null;
 
-  console.log(reservationData, selectedReservation)
+  console.log(reservationData.checkin)
 
   return (
     <ModalOverlay onClick={closeModal1}>
       <ModalContainer onClick={(e) => e.stopPropagation()}>
         <CloseButton onClick={closeModal1}>X</CloseButton>
-        <div>
+        <div style={{ marginBottom: "10px" }}>
+          <p><strong>Apto {reservationData.apartment}</strong> ({reservationData.apartment_owner})</p>
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
             <a href="/occupation" target="_blank" rel="noopener noreferrer">
               <img
@@ -431,7 +437,9 @@ const ReservationModal = ({
                 style={{ width: "30px", height: "auto", cursor: "pointer" }}
               />
             </a>
-            <p><strong>Apto {reservationData.apartment}</strong> ({reservationData.apartment_owner})</p>
+            <p>
+              {format(new Date(reservationData.checkin), 'dd/MM/yyyy', { locale: ptBR })} - {format(new Date(reservationData.checkout), 'dd/MM/yyyy', { locale: ptBR })}
+            </p>
           </div>
         </div>
         <div>
