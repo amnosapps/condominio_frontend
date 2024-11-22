@@ -12,10 +12,12 @@ import {
   startOfDay,
   endOfDay,
   isBefore,
-  startOfWeek
+  startOfWeek,
+  isAfter
 } from "date-fns";
 import { ptBR  } from "date-fns/locale"; // Import Portuguese locale
 import ReservationModal from "./ReservationModal";
+import RodapeCalendar from "./Calendar/RodapeComponent";
 
 const slideDown = keyframes`
   from {
@@ -115,9 +117,6 @@ const DayCell = styled.div`
   }
 `;
 
-
-
-
 const RoomRow = styled.div`
   display: flex;
   align-items: center;
@@ -143,34 +142,49 @@ const RoomLabel = styled.div`
 
 const ReservationBar = styled.div`
   position: absolute;
-  left: ${(props) => `calc(${props.startOffset}% + 5px)`}; /* Add slight offset for visual space */
-  top: ${(props) => (props.stackIndex || 0) * 40}px; /* Adjust vertical positioning */
-  background-color: ${(props) =>
-    props.isCheckedOut ? '#b0bec5' : props.checkinAt ? '#4CAF50' : '#FFC107'};
+  left: ${(props) => `calc(${props.startOffset}% + 5px)`}; 
+  top: ${(props) => (props.stackIndex || 0) * 40}px;
+  background-color: ${(props) => {
+    console.log(props)
+    // checkin proximo
+    if (!props.checkinAt && isToday(props.checkin)) {
+      return '#FFA500'; // Orange for today (pending)
+    }
+
+    // checkin pendente
+    else if (!props.checkinAt && isAfter(new Date(), props.checkin)) {
+      return '#FF5722'; // Red for expired (no check-in)
+    }
+
+    // reserva vigente
+    else if (props.checkinAt && isBefore(new Date(), props.checkout)) {
+      return '#4CAF50'; // Green for past check-ins (confirmed)
+    }
+
+    // checkout pendente
+    else if (props.checkinAt && !props.checkoutAt && isAfter(new Date(), props.checkout)) {
+      return '#000'; // Black if checked in and no checkout yet
+    }
+
+    // reserva encerrada
+    else if (props.checkinAt && props.checkoutAt && isAfter(new Date(), props.checkout)) {
+      return '#9E9E9E'; // Grey if checked in and checked out
+    }
+
+    return '#FFC107'; // futuras reservas
+  }};
   color: white;
   padding: 5px 8px;
   font-size: 0.85rem;
   height: 30px;
-  /* border-radius: 4px; */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   cursor: pointer;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s ease;
 
   &:hover {
-    background-color: ${(props) =>
-      props.isCheckedOut ? '#90a4ae' : props.checkinAt ? '#388e3c' : '#ffb300'};
-  }
-
-  &:hover .tooltip {
-    visibility: visible;
-    opacity: 1;
+    opacity: 0.7
   }
 `;
-
-
 
 const Tooltip = styled.div`
   visibility: hidden;
@@ -471,8 +485,8 @@ const ReservationCalendar = () => {
         startOffset,
         width,
         stackIndex,
-        isCheckedOut:
-          reservation.checkout && isBefore(reservation.checkout, new Date()),
+        isCheckedOut: reservation.checkout_at,
+        checkoutAt: reservation.checkout_at,
         checkinAt: reservation.checkin_at,
       });
     });
@@ -630,7 +644,10 @@ const ReservationCalendar = () => {
                           top: `${bar.stackIndex * 40}px`,
                         }}
                         isCheckedOut={bar.isCheckedOut}
+                        checkin={bar.checkin}
+                        checkout={bar.checkout}
                         checkinAt={bar.checkinAt}
+                        checkoutAt={bar.checkoutAt}
                         onClick={() => handleReservationClick(bar)}
                       >
                         <strong>{bar.guest_name}</strong>
@@ -664,6 +681,7 @@ const ReservationCalendar = () => {
             loadData={loadData}
           />
         )}
+      <RodapeCalendar />
     </CalendarContainer>
   );
 };
