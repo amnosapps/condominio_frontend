@@ -105,7 +105,7 @@ const DayCell = styled.div`
   padding: 8px; /* Consistent padding */
   border-right: 1px solid #e0e0e0;
   background-color: ${(props) =>
-    props.isCurrentDay ? '#e3f2fd' : props.isWeekend ? '#fef9f9' : 'white'};
+    props.isCurrentDay ? '#e3f2fd' : props.isWeekend ? '#ffe0dd' : 'white'};
   transition: background-color 0.3s;
 
   &:last-child {
