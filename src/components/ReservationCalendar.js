@@ -373,6 +373,9 @@ const ReservationCalendar = () => {
         checkin_at: reservation.checkin_at ? parseISO(reservation.checkin_at) : null, // Parse checkin_at
         checkout_at: reservation.checkout_at ? parseISO(reservation.checkout_at) : null, // Parse checkout_at
         has_children: reservation.has_children,
+        address: reservation.address,
+        vehicle_plate: reservation.vehicle_plate,
+        additional_guests: reservation.additional_guests,
       })));
     } catch (error) {
       console.error("Error fetching reservations:", error);

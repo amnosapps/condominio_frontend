@@ -4,6 +4,7 @@ import styled from "styled-components";
 
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { printFormData } from "../utils/print";
 
 // Styled Components
 const ModalOverlay = styled.div`
@@ -58,21 +59,6 @@ const CloseButton = styled.button`
   cursor: pointer;
 `;
 
-const StyledLink = styled.a`
-  display: inline-block;
-  margin-top: 10px;
-  padding: 10px 20px;
-  background-color: #4682b4;
-  color: white;
-  text-decoration: none;
-  border-radius: 5px;
-  text-align: center;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #35688a;
-  }
-`;
 
 const GreenButton = styled.button`
   margin: 10px 5px;
@@ -102,16 +88,92 @@ const RedButton = styled.button`
   }
 `;
 
-const EditableInput = styled.input`
-  width: 95%;
-  padding: 8px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
+const RemoveGuestButton = styled.button`
+  /* margin: 5px 5px; */
+  padding: 5px 5px;
+  background-color: transparent;
+  color: white;
+  border: none;
   border-radius: 5px;
-  font-size: 16px;
+  /* font-size: 14px; */
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
 `;
 
-const TitleInput = styled.input`
+const AddGuestButton = styled.button`
+  margin: 15px 0;
+  padding: 10px 10px;
+  background-color: #DE7066;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+
+  &:hover {
+    background-color: #d89591;
+  }
+`;
+
+const CheckboxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+`;
+
+const HiddenCheckbox = styled.input.attrs({ type: "checkbox" })`
+  border: 0;
+  clip: rect(0 0 0 0);
+  clippath: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+`;
+
+const StyledCheckbox = styled.div`
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background: ${(props) => (props.checked ? "#28a745" : "white")};
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  transition: all 150ms;
+  cursor: pointer;
+
+  ${HiddenCheckbox}:focus + & {
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.5);
+  }
+
+  &:hover {
+    border-color: #999;
+  }
+
+  &:after {
+    content: "";
+    display: ${(props) => (props.checked ? "block" : "none")};
+    width: 10px;
+    height: 10px;
+    margin: 4px;
+    background: white;
+    border-radius: 2px;
+  }
+`;
+
+const Label = styled.label`
+  margin-left: 10px;
+  font-size: 16px;
+  color: #333;
+  cursor: pointer;
+`;
+
+const EditableInput = styled.input`
   width: 95%;
   padding: 8px;
   margin: 10px 0;
@@ -173,7 +235,33 @@ const ReservationModal = ({
     checkout: selectedReservation?.checkout || null, // Checkout timestamp
     checkin_at: selectedReservation?.checkin_at || null, // Check-in timestamp
     checkout_at: selectedReservation?.checkout_at || null, // Checkout timestamp
+    address: selectedReservation?.address || {
+      endereco: "",
+      bairro: "",
+      cep: "",
+      cidade: "",
+      estado: "",
+      pais: "",
+    },
+    vehicle_plate: selectedReservation?.vehicle_plate || "",
+    additional_guests: selectedReservation?.additional_guests || [],
   });
+
+  const [hasCar, setHasCar] = useState(!!selectedReservation?.vehicle_plate);
+  const [vehiclePlate, setVehiclePlate] = useState(
+    selectedReservation?.vehicle_plate || ""
+  );
+  
+  const [additionalGuests, setAdditionalGuests] = useState(
+    selectedReservation?.additional_guests.map((guest) => ({
+      name: guest.name || "",
+      document: guest.document || "",
+      age: guest.age || null,
+      is_child: guest.is_child || false,
+    })) || []
+  );
+  
+  const [address, setAddress] = useState(reservationData.address);
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [cameraActive, setCameraActive] = useState(false);
@@ -187,6 +275,44 @@ const ReservationModal = ({
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleAddressChange = (field, value) => {
+    setAddress((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleHasCarChange = (e) => {
+    const checked = e.target.checked;
+    setHasCar(checked);
+    if (!checked) {
+      setVehiclePlate(""); // Clear vehicle plate if no car
+      handleChange("vehicle_plate", ""); // Sync with reservationData
+    }
+  };
+
+  const addAdditionalGuest = () => {
+    setAdditionalGuests((prev) => [
+      ...prev,
+      { name: "", document: "", age: "", is_child: false },
+    ]);
+  };
+
+  const removeAdditionalGuest = (index) => {
+    setAdditionalGuests((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const updateGuestDetails = (index, field, value) => {
+    setAdditionalGuests((prev) => {
+      const updated = [...prev];
+      updated[index] = {
+        ...updated[index],
+        [field]: value, // Update only the specified field
+      };
+      return updated;
+    });
   };
 
   const handlePhoneChange = (e) => {
@@ -213,13 +339,32 @@ const ReservationModal = ({
       ? new Date(reservationData.checkin_at).toISOString()
       : new Date().toISOString();
   
+    // Calculate total guests (main guest + additional guests)
+    const totalGuests = 1 + additionalGuests.length;
+  
+    // Determine if there are children
+    const hasChildren = additionalGuests.some((guest) => guest.isChild);
+  
     // Append reservation data to formData
     formData.append("guest_name", reservationData.guest_name);
     formData.append("guest_document", reservationData.guest_document);
     formData.append("guest_phone", reservationData.guest_phone || "");
-    formData.append("guests_qty", reservationData.guests_qty);
-    formData.append("has_children", reservationData.hasChildren === "yes");
+    formData.append("guests_qty", totalGuests); // Updated to use calculated total
+    formData.append("has_children", hasChildren); // Dynamically set
     formData.append("checkin_at", formattedCheckinAt);
+  
+    // Append Address information
+    Object.entries(address).forEach(([key, value]) => {
+      formData.append(key, value || ""); // Append each address field
+    });
+  
+    // Append Vehicle Plate if the user has a car
+    if (hasCar) {
+      formData.append("vehicle_plate", vehiclePlate);
+    }
+  
+    // Append Additional Guests
+    formData.append("additional_guests", JSON.stringify(additionalGuests));
   
     // Append old photos as URLs (these won't be uploaded but retained as references)
     reservationData.additional_photos.forEach((photoUrl, index) => {
@@ -242,14 +387,8 @@ const ReservationModal = ({
       }
     }
   
-    console.log("FormData contents:");
-    for (let pair of formData.entries()) {
-      if (pair[0].startsWith("additional_photos")) {
-        console.log(`${pair[0]}: ${pair[1].name}`);
-      } else {
-        console.log(`${pair[0]}: ${pair[1]}`);
-      }
-    }
+    // Log the FormData contents in JSON-like format
+    printFormData(formData);
   
     try {
       const response = await axios.patch(
@@ -421,8 +560,6 @@ const ReservationModal = ({
 
   if (!selectedReservation) return null;
 
-  console.log(reservationData.checkin)
-
   return (
     <ModalOverlay onClick={closeModal1}>
       <ModalContainer onClick={(e) => e.stopPropagation()}>
@@ -442,6 +579,8 @@ const ReservationModal = ({
             </p>
           </div>
         </div>
+
+        {/* Guest Information */}
         <div>
           <div>
             <strong>Nome do Hóspede:</strong>
@@ -458,8 +597,6 @@ const ReservationModal = ({
               value={reservationData.guest_document}
               onChange={(e) => handleChange("guest_document", e.target.value)}
             />
-          </div>
-          <div>
             <strong>Contato do Hóspede:</strong>
             <EditableInput
               type="text"
@@ -467,56 +604,125 @@ const ReservationModal = ({
               onChange={handlePhoneChange}
               placeholder="88 88888-8888"
             />
-          </div>
-          <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-            <div style={{ flex: 1 }}>
-              <strong>Quantidade de Hóspedes:</strong>
-              <select
-                value={reservationData.guests_qty || ""}
-                onChange={(e) => handleChange("guests_qty", e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  margin: "10px 0",
-                  border: "1px solid #ccc",
-                  borderRadius: "5px",
-                  fontSize: "16px",
-                }}
-              >
-                <option value="" disabled>
-                  Selecione a quantidade
-                </option>
-                {[...Array(10)].map((_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {i + 1}
-                  </option>
-                ))}
-              </select>
+            
+            <div>
+              <strong>Endereço:</strong>
+              <EditableInput
+                type="text"
+                value={address.endereco || ""}
+                onChange={(e) => handleAddressChange("endereco", e.target.value)}
+              />
+              <strong>Bairro:</strong>
+              <EditableInput
+                type="text"
+                value={address.bairro || ""}
+                onChange={(e) => handleAddressChange("bairro", e.target.value)}
+              />
+              <strong>CEP:</strong>
+              <EditableInput
+                type="text"
+                value={address.cep || ""}
+                onChange={(e) => handleAddressChange("cep", e.target.value)}
+              />
+              <strong>Cidade:</strong>
+              <EditableInput
+                type="text"
+                value={address.cidade || ""}
+                onChange={(e) => handleAddressChange("cidade", e.target.value)}
+              />
+              <strong>Estado:</strong>
+              <EditableInput
+                type="text"
+                value={address.estado || ""}
+                onChange={(e) => handleAddressChange("estado", e.target.value)}
+              />
+              <strong>País:</strong>
+              <EditableInput
+                type="text"
+                value={address.pais || ""}
+                onChange={(e) => handleAddressChange("pais", e.target.value)}
+              />
             </div>
-            <div style={{ flex: 1 }}>
-              <strong>Tem crianças?</strong>
-              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                <label>
-                  <input
-                    type="radio"
-                    name="hasChildren"
-                    value="yes"
-                    checked={reservationData.hasChildren === "yes"}
-                    onChange={(e) => handleChange("hasChildren", e.target.value)}
+
+            <div>
+              <CheckboxContainer>
+                <HiddenCheckbox
+                  checked={hasCar}
+                  onChange={handleHasCarChange}
+                />
+                <StyledCheckbox
+                  checked={hasCar}
+                  onClick={() => handleHasCarChange({ target: { checked: !hasCar } })}
+                />
+                <Label>Tem veículo?</Label>
+              </CheckboxContainer>
+              {hasCar && (
+                <div style={{ margin: '15px 0' }}>
+                  <strong>Placa do Veículo:</strong>
+                  <EditableInput
+                    type="text"
+                    value={vehiclePlate}
+                    onChange={(e) => setVehiclePlate(e.target.value)}
                   />
-                  Sim
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="hasChildren"
-                    value="no"
-                    checked={reservationData.hasChildren === "no"}
-                    onChange={(e) => handleChange("hasChildren", e.target.value)}
+                </div>
+              )}
+            </div>
+            <div>
+              {additionalGuests.map((guest, index) => (
+                <div key={index} style={{ margin: '15px 0' }}>
+                  <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <strong>Hóspede Adicional:</strong>
+                    <RemoveGuestButton onClick={() => removeAdditionalGuest(index)}>
+                      <img width={20} src="trash.png" />
+                    </RemoveGuestButton>
+                  </div>
+                  
+                  <EditableInput
+                    type="text"
+                    placeholder="Nome"
+                    value={guest.name}
+                    onChange={(e) => updateGuestDetails(index, "name", e.target.value)}
                   />
-                  Não
-                </label>
-              </div>
+                  <EditableInput
+                    type="text"
+                    placeholder="Documento"
+                    value={guest.document}
+                    onChange={(e) =>
+                      updateGuestDetails(index, "document", e.target.value)
+                    }
+                  />
+                  <div>
+                    <CheckboxContainer>
+                      <HiddenCheckbox
+                        checked={guest.is_child}
+                        onChange={(e) =>
+                          updateGuestDetails(index, "is_child", e.target.checked)
+                        }
+                      />
+                      <StyledCheckbox
+                        checked={guest.is_child}
+                        onClick={() =>
+                          updateGuestDetails(index, "is_child", !guest.isChild)
+                        }
+                      />
+                      <Label>É criança?</Label>
+                    </CheckboxContainer>
+                    {guest.is_child && (
+                      <EditableInput
+                        type="number"
+                        placeholder="Idade"
+                        value={guest.age}
+                        onChange={(e) =>
+                          updateGuestDetails(index, "age", e.target.value)
+                        }
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
+              <AddGuestButton onClick={addAdditionalGuest}>
+                Adicionar Hóspede
+              </AddGuestButton>
             </div>
           </div>
         </div>
