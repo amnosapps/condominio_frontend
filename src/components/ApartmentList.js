@@ -90,6 +90,7 @@ function ApartmentList({ condominium }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        console.log(selectedCondominium);
         const fetchData = async () => {
             const token = localStorage.getItem('accessToken');
             try {
@@ -97,6 +98,7 @@ function ApartmentList({ condominium }) {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
+                    params: { condominium: selectedCondominium }, // Move here
                 });
                 setApartments(response.data);
             } catch (error) {
@@ -105,8 +107,11 @@ function ApartmentList({ condominium }) {
                 setLoading(false);
             }
         };
-        fetchData();
-    }, []);
+        if (selectedCondominium) {
+            fetchData();
+        }
+    }, [selectedCondominium]);
+    
 
     const statusCounts = apartments.reduce(
         (acc, apartment) => {

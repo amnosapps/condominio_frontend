@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { printFormData } from "../utils/print";
+import PhotoCapture from "./PhotoCapture";
 
 // Styled Components
 const ModalOverlay = styled.div`
@@ -225,7 +226,7 @@ const ReservationModal = ({
     guest_name: selectedReservation?.guest_name || "",
     guest_document: selectedReservation?.guest_document || "",
     guest_phone: selectedReservation?.guest_phone || "", // Handle null values
-    guests_qty: selectedReservation?.guests_qty || "",
+    guests_qty: selectedReservation?.additional_guests.length + 1 || 0,
     apartment: selectedReservation?.apartment || "", // Optional apartment number
     apartment_owner: selectedReservation?.apartment_owner || "", // Optional apartment owner name
     hasChildren: selectedReservation?.hasChildren || "no",
@@ -256,18 +257,12 @@ const ReservationModal = ({
     selectedReservation?.additional_guests.map((guest) => ({
       name: guest.name || "",
       document: guest.document || "",
-      age: guest.age || null,
+      age: guest.age || 0,
       is_child: guest.is_child || false,
     })) || []
   );
   
   const [address, setAddress] = useState(reservationData.address);
-
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [cameraActive, setCameraActive] = useState(false);
-  const [capturedPhotos, setCapturedPhotos] = useState([]); // Store multiple photos
-  const videoRef = useRef(null);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (field, value) => {
@@ -296,7 +291,7 @@ const ReservationModal = ({
   const addAdditionalGuest = () => {
     setAdditionalGuests((prev) => [
       ...prev,
-      { name: "", document: "", age: "", is_child: false },
+      { name: "", document: "", age: 0, is_child: false },
     ]);
   };
 
@@ -345,7 +340,7 @@ const ReservationModal = ({
     // Determine if there are children
     const hasChildren = additionalGuests.some((guest) => guest.is_child);
 
-    if (hasChildren && capturedPhotos.length === 0 && reservationData.additional_photos.length === 0) {
+    if (hasChildren && reservationData.additional_photos.length === 0) {
       alert("Você deve adicionar pelo menos uma foto se houver crianças na reserva.");
       setIsSubmitting(false);
       return;
@@ -376,25 +371,6 @@ const ReservationModal = ({
     reservationData.additional_photos.forEach((photoUrl, index) => {
       formData.append(`existing_photos[${index}]`, photoUrl);
     });
-  
-    // Append new photos by converting Blob URLs to files
-    for (const [index, photo] of capturedPhotos.entries()) {
-      try {
-        const response = await fetch(photo);
-        const blob = await response.blob();
-        const file = new File(
-          [blob],
-          `additional_photo_${Date.now()}_${index + 1}.png`,
-          { type: blob.type }
-        );
-        formData.append(`additional_photos[${index}]`, file); // Use indexed keys
-      } catch (error) {
-        console.error(`Erro ao processar a foto adicional ${index + 1}:`, error);
-      }
-    }
-  
-    // Log the FormData contents in JSON-like format
-    printFormData(formData);
   
     try {
       const response = await axios.patch(
@@ -498,69 +474,14 @@ const ReservationModal = ({
       });
   };
 
-  const capturePhoto = () => {
-    if (!videoRef.current) {
-      console.error("Video reference is not available");
-      return;
-    }
-  
-    const canvas = document.createElement("canvas");
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-  
-    const context = canvas.getContext("2d");
-    if (!context) {
-      console.error("Unable to get 2D context for canvas");
-      return;
-    }
-  
-    context.drawImage(videoRef.current, 0, 0);
-    
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          console.error("Failed to create blob from canvas");
-          return;
-        }
-  
-        const photoUrl = URL.createObjectURL(blob);
-        setCapturedPhotos((prev) => [...prev, photoUrl]);
-      },
-      "image/png",
-      1.0
-    );
-  };
-
-  useEffect(() => {
-    if (cameraActive && videoRef.current) {
-      navigator.mediaDevices
-        .getUserMedia({ video: true })
-        .then((stream) => {
-          videoRef.current.srcObject = stream;
-        })
-        .catch((error) => {
-          console.error("Error accessing the camera:", error);
-          setCameraActive(false);
-        });
-    }
-  }, [cameraActive]);
-
-  const handleImagePick = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setSelectedImage(file);
-      setCapturedPhotos((prev) => [...prev, URL.createObjectURL(file)]);
-    }
-  };
-
-  const handleCameraShot = () => {
-    setCameraActive(true);
+  const updatePhotos = (photos) => {
+    setReservationData((prev) => ({
+      ...prev,
+      additional_photos: photos,
+    }));
   };
 
   const closeModal1 = () => {
-    setSelectedImage(null);
-    setCapturedPhotos([]);
-    setCameraActive(false);
     closeModal();
   };
 
@@ -575,7 +496,7 @@ const ReservationModal = ({
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
             <a href="/occupation" target="_blank" rel="noopener noreferrer">
               <img
-                src="download-pdf.png"
+                src="/download-pdf.png"
                 alt="PDF Reserva"
                 style={{ width: "30px", height: "auto", cursor: "pointer" }}
               />
@@ -733,113 +654,10 @@ const ReservationModal = ({
           </div>
         </div>
 
-        <div>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <p>Capturar Imagens:</p>
-            <div style={{ marginLeft: "10px" }}>
-              <StyledFileInput
-                id="imageUpload"
-                type="file"
-                accept="image/*"
-                onChange={handleImagePick}
-              />
-              <FileInputLabel htmlFor="imageUpload" />
-            </div>
-            <div style={{ marginLeft: "10px" }} onClick={handleCameraShot}>
-              <img
-                src="camera.png"
-                style={{ width: "30px", height: "auto", cursor: "pointer" }}
-              />
-            </div>
-          </div>
-          {cameraActive && (
-            <VideoContainer>
-              <VideoPreview ref={videoRef} autoPlay></VideoPreview>
-              <button onClick={capturePhoto}>Capturar</button>
-            </VideoContainer>
-          )}
-
-          <div style={{ marginTop: "20px" }}>
-            {reservationData.additional_photos.length > 0 && (
-              <strong>Fotos:</strong>
-            )}
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "10px",
-                marginTop: "10px",
-              }}
-            >
-              {/* Display old photos */}
-              {reservationData.additional_photos?.map((photoUrl, index) => (
-                <div
-                  key={`old-${index}`}
-                  style={{ position: "relative", width: "20%" }}
-                >
-                  <ImagePreview src={photoUrl} alt={`Old Photo ${index + 1}`} />
-                  <button
-                    onClick={() => {
-                      const updatedPhotos = [...reservationData.additional_photos];
-                      updatedPhotos.splice(index, 1); // Remove this photo
-                      setReservationData((prev) => ({
-                        ...prev,
-                        additional_photos: updatedPhotos,
-                      }));
-                    }}
-                    style={{
-                      position: "absolute",
-                      top: "5px",
-                      right: "5px",
-                      backgroundColor: "#dc3545",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "50%",
-                      width: "20px",
-                      height: "20px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    &times;
-                  </button>
-                </div>
-              ))}
-
-              {/* Display new photos */}
-              {capturedPhotos.map((photo, index) => (
-                <div
-                  key={`new-${index}`}
-                  style={{ position: "relative", width: "20%" }}
-                >
-                  <ImagePreview src={photo} alt={`New Photo ${index + 1}`} />
-                  <button
-                    onClick={() =>
-                      setCapturedPhotos((prev) =>
-                        prev.filter((_, i) => i !== index)
-                      )
-                    }
-                    style={{
-                      position: "absolute",
-                      top: "5px",
-                      right: "5px",
-                      backgroundColor: "#dc3545",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "50%",
-                      width: "20px",
-                      height: "20px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    &times;
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
-
+        <PhotoCapture
+          existingPhotos={reservationData.additional_photos}
+          onPhotosChange={updatePhotos}
+        />
 
         <div style={{ display: "flex", justifyContent: "start", gap: "10px" }}>
           {reservationData.checkin_at ? (

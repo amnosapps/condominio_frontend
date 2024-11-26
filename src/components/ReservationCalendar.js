@@ -14,7 +14,9 @@ import {
   endOfDay,
   isBefore,
   startOfWeek,
-  isAfter
+  isAfter,
+  parse,
+  isValid,
 } from "date-fns";
 import { ptBR  } from "date-fns/locale"; // Import Portuguese locale
 import ReservationModal from "./ReservationModal";
@@ -146,7 +148,6 @@ const ReservationBar = styled.div`
   left: ${(props) => `calc(${props.startOffset}% + 5px)`}; 
   top: ${(props) => (props.stackIndex || 0) * 40}px;
   background-color: ${(props) => {
-    console.log(props)
     // checkin proximo
     if (!props.checkinAt && isToday(props.checkin)) {
       return '#FFA500'; // Orange for today (pending)
@@ -349,6 +350,7 @@ const ReservationCalendar = ({ condominium }) => {
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/`, {
         headers: { Authorization: `Bearer ${token}` },
+        params: { condominium: selectedCondominium },
       });
       setApartments(response.data.map(apartment => `${apartment.number}`));
     } catch (error) {
@@ -361,13 +363,14 @@ const ReservationCalendar = ({ condominium }) => {
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reservations/`, {
         headers: { Authorization: `Bearer ${token}` },
+        params: { condominium: selectedCondominium },
       });
       setReservations(response.data.map(reservation => ({
         id: reservation.id,
         guest_name: reservation.guest_name,
         guest_document: reservation.guest_document,
         guest_phone: reservation.guest_phone || "", // Handle null values
-        guests_qty: `${reservation.guests_qty}`, // Ensure it's a string
+        guests_qty: reservation.additional_guests.length + 1 || 0, // Ensure it's a string
         apartment: reservation.apt_number,
         apartment_owner: reservation.apt_owner_name,
         photos: reservation.photo, // Main photo URL
@@ -410,11 +413,8 @@ const ReservationCalendar = ({ condominium }) => {
 
   const getTotalGuestsForDay = (day) => {
     return reservations
-      .filter(
-        (reservation) =>
-          day >= reservation.checkin && day <= reservation.checkout
-      )
-      .reduce((totalGuests, reservation) => totalGuests + parseInt(reservation.guests_qty, 10), 0);
+      .filter((reservation) => day >= reservation.checkin && day <= reservation.checkout)
+      .reduce((totalGuests, reservation) => totalGuests + (reservation.additional_guests.length + 1),0);
   };
 
   const handleReservationClick = (reservation) => {
@@ -565,6 +565,33 @@ const ReservationCalendar = ({ condominium }) => {
     setSelectedReservation(null);
   };
 
+  const CustomDateInput = ({ value, onChange }) => {
+    const handleInputChange = (e) => {
+      const rawValue = e.target.value; // Get the value in dd/MM/yyyy format
+      const parsedDate = parse(rawValue, "dd/MM/yyyy", new Date(), { locale: ptBR });
+  
+      if (isValid(parsedDate)) {
+        const isoValue = format(parsedDate, "yyyy-MM-dd"); // Convert to ISO format
+        onChange(isoValue);
+      } else {
+        onChange(""); // Invalid input
+      }
+    };
+  
+    const displayValue = value
+      ? format(parse(value, "yyyy-MM-dd", new Date()), "dd/MM/yyyy", { locale: ptBR })
+      : "";
+  
+    return (
+      <input
+        type="text"
+        placeholder="dd/mm/yyyy"
+        value={displayValue}
+        onChange={handleInputChange}
+      />
+    );
+  };
+
   return (
     <CalendarContainer>
       {loading ? (
@@ -579,18 +606,14 @@ const ReservationCalendar = ({ condominium }) => {
               onChange={(e) => setGuestNameFilter(e.target.value)}
             />
             <DateInputContainer>
-              <input
-                type="date"
-                placeholder="Data de início"
+              {/* <CustomDateInput
                 value={startDateFilter}
-                onChange={(e) => setStartDateFilter(e.target.value)}
+                onChange={(date) => setStartDateFilter(date)}
               />
-              <input
-                type="date"
-                placeholder="Data de fim"
+              <CustomDateInput
                 value={endDateFilter}
                 onChange={(e) => setEndDateFilter(e.target.value)}
-              />
+              /> */}
               <ClearButton onClick={() => clearFilters()}>Limpar Filtros</ClearButton>
             </DateInputContainer>
           </FilterContainer>

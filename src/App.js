@@ -7,6 +7,7 @@ import DashboardLayout from './components/DashboardLayout';
 import LandingPage from './components/LandingPage';
 import ReservationCalendar from './components/ReservationCalendar';
 import CondominiumSelection from './components/CondominiumSelection';
+import CondominiumReport from './components/CondominiumReport';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('accessToken'));
@@ -115,6 +116,7 @@ function App() {
                 >
                     <Route path="occupation" element={<ReservationCalendar />} />
                     <Route path="apartments" element={<ApartmentList />} />
+                    <Route path="reports" element={<CondominiumReport />} />
                 </Route>
 
                 {/* Fallback Route */}
