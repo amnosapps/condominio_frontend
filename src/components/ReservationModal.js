@@ -345,8 +345,6 @@ const ReservationModal = ({
     // Determine if there are children
     const hasChildren = additionalGuests.some((guest) => guest.is_child);
 
-    console.log(hasChildren, capturedPhotos.length, reservationData.additional_photos.length)
-    
     if (hasChildren && capturedPhotos.length === 0 && reservationData.additional_photos.length === 0) {
       alert("Você deve adicionar pelo menos uma foto se houver crianças na reserva.");
       setIsSubmitting(false);

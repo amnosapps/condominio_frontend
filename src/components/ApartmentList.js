@@ -1,6 +1,7 @@
 // src/components/ApartmentList.js
 
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import styled from 'styled-components';
 import { Doughnut } from 'react-chartjs-2';
@@ -82,7 +83,9 @@ const ChartWrapper = styled.div`
     text-align: center;
 `;
 
-function ApartmentList() {
+function ApartmentList({ condominium }) {
+    const params = useParams();
+    const selectedCondominium = condominium || params.condominium;
     const [apartments, setApartments] = useState([]);
     const [loading, setLoading] = useState(true);
 

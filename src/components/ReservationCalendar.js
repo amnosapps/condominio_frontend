@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef   } from "react";
+import { useParams } from 'react-router-dom';
 import axios from "axios";
 import styled, { css, keyframes  } from "styled-components";
 import {
@@ -325,7 +326,10 @@ const monthNames = [
 ];
 
 // Main component
-const ReservationCalendar = () => {
+const ReservationCalendar = ({ condominium }) => {
+  const params = useParams();
+  const selectedCondominium = condominium || params.condominium;
+
   const [loadingNavigation, setLoadingNavigation] = useState(false);
 
   const [viewType, setViewType] = useState("7");
@@ -488,7 +492,7 @@ const ReservationCalendar = () => {
         startOffset,
         width,
         stackIndex,
-        isCheckedOut: reservation.checkout_at,
+        ischeckedout: reservation.checkout_at,
         checkoutAt: reservation.checkout_at,
         checkinAt: reservation.checkin_at,
       });
@@ -646,7 +650,7 @@ const ReservationCalendar = () => {
                           width: `${bar.width}%`,      // Fit within DayCell
                           top: `${bar.stackIndex * 40}px`,
                         }}
-                        isCheckedOut={bar.isCheckedOut}
+                        ischeckedout={bar.ischeckedout}
                         checkin={bar.checkin}
                         checkout={bar.checkout}
                         checkinAt={bar.checkinAt}

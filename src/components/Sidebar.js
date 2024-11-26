@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
 
-// Styled components for Sidebar
 const SidebarContainer = styled.div`
     background-color: #fff;
     width: 250px;
@@ -27,6 +26,20 @@ const Logo = styled.h2`
     font-size: 24px;
     color: #DE7066;
     margin-bottom: 2rem;
+`;
+
+const Select = styled.select`
+    margin: 1rem 0;
+    padding: 0.5rem;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+
+    &:focus {
+        border-color: #DE7066;
+        box-shadow: 0 0 4px rgba(222, 112, 102, 0.4);
+    }
 `;
 
 const ProfileAndLogoutContainer = styled.div`
@@ -69,14 +82,9 @@ const CondoName = styled.span`
 `;
 
 const UserName = styled.span`
-    font-size: 16px;
-    color: #333;
-    font-weight: bold;
-`;
-
-const ImgSidebar = styled.img`
-    width: 20px;
-    margin-right: 10px;
+    font-size: 18px;
+    color: #737373;
+    /* font-weight: bold; */
 `;
 
 const NavList = styled.ul`
@@ -92,16 +100,25 @@ const NavItem = styled.li`
     align-items: center;
 `;
 
-const NavLink = styled.a`
+const NavButton = styled.button`
     color: #737373;
     text-decoration: none;
     font-size: 18px;
     transition: color 0.3s;
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 
     &:hover {
         color: #DE7066;
         cursor: pointer;
     }
+`;
+
+const ImgSidebar = styled.img`
+    width: 20px;
 `;
 
 const LogoutButton = styled.button`
@@ -121,12 +138,8 @@ const LogoutButton = styled.button`
 `;
 
 const spin = keyframes`
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 `;
 
 const LoadingSpinner = styled.div`
@@ -138,25 +151,79 @@ const LoadingSpinner = styled.div`
   animation: ${spin} 1s linear infinite;
 `;
 
-const Sidebar = () => {
+const CenteredContainer = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%; /* Takes up full height of the SidebarContainer */
+`;
+
+const StyledSelect = styled.select`
+    margin-top: 10px;
+    padding: 5px 4px;
+    font-size: 16px;
+    font-weight: 400;
+    color: #737373;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+    transition: all 0.3s;
+
+    &:focus {
+        /* border-color: #DE7066; */
+        background-color: #fff;
+        box-shadow: 0 0 5px rgba(222, 112, 102, 0.5);
+    }
+
+    &:hover {
+        cursor: pointer;
+    }
+
+    option {
+        font-size: 14px;
+        color: #333;
+        background-color: #fff;
+        padding: 10px;
+    }
+`;
+
+const Sidebar = ({ condominium }) => {
     const navigate = useNavigate();
+    const params = useParams();
+    const selectedCondominium = condominium || params.condominium;
+
     const [profile, setProfile] = useState(null);
+    const [condominiums, setCondominiums] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchUserProfile = async () => {
             const token = localStorage.getItem('accessToken');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+
             try {
                 const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/profile/`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                setProfile(response.data); // Assuming a single profile is returned
+                setProfile(response.data);
+                setCondominiums(response.data.condominiums || []);
             } catch (error) {
                 console.error("Error fetching user profile:", error);
+                navigate('/login');
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchUserProfile();
-    }, []);
+    }, [navigate]);
 
     const handleLogout = () => {
         localStorage.removeItem('accessToken');
@@ -164,36 +231,63 @@ const Sidebar = () => {
         navigate('/login');
     };
 
+    const handleCondominiumChange = (event) => {
+        const newCondominium = event.target.value;
+        navigate(`/${newCondominium}/occupation`);
+    };
+
+    if (loading) {
+        return (
+            <></>
+            // <SidebarContainer>
+            //     <CenteredContainer>
+            //         <LoadingSpinner />
+            //     </CenteredContainer>
+            // </SidebarContainer>
+        );
+    }
+
     return (
         <SidebarContainer>
             <Logo>iGestão</Logo>
+            
             <NavList>
                 <NavItem>
-                    <ImgSidebar src="calendar.png" />
-                    <NavLink href="/occupation">Mapa de Ocupação</NavLink>
+                    <NavButton onClick={() => navigate(`/${selectedCondominium}/occupation`)}>
+                        <ImgSidebar src="/calendar.png" alt="Calendar" />
+                        Mapa de Ocupação
+                    </NavButton>
                 </NavItem>
                 <NavItem>
-                    <ImgSidebar src="apartament.png" />
-                    <NavLink href="/apartments">Apartamentos</NavLink>
+                    <NavButton onClick={() => navigate(`/${selectedCondominium}/apartments`)}>
+                        <ImgSidebar src="/apartament.png" alt="Apartments" />
+                        Apartamentos
+                    </NavButton>
                 </NavItem>
                 <NavItem>
-                    <ImgSidebar src="report.png" />
-                    <NavLink href="/">Relatórios</NavLink>
+                    <NavButton onClick={() => navigate(`/${selectedCondominium}/reports`)}>
+                        <ImgSidebar src="/report.png" alt="Reports" />
+                        Relatórios
+                    </NavButton>
                 </NavItem>
             </NavList>
             <ProfileAndLogoutContainer>
-                {profile ? (
+                {profile && (
                     <ProfileContainer>
                         <Avatar>
-                            {profile.user.charAt(0).toUpperCase()} {/* First letter of username */}
+                            {profile.user?.charAt(0).toUpperCase() || "?"}
                         </Avatar>
                         <ProfileInfo>
-                            <UserName>{profile.user}</UserName>
-                            <CondoName>{profile.condominium.join(", ")}</CondoName>
+                            <UserName>{profile.user || "Usuário Desconhecido"}</UserName>
+                            <StyledSelect value={selectedCondominium} onChange={handleCondominiumChange}>
+                                {condominiums.map((condo) => (
+                                    <option key={condo} value={condo}>
+                                        {condo}
+                                    </option>
+                                ))}
+                            </StyledSelect>
                         </ProfileInfo>
                     </ProfileContainer>
-                ) : (
-                    <LoadingSpinner />
                 )}
                 <LogoutButton onClick={handleLogout}>
                     Sair
