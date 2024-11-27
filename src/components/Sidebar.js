@@ -191,6 +191,67 @@ const StyledSelect = styled.select`
     }
 `;
 
+const NotificationBellContainer = styled.div`
+    position: absolute;
+    margin-bottom: 40px;
+    margin-left: 39px;
+    cursor: pointer;
+
+    &:hover .notifications {
+        display: block;
+    }
+`;
+
+const BellIcon = styled.div`
+    font-size: 18px;
+    color: #737373;
+    position: relative;
+
+    &:hover {
+        color: #DE7066;
+    }
+`;
+
+const UnreadCount = styled.span`
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background: #DE7066;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 8px;
+    padding: 5px 7px;
+    display: ${(props) => (props.count > 0 ? 'inline' : 'none')};
+`;
+
+const NotificationList = styled.div`
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    width: 300px;
+    z-index: 20;
+    display: ${(props) => (props.show ? 'block' : 'none')};
+`;
+
+const NotificationItem = styled.div`
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background: #f9f9f9;
+        cursor: pointer;
+    }
+`;
+
 const Sidebar = ({ condominium }) => {
     const navigate = useNavigate();
     const params = useParams();
@@ -199,6 +260,10 @@ const Sidebar = ({ condominium }) => {
     const [profile, setProfile] = useState(null);
     const [condominiums, setCondominiums] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [showNotifications, setShowNotifications] = useState(false);
 
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -222,8 +287,44 @@ const Sidebar = ({ condominium }) => {
             }
         };
 
+        const fetchNotifications = async () => {
+            const token = localStorage.getItem('accessToken');
+            try {
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/notifications/`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                setNotifications(response.data);
+                const unread = response.data.filter((notif) => !notif.is_read).length;
+                setUnreadCount(unread);
+            } catch (error) {
+                console.error("Error fetching notifications:", error);
+            }
+        };
+
         fetchUserProfile();
+        fetchNotifications();
     }, [navigate]);
+
+    const markNotificationAsRead = async (id) => {
+        const token = localStorage.getItem('accessToken');
+        try {
+            await axios.post(`${process.env.REACT_APP_API_URL}/api/notifications/${id}/mark_as_read/`, null, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setNotifications((prev) =>
+                prev.map((notif) =>
+                    notif.id === id ? { ...notif, is_read: true } : notif
+                )
+            );
+            setUnreadCount((prev) => prev - 1);
+        } catch (error) {
+            console.error("Error marking notification as read:", error);
+        }
+    };
+
+    const toggleNotifications = () => {
+        setShowNotifications((prev) => !prev);
+    };
 
     const handleLogout = () => {
         localStorage.removeItem('accessToken');
@@ -249,7 +350,7 @@ const Sidebar = ({ condominium }) => {
 
     return (
         <SidebarContainer>
-            <Logo>iGestão</Logo>
+            <Logo>iGoove</Logo>
             
             <NavList>
                 <NavItem>
@@ -271,11 +372,31 @@ const Sidebar = ({ condominium }) => {
                     </NavButton>
                 </NavItem>
             </NavList>
+            
             <ProfileAndLogoutContainer>
                 {profile && (
                     <ProfileContainer>
                         <Avatar>
                             {profile.user?.charAt(0).toUpperCase() || "?"}
+                            <NotificationBellContainer onClick={toggleNotifications}>
+                                    <BellIcon>🔔</BellIcon>
+                                    <UnreadCount count={unreadCount}>{unreadCount}</UnreadCount>
+                                    <NotificationList show={showNotifications} className="notifications">
+                                        {notifications.length > 0 ? (
+                                            notifications.map((notif) => (
+                                                <NotificationItem
+                                                    key={notif.id}
+                                                    onClick={() => markNotificationAsRead(notif.id)}
+                                                >
+                                                    <strong>{notif.title}</strong>
+                                                    <p>{notif.message}</p>
+                                                </NotificationItem>
+                                            ))
+                                        ) : (
+                                            <p>No notifications</p>
+                                        )}
+                                    </NotificationList>
+                                </NotificationBellContainer>
                         </Avatar>
                         <ProfileInfo>
                             <UserName>{profile.user || "Usuário Desconhecido"}</UserName>

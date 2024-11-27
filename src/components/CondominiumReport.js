@@ -451,7 +451,7 @@ function CondominiumReport({ condominium }) {
             <tr>
               <TableHeader>Apartamento</TableHeader>
               <TableHeader>Status</TableHeader>
-              <TableHeader>Ocupação</TableHeader>
+              <TableHeader>Hóspedes</TableHeader>
               <TableHeader>Dias Ocupados</TableHeader>
             </tr>
           </thead>

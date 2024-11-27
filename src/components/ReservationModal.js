@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { printFormData } from "../utils/print";
 import PhotoCapture from "./PhotoCapture";
+import LogsVisualization from "./Logs/LogsVizualization";
 
 // Styled Components
 const ModalOverlay = styled.div`
@@ -183,45 +184,88 @@ const EditableInput = styled.input`
   font-size: 16px;
 `;
 
-const ImagePreview = styled.img`
-  width: 100%;
-  margin-top: 10px;
-  border-radius: 5px;
-`;
+const LogsModalContainer = styled.div`
+  margin-top: 50px;
+  background-color: white;
+  width: 80%;
+  max-width: 600px;
+  max-height: 80vh;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow-y: auto;
 
-const VideoContainer = styled.div`
-  margin-top: 10px;
-`;
-
-const VideoPreview = styled.video`
-  width: 100%;
-  border-radius: 5px;
-`;
-
-const StyledFileInput = styled.input`
-  display: none; // Hide the default file input
-`;
-
-const FileInputLabel = styled.label`
-  display: inline-block;
-  cursor: pointer;
-  width: 30px; // Set width for the "image"
-  height: 30px; // Set height for the "image"
-  background: url("photos.png") no-repeat center center;
-  background-size: cover; // Ensure the background image covers the label
-  border-radius: 10px; // Optional: make the image corners rounded
-  transition: transform 0.2s ease;
-
-  &:hover {
-    transform: scale(1.05); // Slight zoom effect on hover
+  /* Custom scrollbar styling */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
   }
 `;
+
+const LogsButton = styled.button`
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+`;
+
+const LogsList = styled.div`
+  margin-top: 20px;
+`;
+
+const LogItem = styled.div`
+  border-bottom: 1px solid #ccc;
+  padding: 10px 0;
+`;
+
+const LogsModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+`;
+
+const CloseLogsButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+`;
+
 
 const ReservationModal = ({
   closeModal,
   selectedReservation,
   loadData
 }) => {
+  const [logs, setLogs] = useState([]);
+  const [isLogsOpen, setIsLogsOpen] = useState(false);
+
   const [reservationData, setReservationData] = useState({
     guest_name: selectedReservation?.guest_name || "",
     guest_document: selectedReservation?.guest_document || "",
@@ -264,6 +308,24 @@ const ReservationModal = ({
   
   const [address, setAddress] = useState(reservationData.address);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fetchLogs = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/logs/`, // Replace with your actual logs endpoint
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { object_id: selectedReservation.id, model_name: "Reservation" },
+        }
+      );
+      setLogs(response.data);
+      setIsLogsOpen(true); // Open the logs modal
+    } catch (error) {
+      console.error("Error fetching logs:", error);
+      alert("Failed to load logs. Please try again.");
+    }
+  };
 
   const handleChange = (field, value) => {
     setReservationData((prev) => ({
@@ -490,9 +552,34 @@ const ReservationModal = ({
   return (
     <ModalOverlay onClick={closeModal1}>
       <ModalContainer onClick={(e) => e.stopPropagation()}>
-        <CloseButton onClick={closeModal1}>X</CloseButton>
+        <div style={{ display: 'flex', alignContent: 'center' }}>
+          <LogsButton onClick={fetchLogs}>View Logs</LogsButton> 
+          <CloseButton onClick={closeModal1}>X</CloseButton>
+        </div>
         <div style={{ marginBottom: "10px" }}>
-          <p><strong>Apto {reservationData.apartment}</strong> ({reservationData.apartment_owner})</p>
+            {isLogsOpen && (
+              <LogsModalOverlay onClick={() => setIsLogsOpen(false)}>
+                <LogsModalContainer onClick={(e) => e.stopPropagation()}>
+                  <CloseLogsButton onClick={() => setIsLogsOpen(false)}>X</CloseLogsButton>
+                  <h3>Logs da Reserva</h3>
+                  <LogsList>
+                    {logs.length > 0 ? (
+                      logs.map((log) => (
+                        <LogItem key={log.id}>
+                          <p><strong>Ação:</strong> {log.action}</p>
+                          <p><strong>Usuário:</strong> {log.user}</p>
+                          <p><strong>Horário:</strong> {new Date(log.timestamp).toLocaleString()}</p>
+                          <LogsVisualization log={log} />
+                        </LogItem>
+                      ))
+                    ) : (
+                      <p>Nao foram encontrados logs desta reserva.</p>
+                    )}
+                  </LogsList>
+                </LogsModalContainer>
+              </LogsModalOverlay>
+            )}
+          <p><strong>Apto {reservationData.apartment}</strong> ({reservationData.apartment_owner}) </p>
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
             <a href="/occupation" target="_blank" rel="noopener noreferrer">
               <img
