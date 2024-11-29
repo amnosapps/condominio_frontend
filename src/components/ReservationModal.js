@@ -428,12 +428,22 @@ const ReservationModal = ({
   
     // Append Additional Guests
     formData.append("additional_guests", JSON.stringify(additionalGuests));
-  
-    // Append old photos as URLs (these won't be uploaded but retained as references)
-    reservationData.additional_photos.forEach((photoUrl, index) => {
-      formData.append(`existing_photos[${index}]`, photoUrl);
+    
+    console.log(reservationData.additional_photos)
+    const photos = reservationData.additional_photos.map(async (photoUrl, index) => {
+      console.log(photoUrl, index)
+      const response = await fetch(photoUrl); // Fetch the blob from the URL
+      const blob = await response.blob(); // Convert response to Blob
+      return new File([blob], `photo-${index}.jpg`, { type: blob.type }); // Convert Blob to File
     });
   
+    // Wait for all photos to be processed
+    const photoFiles = await Promise.all(photos);
+  
+    // Append each photo to FormData
+    photoFiles.forEach((file) => {
+      formData.append("additional_photos", file);
+    });
     try {
       const response = await axios.patch(
         `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,

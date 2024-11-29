@@ -371,6 +371,16 @@ const Sidebar = ({ condominium }) => {
                         Relatórios
                     </NavButton>
                 </NavItem>
+                {/* <NavItem>
+                    <NavButton onClick={() => navigate(`/${selectedCondominium}/services`)}>
+                        <ImgSidebar src="/report.png" alt="Reports" />
+                        Serviços
+                    </NavButton>
+                    <NavButton onClick={() => navigate(`/${selectedCondominium}/dashboard`)}>
+                        <ImgSidebar src="/report.png" alt="Reports" />
+                        Dashboard
+                    </NavButton>
+                </NavItem> */}
             </NavList>
             
             <ProfileAndLogoutContainer>

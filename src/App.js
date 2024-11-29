@@ -8,6 +8,8 @@ import LandingPage from './components/LandingPage';
 import ReservationCalendar from './components/ReservationCalendar';
 import CondominiumSelection from './components/CondominiumSelection';
 import CondominiumReport from './components/CondominiumReport';
+import ServicesPage from './pages/Services';
+import Dashboard from './pages/Services/Dashboard';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('accessToken'));
@@ -82,11 +84,29 @@ function App() {
         return children;
     };
 
+    const [services, setServices] = useState([
+        {
+          id: 1,
+          name: "Cleaning Service",
+          baseCost: 100,
+          bookedBy: [],
+          date: "2024-11-20",
+        },
+        {
+          id: 2,
+          name: "Gardening Service",
+          baseCost: 200,
+          bookedBy: [],
+          date: "2024-11-21",
+        },
+      ]);
+
     return (
         <Router>
             <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
+                
 
                 {/* Condominium Selection */}
                 <Route
@@ -117,6 +137,14 @@ function App() {
                     <Route path="occupation" element={<ReservationCalendar />} />
                     <Route path="apartments" element={<ApartmentList />} />
                     <Route path="reports" element={<CondominiumReport />} />
+                    <Route
+                        path="services"
+                        element={<ServicesPage services={services} setServices={setServices} />}
+                    />
+                    <Route
+                        path="dashboard"
+                        element={<Dashboard services={services} />}
+                    />
                 </Route>
 
                 {/* Fallback Route */}

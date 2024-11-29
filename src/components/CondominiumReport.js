@@ -360,12 +360,30 @@ function CondominiumReport({ condominium }) {
 
   // Group Reservations by Month for the Selected Year
   const reservationsByMonth = Array(12).fill(0);
+
   reservations.forEach((reservation) => {
     const checkinDate = reservation.checkin ? parseISO(reservation.checkin) : null;
-    if (checkinDate && getYear(checkinDate) === selectedYear) {
-      const checkinMonth = getMonth(checkinDate);
-      reservationsByMonth[checkinMonth] +=
-        reservation.additional_guests.length + 1;
+    const checkoutDate = reservation.checkout ? parseISO(reservation.checkout) : null;
+
+    if (checkinDate && checkoutDate) {
+      const checkinYear = getYear(checkinDate);
+      const checkoutYear = getYear(checkoutDate);
+
+      // Iterate over all months in the selected year
+      for (let month = 0; month < 12; month++) {
+        const monthStart = new Date(selectedYear, month, 1);
+        const monthEnd = new Date(selectedYear, month + 1, 0); // Last day of the month
+
+        // Check if reservation overlaps with the current month
+        const overlapsMonth =
+          (checkinDate <= monthEnd && checkinDate >= monthStart) || // Check-in during the month
+          (checkoutDate >= monthStart && checkoutDate <= monthEnd) || // Check-out during the month
+          (checkinDate <= monthStart && checkoutDate >= monthEnd); // Spans the entire month
+
+        if (overlapsMonth) {
+          reservationsByMonth[month] += 1; // Count this reservation for the month
+        }
+      }
     }
   });
 

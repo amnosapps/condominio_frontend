@@ -159,7 +159,7 @@ const ReservationBar = styled.div`
     }
 
     // reserva vigente
-    else if (props.checkinAt && isBefore(new Date(), props.checkout)) {
+    else if (props.checkinAt && !props.checkoutAt && isBefore(new Date(), props.checkout)) {
       return '#4CAF50'; // Green for past check-ins (confirmed)
     }
 
@@ -169,7 +169,7 @@ const ReservationBar = styled.div`
     }
 
     // reserva encerrada
-    else if (props.checkinAt && props.checkoutAt && isAfter(new Date(), props.checkout)) {
+    else if (props.checkinAt && props.checkoutAt) {
       return '#9E9E9E'; // Grey if checked in and checked out
     }
 
@@ -374,7 +374,7 @@ const ReservationCalendar = ({ condominium }) => {
         apartment: reservation.apt_number,
         apartment_owner: reservation.apt_owner_name,
         photos: reservation.photo, // Main photo URL
-        additional_photos: reservation.additional_photos, // Extract additional photo URLs
+        additional_photos: reservation.additional_photos_urls || [], // Extract additional photo URLs
         checkin: reservation.checkin ? parseISO(reservation.checkin) : null, // Parse checkin if exists
         checkout: reservation.checkout ? parseISO(reservation.checkout) : null, // Parse checkout if exists
         checkin_at: reservation.checkin_at ? parseISO(reservation.checkin_at) : null, // Parse checkin_at
@@ -412,13 +412,19 @@ const ReservationCalendar = ({ condominium }) => {
   }, [reservations]);
 
   const getTotalGuestsForDay = (day) => {
-    return reservations
-      .filter((reservation) => day >= reservation.checkin && day <= reservation.checkout)
-      .reduce((totalGuests, reservation) => totalGuests + (reservation.additional_guests.length + 1),0);
+    function normalizeDate(date) {
+        const normalized = new Date(date);
+        normalized.setHours(0, 0, 0, 0);
+        return normalized;
+    }
+
+    return reservations.filter((reservation) => 
+      normalizeDate(day) >= normalizeDate(reservation.checkin) && 
+      normalizeDate(day) <= normalizeDate(reservation.checkout))
+    .reduce((totalGuests, reservation) => totalGuests + (reservation.additional_guests.length + 1),0);
   };
 
   const handleReservationClick = (reservation) => {
-    console.log(reservation)
     setSelectedReservation(reservation);
   };
 

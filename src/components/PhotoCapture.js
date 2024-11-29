@@ -10,11 +10,32 @@ const ImagePreview = styled.img`
 
 const VideoContainer = styled.div`
   margin-top: 10px;
+  position: relative;
 `;
 
 const VideoPreview = styled.video`
   width: 100%;
   border-radius: 5px;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 25px;
+  text-align: center;
+
+  &:hover {
+    background-color: #c82333;
+  }
 `;
 
 const StyledFileInput = styled.input`
@@ -26,7 +47,7 @@ const FileInputLabel = styled.label`
   cursor: pointer;
   width: 30px; // Set width for the "image"
   height: 30px; // Set height for the "image"
-  background: url("photos.png") no-repeat center center;
+  background: url("/photos.png") no-repeat center center;
   background-size: cover; // Ensure the background image covers the label
   border-radius: 10px; // Optional: make the image corners rounded
   transition: transform 0.2s ease;
@@ -77,7 +98,7 @@ const CaptureButton = styled.button`
 
 const PhotoCapture = ({ existingPhotos, onPhotosChange }) => {
   const [cameraActive, setCameraActive] = useState(false);
-  const [capturedPhotos, setCapturedPhotos] = useState([]);
+  const [capturedPhotos, setCapturedPhotos] = useState(existingPhotos);
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -92,6 +113,13 @@ const PhotoCapture = ({ existingPhotos, onPhotosChange }) => {
           setCameraActive(false);
         });
     }
+
+    return () => {
+      if (videoRef.current?.srcObject) {
+        const tracks = videoRef.current.srcObject.getTracks();
+        tracks.forEach((track) => track.stop());
+      }
+    };
   }, [cameraActive]);
 
   const handleImagePick = (event) => {
@@ -128,6 +156,14 @@ const PhotoCapture = ({ existingPhotos, onPhotosChange }) => {
     onPhotosChange(updatedPhotos);
   };
 
+  const closeCamera = () => {
+    if (videoRef.current?.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach((track) => track.stop());
+    }
+    setCameraActive(false);
+  };
+
   return (
     <div>
       <div style={{ display: "flex", alignItems: "center" }}>
@@ -143,7 +179,7 @@ const PhotoCapture = ({ existingPhotos, onPhotosChange }) => {
         </div>
         <div style={{ marginLeft: "10px" }} onClick={() => setCameraActive(true)}>
           <img
-            src="camera.png"
+            src="/camera.png"
             style={{ width: "30px", height: "auto", cursor: "pointer" }}
           />
         </div>
@@ -152,18 +188,11 @@ const PhotoCapture = ({ existingPhotos, onPhotosChange }) => {
         <VideoContainer>
           <VideoPreview ref={videoRef} autoPlay></VideoPreview>
           <CaptureButton onClick={capturePhoto}>Capturar</CaptureButton>
+          <CloseButton onClick={closeCamera}>&times;</CloseButton>
         </VideoContainer>
       )}
 
       <PhotoContainer>
-        {existingPhotos?.map((photoUrl, index) => (
-          <PhotoItem key={`existing-${index}`}>
-            <ImagePreview src={photoUrl} alt={`Existing Photo ${index + 1}`} />
-            <RemoveButton onClick={() => onPhotosChange(existingPhotos.filter((_, i) => i !== index))}>
-              &times;
-            </RemoveButton>
-          </PhotoItem>
-        ))}
         {capturedPhotos.map((photo, index) => (
           <PhotoItem key={`new-${index}`}>
             <ImagePreview src={photo} alt={`New Photo ${index + 1}`} />
