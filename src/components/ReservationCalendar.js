@@ -50,7 +50,7 @@ const CalendarHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
-  background-color: #DE7066;
+  background-color: #F46600;
   color: white;
   font-weight: bold;
   border-bottom: 1px solid #1565c0;
@@ -72,9 +72,9 @@ const CalendarHeader = styled.div`
   }
 
   select {
-    background: #DE7066;
+    background: #F46600;
     color: white;
-    border: 1px solid #DE7066;
+    border: 1px solid #F46600;
     border-radius: 4px;
     padding: 5px 10px;
     font-size: 1rem;
@@ -276,7 +276,7 @@ const DateInputContainer = styled.div`
 
 
 const ClearButton = styled.button`
-  background-color: #DE7066;
+  background-color: #F46600;
   color: white;
   border: none;
   padding: 8px 15px;
@@ -313,7 +313,7 @@ const LoadingSpinner = styled.div`
   width: 50px;
   height: 50px;
   border: 8px solid #f3f3f3; /* Light grey */
-  border-top: 8px solid #DE7066; /* Blue */
+  border-top: 8px solid #F46600; /* Blue */
   border-radius: 50%;
   animation: ${spin} 1s linear infinite;
   z-index: 1000;

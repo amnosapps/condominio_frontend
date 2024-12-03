@@ -15,7 +15,7 @@ const Container = styled.div`
 `;
 
 const Title = styled.h2`
-    color: #DE7066;
+    color: #F46600;
     margin-bottom: 20px;
     font-size: 1.5rem;
 `;
@@ -30,7 +30,7 @@ const CardGrid = styled.div`
 
 const Card = styled.div`
     background-color: #fff;
-    border: 2px solid #DE7066;
+    border: 2px solid #F46600;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 20px;
@@ -52,13 +52,13 @@ const CardImage = styled.img`
 `;
 
 const CardTitle = styled.h3`
-    color: #DE7066;
+    color: #F46600;
     font-size: 1.2rem;
     margin-bottom: 10px;
 `;
 
 const CardButton = styled.button`
-    background-color: #DE7066;
+    background-color: #F46600;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -79,7 +79,7 @@ const ErrorMessage = styled.div`
 `;
 
 const LoadingMessage = styled.div`
-    color: #DE7066;
+    color: #F46600;
     font-size: 1rem;
     margin-top: 20px;
 `;

@@ -14,6 +14,9 @@ const Container = styled.div`
 `;
 
 const LoginBox = styled.div`
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
     background-color: white;
     padding: 3rem 2rem;
@@ -24,11 +27,17 @@ const LoginBox = styled.div`
     box-sizing: border-box;
 `;
 
+const ImgLogo = styled.img`
+    width: 200px;
+    margin-top: -80px;
+    margin-bottom: -50px;
+`;
+
 const Title = styled.a`
     margin-bottom: 1.5rem;
     font-size: 24px;
     text-align: center;
-    color: #DE7066;
+    color: #F46600;
     text-decoration: none;
     font-weight: 600;
     padding: 7.5rem;
@@ -45,6 +54,7 @@ const Title = styled.a`
 const Form = styled.form`
     display: flex;
     flex-direction: column;
+    width: 100%;
 `;
 
 const InputGroup = styled.div`
@@ -68,13 +78,13 @@ const Input = styled.input`
     transition: border-color 0.2s;
 
     &:focus {
-        border-color: #DE7066;
+        border-color: #F46600;
         outline: none;
     }
 `;
 
 const Button = styled.button`
-    background-color: #DE7066;
+    background-color: #F46600;
     color: white;
     padding: 0.75rem;
     border: none;
@@ -162,7 +172,7 @@ function Login({ onLoginSuccess }) {
     return (
         <Container>
             <LoginBox>
-                <Title href="/">iGestão</Title>
+                <ImgLogo src="/IMG_0659.PNG" alt="home" />
                 <Form onSubmit={handleSubmit}>
                     <InputGroup>
                         <Label>Usuário:</Label>

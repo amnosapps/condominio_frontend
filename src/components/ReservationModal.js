@@ -108,7 +108,7 @@ const RemoveGuestButton = styled.button`
 const AddGuestButton = styled.button`
   margin: 15px 0;
   padding: 10px 10px;
-  background-color: #DE7066;
+  background-color: #F46600;
   color: white;
   border: none;
   border-radius: 5px;
@@ -729,7 +729,7 @@ const ReservationModal = ({
                   <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                     <strong>Hóspede Adicional:</strong>
                     <RemoveGuestButton onClick={() => removeAdditionalGuest(index)}>
-                      <img width={20} src="trash.png" />
+                      <img width={20} src="/trash.png" />
                     </RemoveGuestButton>
                   </div>
                   

@@ -88,7 +88,7 @@ const YearNavigation = styled.div`
   margin-bottom: 1rem;
 
   button {
-    background-color: #de7066;
+    background-color: #F46600;
     color: white;
     border: none;
     padding: 8px 12px;
@@ -119,7 +119,7 @@ const ViewSelector = styled.div`
   margin-bottom: 2rem;
 
   button {
-    background-color: #de7066;
+    background-color: #F46600;
     color: white;
     border: none;
     padding: 8px 12px;
@@ -146,7 +146,7 @@ const OccupationTable = styled.table`
 `;
 
 const TableHeader = styled.th`
-  background-color: #de7066;
+  background-color: #F46600;
   color: white;
   padding: 10px;
   border: 1px solid #dee2e6;
