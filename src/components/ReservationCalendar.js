@@ -383,6 +383,7 @@ const ReservationCalendar = ({ condominium }) => {
         address: reservation.address,
         vehicle_plate: reservation.vehicle_plate,
         additional_guests: reservation.additional_guests,
+        reservation_file: reservation.reservation_file
       })));
     } catch (error) {
       console.error("Error fetching reservations:", error);

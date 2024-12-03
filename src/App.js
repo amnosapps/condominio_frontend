@@ -10,6 +10,7 @@ import CondominiumSelection from './components/CondominiumSelection';
 import CondominiumReport from './components/CondominiumReport';
 import ServicesPage from './pages/Services';
 import Dashboard from './pages/Services/Dashboard';
+import HomePage from './pages/Home/HomePage';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('accessToken'));
@@ -134,6 +135,7 @@ function App() {
                         </ProtectedRoute>
                     }
                 >
+                    <Route path="home" element={<HomePage />} />
                     <Route path="occupation" element={<ReservationCalendar />} />
                     <Route path="apartments" element={<ApartmentList />} />
                     <Route path="reports" element={<CondominiumReport />} />

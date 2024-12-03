@@ -290,6 +290,7 @@ const ReservationModal = ({
     },
     vehicle_plate: selectedReservation?.vehicle_plate || "",
     additional_guests: selectedReservation?.additional_guests || [],
+    reservation_file: selectedReservation?.reservation_file || "",
   });
 
   const [hasCar, setHasCar] = useState(!!selectedReservation?.vehicle_plate);
@@ -557,6 +558,37 @@ const ReservationModal = ({
     closeModal();
   };
 
+  const openBase64Pdf = (base64String, fileName = "reservation.pdf") => {
+    try {
+      // Decode the base64 string
+      const byteCharacters = atob(base64String);
+      const byteNumbers = Array.from(byteCharacters, char => char.charCodeAt(0));
+      const byteArray = new Uint8Array(byteNumbers);
+  
+      // Create a Blob from the byte array
+      const pdfBlob = new Blob([byteArray], { type: "application/pdf" });
+  
+      // Generate a URL for the Blob
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+  
+      // Open the URL in a new tab
+      const newWindow = window.open(pdfUrl, "_blank");
+      if (!newWindow) {
+        // If the browser blocks the new tab, offer the file for download
+        const downloadLink = document.createElement("a");
+        downloadLink.href = pdfUrl;
+        downloadLink.download = fileName;
+        downloadLink.click();
+      }
+  
+      // Optional: Revoke the object URL after a delay to release memory
+      setTimeout(() => URL.revokeObjectURL(pdfUrl), 10000);
+    } catch (error) {
+      console.error("Erro ao abrir pdf:", error);
+      alert("Erro ao abrir pdf. Procure o suporte");
+    }
+  };
+
   if (!selectedReservation) return null;
 
   return (
@@ -591,7 +623,7 @@ const ReservationModal = ({
             )}
           <p><strong>Apto {reservationData.apartment}</strong> ({reservationData.apartment_owner}) </p>
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-            <a href="/occupation" target="_blank" rel="noopener noreferrer">
+            <a onClick={() => openBase64Pdf(reservationData.reservation_file, `${selectedReservation.apartment}_${selectedReservation.id}reservation.pdf`)}>
               <img
                 src="/download-pdf.png"
                 alt="PDF Reserva"

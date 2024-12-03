@@ -348,11 +348,19 @@ const Sidebar = ({ condominium }) => {
         );
     }
 
+    console.log(selectedCondominium)
+
     return (
         <SidebarContainer>
             <Logo>iGoove</Logo>
             
             <NavList>
+                <NavItem>
+                    <NavButton onClick={() => navigate(`/${selectedCondominium}/home`)}>
+                        <ImgSidebar src="/home.png" alt="home" />
+                        Início
+                    </NavButton>
+                </NavItem>
                 <NavItem>
                     <NavButton onClick={() => navigate(`/${selectedCondominium}/occupation`)}>
                         <ImgSidebar src="/calendar.png" alt="Calendar" />
