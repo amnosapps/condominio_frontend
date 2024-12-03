@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef   } from "react";
+import { useParams } from 'react-router-dom';
 import axios from "axios";
 import styled, { css, keyframes  } from "styled-components";
 import {
@@ -13,7 +14,9 @@ import {
   endOfDay,
   isBefore,
   startOfWeek,
-  isAfter
+  isAfter,
+  parse,
+  isValid,
 } from "date-fns";
 import { ptBR  } from "date-fns/locale"; // Import Portuguese locale
 import ReservationModal from "./ReservationModal";
@@ -47,7 +50,7 @@ const CalendarHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
-  background-color: #DE7066;
+  background-color: #F46600;
   color: white;
   font-weight: bold;
   border-bottom: 1px solid #1565c0;
@@ -69,9 +72,9 @@ const CalendarHeader = styled.div`
   }
 
   select {
-    background: #DE7066;
+    background: #F46600;
     color: white;
-    border: 1px solid #DE7066;
+    border: 1px solid #F46600;
     border-radius: 4px;
     padding: 5px 10px;
     font-size: 1rem;
@@ -145,7 +148,6 @@ const ReservationBar = styled.div`
   left: ${(props) => `calc(${props.startOffset}% + 5px)`}; 
   top: ${(props) => (props.stackIndex || 0) * 40}px;
   background-color: ${(props) => {
-    console.log(props)
     // checkin proximo
     if (!props.checkinAt && isToday(props.checkin)) {
       return '#FFA500'; // Orange for today (pending)
@@ -157,7 +159,7 @@ const ReservationBar = styled.div`
     }
 
     // reserva vigente
-    else if (props.checkinAt && isBefore(new Date(), props.checkout)) {
+    else if (props.checkinAt && !props.checkoutAt && isBefore(new Date(), props.checkout)) {
       return '#4CAF50'; // Green for past check-ins (confirmed)
     }
 
@@ -167,7 +169,7 @@ const ReservationBar = styled.div`
     }
 
     // reserva encerrada
-    else if (props.checkinAt && props.checkoutAt && isAfter(new Date(), props.checkout)) {
+    else if (props.checkinAt && props.checkoutAt) {
       return '#9E9E9E'; // Grey if checked in and checked out
     }
 
@@ -274,7 +276,7 @@ const DateInputContainer = styled.div`
 
 
 const ClearButton = styled.button`
-  background-color: #DE7066;
+  background-color: #F46600;
   color: white;
   border: none;
   padding: 8px 15px;
@@ -311,7 +313,7 @@ const LoadingSpinner = styled.div`
   width: 50px;
   height: 50px;
   border: 8px solid #f3f3f3; /* Light grey */
-  border-top: 8px solid #DE7066; /* Blue */
+  border-top: 8px solid #F46600; /* Blue */
   border-radius: 50%;
   animation: ${spin} 1s linear infinite;
   z-index: 1000;
@@ -325,7 +327,10 @@ const monthNames = [
 ];
 
 // Main component
-const ReservationCalendar = () => {
+const ReservationCalendar = ({ condominium }) => {
+  const params = useParams();
+  const selectedCondominium = condominium || params.condominium;
+
   const [loadingNavigation, setLoadingNavigation] = useState(false);
 
   const [viewType, setViewType] = useState("7");
@@ -345,6 +350,7 @@ const ReservationCalendar = () => {
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/`, {
         headers: { Authorization: `Bearer ${token}` },
+        params: { condominium: selectedCondominium },
       });
       setApartments(response.data.map(apartment => `${apartment.number}`));
     } catch (error) {
@@ -357,17 +363,18 @@ const ReservationCalendar = () => {
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reservations/`, {
         headers: { Authorization: `Bearer ${token}` },
+        params: { condominium: selectedCondominium },
       });
       setReservations(response.data.map(reservation => ({
         id: reservation.id,
         guest_name: reservation.guest_name,
         guest_document: reservation.guest_document,
         guest_phone: reservation.guest_phone || "", // Handle null values
-        guests_qty: `${reservation.guests_qty}`, // Ensure it's a string
+        guests_qty: reservation.additional_guests.length + 1 || 0, // Ensure it's a string
         apartment: reservation.apt_number,
         apartment_owner: reservation.apt_owner_name,
         photos: reservation.photo, // Main photo URL
-        additional_photos: reservation.additional_photos, // Extract additional photo URLs
+        additional_photos: reservation.additional_photos_urls || [], // Extract additional photo URLs
         checkin: reservation.checkin ? parseISO(reservation.checkin) : null, // Parse checkin if exists
         checkout: reservation.checkout ? parseISO(reservation.checkout) : null, // Parse checkout if exists
         checkin_at: reservation.checkin_at ? parseISO(reservation.checkin_at) : null, // Parse checkin_at
@@ -376,6 +383,7 @@ const ReservationCalendar = () => {
         address: reservation.address,
         vehicle_plate: reservation.vehicle_plate,
         additional_guests: reservation.additional_guests,
+        reservation_file: reservation.reservation_file
       })));
     } catch (error) {
       console.error("Error fetching reservations:", error);
@@ -405,16 +413,19 @@ const ReservationCalendar = () => {
   }, [reservations]);
 
   const getTotalGuestsForDay = (day) => {
-    return reservations
-      .filter(
-        (reservation) =>
-          day >= reservation.checkin && day <= reservation.checkout
-      )
-      .reduce((totalGuests, reservation) => totalGuests + parseInt(reservation.guests_qty, 10), 0);
+    function normalizeDate(date) {
+        const normalized = new Date(date);
+        normalized.setHours(0, 0, 0, 0);
+        return normalized;
+    }
+
+    return reservations.filter((reservation) => 
+      normalizeDate(day) >= normalizeDate(reservation.checkin) && 
+      normalizeDate(day) <= normalizeDate(reservation.checkout))
+    .reduce((totalGuests, reservation) => totalGuests + (reservation.additional_guests.length + 1),0);
   };
 
   const handleReservationClick = (reservation) => {
-    console.log(reservation)
     setSelectedReservation(reservation);
   };
 
@@ -488,7 +499,7 @@ const ReservationCalendar = () => {
         startOffset,
         width,
         stackIndex,
-        isCheckedOut: reservation.checkout_at,
+        ischeckedout: reservation.checkout_at,
         checkoutAt: reservation.checkout_at,
         checkinAt: reservation.checkin_at,
       });
@@ -561,6 +572,33 @@ const ReservationCalendar = () => {
     setSelectedReservation(null);
   };
 
+  const CustomDateInput = ({ value, onChange }) => {
+    const handleInputChange = (e) => {
+      const rawValue = e.target.value; // Get the value in dd/MM/yyyy format
+      const parsedDate = parse(rawValue, "dd/MM/yyyy", new Date(), { locale: ptBR });
+  
+      if (isValid(parsedDate)) {
+        const isoValue = format(parsedDate, "yyyy-MM-dd"); // Convert to ISO format
+        onChange(isoValue);
+      } else {
+        onChange(""); // Invalid input
+      }
+    };
+  
+    const displayValue = value
+      ? format(parse(value, "yyyy-MM-dd", new Date()), "dd/MM/yyyy", { locale: ptBR })
+      : "";
+  
+    return (
+      <input
+        type="text"
+        placeholder="dd/mm/yyyy"
+        value={displayValue}
+        onChange={handleInputChange}
+      />
+    );
+  };
+
   return (
     <CalendarContainer>
       {loading ? (
@@ -575,18 +613,14 @@ const ReservationCalendar = () => {
               onChange={(e) => setGuestNameFilter(e.target.value)}
             />
             <DateInputContainer>
-              <input
-                type="date"
-                placeholder="Data de início"
+              {/* <CustomDateInput
                 value={startDateFilter}
-                onChange={(e) => setStartDateFilter(e.target.value)}
+                onChange={(date) => setStartDateFilter(date)}
               />
-              <input
-                type="date"
-                placeholder="Data de fim"
+              <CustomDateInput
                 value={endDateFilter}
                 onChange={(e) => setEndDateFilter(e.target.value)}
-              />
+              /> */}
               <ClearButton onClick={() => clearFilters()}>Limpar Filtros</ClearButton>
             </DateInputContainer>
           </FilterContainer>
@@ -646,7 +680,7 @@ const ReservationCalendar = () => {
                           width: `${bar.width}%`,      // Fit within DayCell
                           top: `${bar.stackIndex * 40}px`,
                         }}
-                        isCheckedOut={bar.isCheckedOut}
+                        ischeckedout={bar.ischeckedout}
                         checkin={bar.checkin}
                         checkout={bar.checkout}
                         checkinAt={bar.checkinAt}

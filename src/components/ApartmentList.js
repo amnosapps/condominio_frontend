@@ -1,6 +1,7 @@
 // src/components/ApartmentList.js
 
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import styled from 'styled-components';
 import { Doughnut } from 'react-chartjs-2';
@@ -82,11 +83,14 @@ const ChartWrapper = styled.div`
     text-align: center;
 `;
 
-function ApartmentList() {
+function ApartmentList({ condominium }) {
+    const params = useParams();
+    const selectedCondominium = condominium || params.condominium;
     const [apartments, setApartments] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        console.log(selectedCondominium);
         const fetchData = async () => {
             const token = localStorage.getItem('accessToken');
             try {
@@ -94,6 +98,7 @@ function ApartmentList() {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
+                    params: { condominium: selectedCondominium }, // Move here
                 });
                 setApartments(response.data);
             } catch (error) {
@@ -102,8 +107,11 @@ function ApartmentList() {
                 setLoading(false);
             }
         };
-        fetchData();
-    }, []);
+        if (selectedCondominium) {
+            fetchData();
+        }
+    }, [selectedCondominium]);
+    
 
     const statusCounts = apartments.reduce(
         (acc, apartment) => {

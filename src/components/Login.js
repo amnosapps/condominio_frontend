@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';  // Import useNavigate from React Router
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import styled from 'styled-components';
 
@@ -14,6 +14,9 @@ const Container = styled.div`
 `;
 
 const LoginBox = styled.div`
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
     background-color: white;
     padding: 3rem 2rem;
@@ -24,14 +27,19 @@ const LoginBox = styled.div`
     box-sizing: border-box;
 `;
 
+const ImgLogo = styled.img`
+    width: 200px;
+    margin-top: -80px;
+    margin-bottom: -50px;
+`;
+
 const Title = styled.a`
     margin-bottom: 1.5rem;
     font-size: 24px;
     text-align: center;
-    color: #DE7066;
+    color: #F46600;
     text-decoration: none;
     font-weight: 600;
-    text-align: center;
     padding: 7.5rem;
 
     @media (max-width: 768px) {
@@ -46,6 +54,7 @@ const Title = styled.a`
 const Form = styled.form`
     display: flex;
     flex-direction: column;
+    width: 100%;
 `;
 
 const InputGroup = styled.div`
@@ -69,13 +78,13 @@ const Input = styled.input`
     transition: border-color 0.2s;
 
     &:focus {
-        border-color: #DE7066;
+        border-color: #F46600;
         outline: none;
     }
 `;
 
 const Button = styled.button`
-    background-color: #DE7066;
+    background-color: #F46600;
     color: white;
     padding: 0.75rem;
     border: none;
@@ -104,7 +113,7 @@ const FooterCallToAction = styled.div`
         text-align: center;
         opacity: 60%;
     }
-`
+`;
 
 const ErrorMessage = styled.p`
     color: red;
@@ -118,30 +127,52 @@ function Login({ onLoginSuccess }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
-    const navigate = useNavigate(); // Using React Router's useNavigate for navigation
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null); // Reset error before attempting login
+
         try {
+            // Authenticate user
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/token/`, {
                 username,
                 password,
             });
-            // Store the JWT token in localStorage
+
+            // Save tokens to localStorage
             localStorage.setItem('accessToken', response.data.access);
             localStorage.setItem('refreshToken', response.data.refresh);
-            onLoginSuccess();  // Call the login success callback
-            navigate('/occupation'); // Redirect to the apartments route after login success
+
+            // Fetch user profile
+            const profileResponse = await axios.get(`${process.env.REACT_APP_API_URL}/api/profile/`, {
+                headers: { Authorization: `Bearer ${response.data.access}` },
+            });
+
+            const userProfile = profileResponse.data;
+            onLoginSuccess(userProfile);
+
+            // Navigation logic
+            if (userProfile.condominiums && userProfile.condominiums.length === 1) {
+                // If only one condominium, navigate directly
+                navigate(`/${userProfile.condominiums[0]}/home`);
+            } else if (userProfile.condominiums && userProfile.condominiums.length > 1) {
+                // If multiple condominiums, navigate to selection page
+                navigate('/select-condominium');
+            } else {
+                // Handle case where no condominiums are available
+                setError('Nenhum condomínio foi associado ao seu perfil.');
+            }
         } catch (err) {
-            console.log(err)
-            setError('Erro ao fazer login, procure o suporte.');
+            console.error("Login error:", err);
+            setError('Erro ao fazer login. Verifique suas credenciais ou procure o suporte.');
         }
     };
 
     return (
         <Container>
             <LoginBox>
-                <Title href='/'>iGestão</Title>
+                <ImgLogo src="/IMG_0659.PNG" alt="home" />
                 <Form onSubmit={handleSubmit}>
                     <InputGroup>
                         <Label>Usuário:</Label>

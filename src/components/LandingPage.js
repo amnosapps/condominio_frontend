@@ -20,6 +20,12 @@ const Header = styled.header`
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 `;
 
+const ImgLogo = styled.img`
+    width: 200px;
+    margin-top: -80px;
+    margin-bottom: -50px;
+`;
+
 const HeaderContent = styled.div`
     width: 70%;
     margin: 0 auto;
@@ -35,7 +41,7 @@ const HeaderContent = styled.div`
 const Logo = styled.h1`
     font-size: 24px;
     font-weight: bold;
-    color: #DE7066;
+    color: #F46600;
 `;
 
 const Nav = styled.nav`
@@ -51,7 +57,7 @@ const LoginButton = styled.a`
     cursor: pointer;
     font-weight: 500;
     padding: 0.75rem 2rem;
-    background: linear-gradient(135deg, #DE7066, #F16D61);
+    background: linear-gradient(135deg, #F46600, #F16D61);
     border: none;
     border-radius: 40px;
     color: white;
@@ -59,7 +65,7 @@ const LoginButton = styled.a`
     transition: background-color 0.3s ease;
 
     &:hover {
-        background: linear-gradient(135deg, #F16D61, #DE7066);
+        background: linear-gradient(135deg, #F16D61, #F46600);
     }
 
     @media (max-width: 768px) {
@@ -93,7 +99,7 @@ const HeroTitle = styled.h1`
     line-height: 1.2;
     
     > b {
-        color: #DE7066 ;
+        color: #F46600 ;
         
     }
 
@@ -115,7 +121,7 @@ const HeroSubtitle = styled.p`
 
 const GradientButton = styled.button`
     padding: 1rem 2rem;
-    background: linear-gradient(135deg, #DE7066, #F16D61);
+    background: linear-gradient(135deg, #F46600, #F16D61);
     border: none;
     border-radius: 40px;
     color: white;
@@ -124,7 +130,7 @@ const GradientButton = styled.button`
     transition: background-color 0.3s ease;
 
     &:hover {
-        background: linear-gradient(135deg, #F16D61, #DE7066);
+        background: linear-gradient(135deg, #F16D61, #F46600);
     }
 
     @media (max-width: 768px) {
@@ -210,7 +216,7 @@ const LandingPage = () => {
         <Container>
             <Header>
                 <HeaderContent>
-                    <Logo>iGestão</Logo>
+                    <ImgLogo src="/IMG_0659.PNG" alt="home" />
                     <Nav>
                         <LoginButton onClick={() => navigate('/login')}>Entrar</LoginButton>
                     </Nav>

@@ -5,6 +5,8 @@ import styled from "styled-components";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { printFormData } from "../utils/print";
+import PhotoCapture from "./PhotoCapture";
+import LogsVisualization from "./Logs/LogsVizualization";
 
 // Styled Components
 const ModalOverlay = styled.div`
@@ -106,7 +108,7 @@ const RemoveGuestButton = styled.button`
 const AddGuestButton = styled.button`
   margin: 15px 0;
   padding: 10px 10px;
-  background-color: #DE7066;
+  background-color: #F46600;
   color: white;
   border: none;
   border-radius: 5px;
@@ -182,50 +184,93 @@ const EditableInput = styled.input`
   font-size: 16px;
 `;
 
-const ImagePreview = styled.img`
-  width: 100%;
-  margin-top: 10px;
-  border-radius: 5px;
-`;
+const LogsModalContainer = styled.div`
+  margin-top: 50px;
+  background-color: white;
+  width: 80%;
+  max-width: 600px;
+  max-height: 80vh;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow-y: auto;
 
-const VideoContainer = styled.div`
-  margin-top: 10px;
-`;
-
-const VideoPreview = styled.video`
-  width: 100%;
-  border-radius: 5px;
-`;
-
-const StyledFileInput = styled.input`
-  display: none; // Hide the default file input
-`;
-
-const FileInputLabel = styled.label`
-  display: inline-block;
-  cursor: pointer;
-  width: 30px; // Set width for the "image"
-  height: 30px; // Set height for the "image"
-  background: url("photos.png") no-repeat center center;
-  background-size: cover; // Ensure the background image covers the label
-  border-radius: 10px; // Optional: make the image corners rounded
-  transition: transform 0.2s ease;
-
-  &:hover {
-    transform: scale(1.05); // Slight zoom effect on hover
+  /* Custom scrollbar styling */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
   }
 `;
+
+const LogsButton = styled.button`
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+`;
+
+const LogsList = styled.div`
+  margin-top: 20px;
+`;
+
+const LogItem = styled.div`
+  border-bottom: 1px solid #ccc;
+  padding: 10px 0;
+`;
+
+const LogsModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+`;
+
+const CloseLogsButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+`;
+
 
 const ReservationModal = ({
   closeModal,
   selectedReservation,
   loadData
 }) => {
+  const [logs, setLogs] = useState([]);
+  const [isLogsOpen, setIsLogsOpen] = useState(false);
+
   const [reservationData, setReservationData] = useState({
     guest_name: selectedReservation?.guest_name || "",
     guest_document: selectedReservation?.guest_document || "",
     guest_phone: selectedReservation?.guest_phone || "", // Handle null values
-    guests_qty: selectedReservation?.guests_qty || "",
+    guests_qty: selectedReservation?.additional_guests.length + 1 || 0,
     apartment: selectedReservation?.apartment || "", // Optional apartment number
     apartment_owner: selectedReservation?.apartment_owner || "", // Optional apartment owner name
     hasChildren: selectedReservation?.hasChildren || "no",
@@ -245,6 +290,7 @@ const ReservationModal = ({
     },
     vehicle_plate: selectedReservation?.vehicle_plate || "",
     additional_guests: selectedReservation?.additional_guests || [],
+    reservation_file: selectedReservation?.reservation_file || "",
   });
 
   const [hasCar, setHasCar] = useState(!!selectedReservation?.vehicle_plate);
@@ -256,19 +302,31 @@ const ReservationModal = ({
     selectedReservation?.additional_guests.map((guest) => ({
       name: guest.name || "",
       document: guest.document || "",
-      age: guest.age || null,
+      age: guest.age || 0,
       is_child: guest.is_child || false,
     })) || []
   );
   
   const [address, setAddress] = useState(reservationData.address);
-
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [cameraActive, setCameraActive] = useState(false);
-  const [capturedPhotos, setCapturedPhotos] = useState([]); // Store multiple photos
-  const videoRef = useRef(null);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fetchLogs = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/logs/`, // Replace with your actual logs endpoint
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { object_id: selectedReservation.id, model_name: "Reservation" },
+        }
+      );
+      setLogs(response.data);
+      setIsLogsOpen(true); // Open the logs modal
+    } catch (error) {
+      console.error("Error fetching logs:", error);
+      alert("Failed to load logs. Please try again.");
+    }
+  };
 
   const handleChange = (field, value) => {
     setReservationData((prev) => ({
@@ -296,7 +354,7 @@ const ReservationModal = ({
   const addAdditionalGuest = () => {
     setAdditionalGuests((prev) => [
       ...prev,
-      { name: "", document: "", age: "", is_child: false },
+      { name: "", document: "", age: 0, is_child: false },
     ]);
   };
 
@@ -345,9 +403,7 @@ const ReservationModal = ({
     // Determine if there are children
     const hasChildren = additionalGuests.some((guest) => guest.is_child);
 
-    console.log(hasChildren, capturedPhotos.length, reservationData.additional_photos.length)
-    
-    if (hasChildren && capturedPhotos.length === 0 && reservationData.additional_photos.length === 0) {
+    if (hasChildren && reservationData.additional_photos.length === 0) {
       alert("Você deve adicionar pelo menos uma foto se houver crianças na reserva.");
       setIsSubmitting(false);
       return;
@@ -373,31 +429,22 @@ const ReservationModal = ({
   
     // Append Additional Guests
     formData.append("additional_guests", JSON.stringify(additionalGuests));
-  
-    // Append old photos as URLs (these won't be uploaded but retained as references)
-    reservationData.additional_photos.forEach((photoUrl, index) => {
-      formData.append(`existing_photos[${index}]`, photoUrl);
+    
+    console.log(reservationData.additional_photos)
+    const photos = reservationData.additional_photos.map(async (photoUrl, index) => {
+      console.log(photoUrl, index)
+      const response = await fetch(photoUrl); // Fetch the blob from the URL
+      const blob = await response.blob(); // Convert response to Blob
+      return new File([blob], `photo-${index}.jpg`, { type: blob.type }); // Convert Blob to File
     });
   
-    // Append new photos by converting Blob URLs to files
-    for (const [index, photo] of capturedPhotos.entries()) {
-      try {
-        const response = await fetch(photo);
-        const blob = await response.blob();
-        const file = new File(
-          [blob],
-          `additional_photo_${Date.now()}_${index + 1}.png`,
-          { type: blob.type }
-        );
-        formData.append(`additional_photos[${index}]`, file); // Use indexed keys
-      } catch (error) {
-        console.error(`Erro ao processar a foto adicional ${index + 1}:`, error);
-      }
-    }
+    // Wait for all photos to be processed
+    const photoFiles = await Promise.all(photos);
   
-    // Log the FormData contents in JSON-like format
-    printFormData(formData);
-  
+    // Append each photo to FormData
+    photoFiles.forEach((file) => {
+      formData.append("additional_photos", file);
+    });
     try {
       const response = await axios.patch(
         `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
@@ -500,70 +547,46 @@ const ReservationModal = ({
       });
   };
 
-  const capturePhoto = () => {
-    if (!videoRef.current) {
-      console.error("Video reference is not available");
-      return;
-    }
-  
-    const canvas = document.createElement("canvas");
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-  
-    const context = canvas.getContext("2d");
-    if (!context) {
-      console.error("Unable to get 2D context for canvas");
-      return;
-    }
-  
-    context.drawImage(videoRef.current, 0, 0);
-    
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          console.error("Failed to create blob from canvas");
-          return;
-        }
-  
-        const photoUrl = URL.createObjectURL(blob);
-        setCapturedPhotos((prev) => [...prev, photoUrl]);
-      },
-      "image/png",
-      1.0
-    );
-  };
-
-  useEffect(() => {
-    if (cameraActive && videoRef.current) {
-      navigator.mediaDevices
-        .getUserMedia({ video: true })
-        .then((stream) => {
-          videoRef.current.srcObject = stream;
-        })
-        .catch((error) => {
-          console.error("Error accessing the camera:", error);
-          setCameraActive(false);
-        });
-    }
-  }, [cameraActive]);
-
-  const handleImagePick = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setSelectedImage(file);
-      setCapturedPhotos((prev) => [...prev, URL.createObjectURL(file)]);
-    }
-  };
-
-  const handleCameraShot = () => {
-    setCameraActive(true);
+  const updatePhotos = (photos) => {
+    setReservationData((prev) => ({
+      ...prev,
+      additional_photos: photos,
+    }));
   };
 
   const closeModal1 = () => {
-    setSelectedImage(null);
-    setCapturedPhotos([]);
-    setCameraActive(false);
     closeModal();
+  };
+
+  const openBase64Pdf = (base64String, fileName = "reservation.pdf") => {
+    try {
+      // Decode the base64 string
+      const byteCharacters = atob(base64String);
+      const byteNumbers = Array.from(byteCharacters, char => char.charCodeAt(0));
+      const byteArray = new Uint8Array(byteNumbers);
+  
+      // Create a Blob from the byte array
+      const pdfBlob = new Blob([byteArray], { type: "application/pdf" });
+  
+      // Generate a URL for the Blob
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+  
+      // Open the URL in a new tab
+      const newWindow = window.open(pdfUrl, "_blank");
+      if (!newWindow) {
+        // If the browser blocks the new tab, offer the file for download
+        const downloadLink = document.createElement("a");
+        downloadLink.href = pdfUrl;
+        downloadLink.download = fileName;
+        downloadLink.click();
+      }
+  
+      // Optional: Revoke the object URL after a delay to release memory
+      setTimeout(() => URL.revokeObjectURL(pdfUrl), 10000);
+    } catch (error) {
+      console.error("Erro ao abrir pdf:", error);
+      alert("Erro ao abrir pdf. Procure o suporte");
+    }
   };
 
   if (!selectedReservation) return null;
@@ -571,13 +594,38 @@ const ReservationModal = ({
   return (
     <ModalOverlay onClick={closeModal1}>
       <ModalContainer onClick={(e) => e.stopPropagation()}>
-        <CloseButton onClick={closeModal1}>X</CloseButton>
+        <div style={{ display: 'flex', alignContent: 'center' }}>
+          <LogsButton onClick={fetchLogs}>View Logs</LogsButton> 
+          <CloseButton onClick={closeModal1}>X</CloseButton>
+        </div>
         <div style={{ marginBottom: "10px" }}>
-          <p><strong>Apto {reservationData.apartment}</strong> ({reservationData.apartment_owner})</p>
+            {isLogsOpen && (
+              <LogsModalOverlay onClick={() => setIsLogsOpen(false)}>
+                <LogsModalContainer onClick={(e) => e.stopPropagation()}>
+                  <CloseLogsButton onClick={() => setIsLogsOpen(false)}>X</CloseLogsButton>
+                  <h3>Logs da Reserva</h3>
+                  <LogsList>
+                    {logs.length > 0 ? (
+                      logs.map((log) => (
+                        <LogItem key={log.id}>
+                          <p><strong>Ação:</strong> {log.action}</p>
+                          <p><strong>Usuário:</strong> {log.user}</p>
+                          <p><strong>Horário:</strong> {new Date(log.timestamp).toLocaleString()}</p>
+                          <LogsVisualization log={log} />
+                        </LogItem>
+                      ))
+                    ) : (
+                      <p>Nao foram encontrados logs desta reserva.</p>
+                    )}
+                  </LogsList>
+                </LogsModalContainer>
+              </LogsModalOverlay>
+            )}
+          <p><strong>Apto {reservationData.apartment}</strong> ({reservationData.apartment_owner}) </p>
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-            <a href="/occupation" target="_blank" rel="noopener noreferrer">
+            <a onClick={() => openBase64Pdf(reservationData.reservation_file, `${selectedReservation.apartment}_${selectedReservation.id}reservation.pdf`)}>
               <img
-                src="download-pdf.png"
+                src="/download-pdf.png"
                 alt="PDF Reserva"
                 style={{ width: "30px", height: "auto", cursor: "pointer" }}
               />
@@ -681,7 +729,7 @@ const ReservationModal = ({
                   <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                     <strong>Hóspede Adicional:</strong>
                     <RemoveGuestButton onClick={() => removeAdditionalGuest(index)}>
-                      <img width={20} src="trash.png" />
+                      <img width={20} src="/trash.png" />
                     </RemoveGuestButton>
                   </div>
                   
@@ -735,113 +783,10 @@ const ReservationModal = ({
           </div>
         </div>
 
-        <div>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <p>Capturar Imagens:</p>
-            <div style={{ marginLeft: "10px" }}>
-              <StyledFileInput
-                id="imageUpload"
-                type="file"
-                accept="image/*"
-                onChange={handleImagePick}
-              />
-              <FileInputLabel htmlFor="imageUpload" />
-            </div>
-            <div style={{ marginLeft: "10px" }} onClick={handleCameraShot}>
-              <img
-                src="camera.png"
-                style={{ width: "30px", height: "auto", cursor: "pointer" }}
-              />
-            </div>
-          </div>
-          {cameraActive && (
-            <VideoContainer>
-              <VideoPreview ref={videoRef} autoPlay></VideoPreview>
-              <button onClick={capturePhoto}>Capturar</button>
-            </VideoContainer>
-          )}
-
-          <div style={{ marginTop: "20px" }}>
-            {reservationData.additional_photos.length > 0 && (
-              <strong>Fotos:</strong>
-            )}
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "10px",
-                marginTop: "10px",
-              }}
-            >
-              {/* Display old photos */}
-              {reservationData.additional_photos?.map((photoUrl, index) => (
-                <div
-                  key={`old-${index}`}
-                  style={{ position: "relative", width: "20%" }}
-                >
-                  <ImagePreview src={photoUrl} alt={`Old Photo ${index + 1}`} />
-                  <button
-                    onClick={() => {
-                      const updatedPhotos = [...reservationData.additional_photos];
-                      updatedPhotos.splice(index, 1); // Remove this photo
-                      setReservationData((prev) => ({
-                        ...prev,
-                        additional_photos: updatedPhotos,
-                      }));
-                    }}
-                    style={{
-                      position: "absolute",
-                      top: "5px",
-                      right: "5px",
-                      backgroundColor: "#dc3545",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "50%",
-                      width: "20px",
-                      height: "20px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    &times;
-                  </button>
-                </div>
-              ))}
-
-              {/* Display new photos */}
-              {capturedPhotos.map((photo, index) => (
-                <div
-                  key={`new-${index}`}
-                  style={{ position: "relative", width: "20%" }}
-                >
-                  <ImagePreview src={photo} alt={`New Photo ${index + 1}`} />
-                  <button
-                    onClick={() =>
-                      setCapturedPhotos((prev) =>
-                        prev.filter((_, i) => i !== index)
-                      )
-                    }
-                    style={{
-                      position: "absolute",
-                      top: "5px",
-                      right: "5px",
-                      backgroundColor: "#dc3545",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "50%",
-                      width: "20px",
-                      height: "20px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    &times;
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
-
+        <PhotoCapture
+          existingPhotos={reservationData.additional_photos}
+          onPhotosChange={updatePhotos}
+        />
 
         <div style={{ display: "flex", justifyContent: "start", gap: "10px" }}>
           {reservationData.checkin_at ? (
