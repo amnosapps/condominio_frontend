@@ -520,7 +520,7 @@ const Sidebar = ({ condominium }) => {
                                             </NotificationBody>
                                                 
                                             <NotificationFooter onClick={toggleNotifications}>
-                                                <CloseNotification>Fechar</CloseNotification>
+                                                <>Fechar</>
                                             </NotificationFooter>
                                         </NotificationListContainer>
                                     </NotificationContainer>

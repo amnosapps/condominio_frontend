@@ -132,7 +132,7 @@ const CondominiumSelection = ({ condominiums: initialCondominiums = [], onSelect
 
     const handleCondominiumSelect = (condominium) => {
         onSelect(condominium);
-        navigate(`/${condominium}/occupation`);
+        navigate(`/${condominium}/home`);
     };
 
     if (loading) {
