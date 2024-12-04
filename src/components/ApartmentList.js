@@ -235,6 +235,7 @@ function ApartmentList({ condominium }) {
     const [selectedApartment, setSelectedApartment] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [profile, setProfile] = useState(null);
+    const [filter, setFilter] = useState(null);
 
     const fetchUserProfile = async () => {
         const token = localStorage.getItem('accessToken');
@@ -342,6 +343,26 @@ function ApartmentList({ condominium }) {
         ],
     });
 
+    const handleChartClick = (label) => {
+        switch (label) {
+            case 'Ocupados':
+                setFilter(1);
+                break;
+            case 'Disponíveis':
+                setFilter(0);
+                break;
+            case 'Manutenção':
+                setFilter(2);
+                break;
+            default:
+                setFilter(null);
+        }
+    };
+
+    const filteredApartments = filter !== null
+    ? apartments.filter((apartment) => apartment.status === filter)
+    : apartments;
+
     return (
         <>
             {loading ? (
@@ -360,6 +381,18 @@ function ApartmentList({ condominium }) {
                                             display: true,
                                             position: 'top',
                                         },
+                                        tooltip: {
+                                            callbacks: {
+                                                label: (tooltipItem) => tooltipItem.label,
+                                            },
+                                        },
+                                    },
+                                    onClick: (_, elements) => {
+                                        if (elements.length > 0) {
+                                            const chartIndex = elements[0].index;
+                                            const label = ['Ocupados', 'Disponíveis', 'Manutenção'][chartIndex];
+                                            handleChartClick(label);
+                                        }
                                     },
                                 }}
                             />
@@ -374,6 +407,18 @@ function ApartmentList({ condominium }) {
                                             display: true,
                                             position: 'top',
                                         },
+                                        tooltip: {
+                                            callbacks: {
+                                                label: (tooltipItem) => tooltipItem.label,
+                                            },
+                                        },
+                                    },
+                                    onClick: (_, elements) => {
+                                        if (elements.length > 0) {
+                                            const chartIndex = elements[0].index;
+                                            const label = ['Disponíveis', 'Ocupados', 'Manutenção'][chartIndex];
+                                            handleChartClick(label);
+                                        }
                                     },
                                 }}
                             />
@@ -389,6 +434,18 @@ function ApartmentList({ condominium }) {
                                             position: 'top',
                                         },
                                     },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: (tooltipItem) => tooltipItem.label,
+                                        },
+                                    },
+                                    onClick: (_, elements) => {
+                                        if (elements.length > 0) {
+                                            const chartIndex = elements[0].index;
+                                            const label = ['Manutenção', 'Disponíveis', 'Ocupados'][chartIndex];
+                                            handleChartClick(label);
+                                        }
+                                    },
                                 }}
                             />
                         </ChartWrapper>
@@ -396,7 +453,7 @@ function ApartmentList({ condominium }) {
 
                     {/* Apartment List Section */}
                     <ApartmentListContainer>
-                        {apartments.map(apartment => (
+                        {filteredApartments.map(apartment => (
                             <ApartmentCard key={apartment.id} status={apartment.status} onClick={() => handleEditClick(apartment)}>
                                 <ApartmentInfo>Apartamento: {apartment.number}</ApartmentInfo>
                                 <ApartamentDescription>Status: {apartment.status_name}</ApartamentDescription>
