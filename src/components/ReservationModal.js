@@ -7,6 +7,7 @@ import { ptBR } from 'date-fns/locale';
 import { printFormData } from "../utils/print";
 import PhotoCapture from "./PhotoCapture";
 import LogsVisualization from "./Logs/LogsVizualization";
+import LogsListComponent from "./Logs/LogsVizualization";
 
 // Styled Components
 const ModalOverlay = styled.div`
@@ -604,7 +605,8 @@ const ReservationModal = ({
                 <LogsModalContainer onClick={(e) => e.stopPropagation()}>
                   <CloseLogsButton onClick={() => setIsLogsOpen(false)}>X</CloseLogsButton>
                   <h3>Logs da Reserva</h3>
-                  <LogsList>
+                  <LogsListComponent logs={logs} />
+                  {/* <LogsList>
                     {logs.length > 0 ? (
                       logs.map((log) => (
                         <LogItem key={log.id}>
@@ -617,7 +619,7 @@ const ReservationModal = ({
                     ) : (
                       <p>Nao foram encontrados logs desta reserva.</p>
                     )}
-                  </LogsList>
+                  </LogsList> */}
                 </LogsModalContainer>
               </LogsModalOverlay>
             )}

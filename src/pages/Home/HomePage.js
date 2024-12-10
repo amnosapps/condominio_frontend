@@ -69,7 +69,7 @@ const HomePage = ({ condominium }) => {
         },
         {
             title: "Apartamentos",
-            icon: "/apartament.png",
+            icon: "/apartments.png",
             path: `/${selectedCondominium}/apartments`,
         },
         {

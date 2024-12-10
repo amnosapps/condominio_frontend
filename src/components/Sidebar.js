@@ -466,7 +466,7 @@ const Sidebar = ({ condominium }) => {
                         onClick={() => navigate(`/${selectedCondominium}/apartments`)}
                         active={location.pathname.includes(`${selectedCondominium}/apartments`)}
                     >
-                        <ImgSidebar src="/apartament.png" alt="Apartments" />
+                        <ImgSidebar src="/apartments.png" alt="Apartments" />
                         Apartamentos
                     </NavButton>
                 </NavItem>
@@ -477,6 +477,30 @@ const Sidebar = ({ condominium }) => {
                     >
                         <ImgSidebar src="/report.png" alt="Reports" />
                         Relatórios
+                    </NavButton>
+                </NavItem>
+                <NavItem>
+                    <NavButton>
+                    <ImgSidebar src="/common_area.png" alt="Espaço Comum" />
+                    Espaço
+                    </NavButton>
+                </NavItem>
+                <NavItem>
+                    <NavButton>
+                    <ImgSidebar src="/services.png" alt="Serviços" />
+                    Serviços
+                    </NavButton>
+                </NavItem>
+                <NavItem>
+                    <NavButton>
+                    <ImgSidebar src="/finance.png" alt="Serviços" />
+                    Financeiro
+                    </NavButton>
+                </NavItem>
+                <NavItem>
+                    <NavButton>
+                    <ImgSidebar src="/condo.png" alt="Meu Condomínio" />
+                    Condomínio
                     </NavButton>
                 </NavItem>
             </NavList>
