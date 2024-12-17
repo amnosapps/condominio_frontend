@@ -1,18 +1,20 @@
-# Use Node.js image
+# Use the official Node.js image as the base
 FROM node:18.17.0
 
-# Set working directory
+# Set working directory in the container
 WORKDIR /app
 
-# Copy dependencies
+# Copy package.json and package-lock.json into the container
 COPY package*.json ./
+
+# Install dependencies
 RUN npm install
 
-# Copy source code
+# Copy the rest of the application code into the container
 COPY . .
 
-# Expose port 3000
+# Expose port 3000 (default for React apps)
 EXPOSE 3000
 
-# Run React app in development mode
+# Run the React app
 CMD ["npm", "start"]
