@@ -66,7 +66,7 @@ const CalendarContainer = styled.div`
 
 const CalendarWrapper = styled.div`
   width: 98%;
-  height: 98%;
+  max-height: 98%;
   display: flex;
   flex-direction: column;
   justify-content: center;

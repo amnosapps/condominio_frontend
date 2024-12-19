@@ -15,7 +15,7 @@ const SidebarContainer = styled.div`
     padding: 1.5rem;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     align-items: center;
-    z-index: 10;
+    z-index: 100;
 
     @media (max-width: 768px) {
         width: 200px;
