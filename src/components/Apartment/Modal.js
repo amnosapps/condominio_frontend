@@ -157,33 +157,70 @@ function Modal({ selectedApartment, profile, onClose }) {
     });
     const [isEditingOwner, setIsEditingOwner] = useState(false);
     const [showAddResidentInputs, setShowAddResidentInputs] = useState(false);
+    const [residents, setResidents] = useState(selectedApartment.residents);
+
+    console.log(selectedApartment)
 
     const handleAddResident = async () => {
+        const token = localStorage.getItem('accessToken');
+    
+        if (!residentToAdd.name || !residentToAdd.email || !residentToAdd.phone) {
+            alert('Preencha todos os campos do residente antes de adicionar.');
+            return;
+        }
+    
+        const newResident = {
+            name: residentToAdd.name,
+            user: {
+                username: residentToAdd.username, // Use email as username
+                password: residentToAdd.password || 'defaultPassword123', // Default password if not provided
+            },
+            condominium: selectedApartment.condominium, // Assuming the ID of the condominium is stored here
+            phone: residentToAdd.phone,
+            document: residentToAdd.document || '',
+            email: residentToAdd.email,
+            active: true,
+        };
+    
         try {
-            await axios.post(`/api/residents`, {
-                apartment: selectedApartment.id,
-                ...residentToAdd,
-            });
+            const response = await axios.post(
+                `${process.env.REACT_APP_API_URL}/api/residents/`,
+                newResident,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             alert('Residente adicionado com sucesso.');
-            setResidentToAdd({ name: '', email: '', phone: '' });
+    
+            // Update the local residents state
+            setResidents((prev) => [...prev, response.data]);
+    
+            setResidentToAdd({ name: '', email: '', phone: '', password: '', document: '' });
             setShowAddResidentInputs(false);
         } catch (error) {
+            console.error('Erro ao adicionar residente:', error.response || error);
             alert('Erro ao adicionar residente.');
         }
     };
+    
 
     const handleRemoveResident = async (residentId) => {
+        const token = localStorage.getItem('accessToken');
         try {
-            await axios.delete(`/api/residents/${residentId}`);
+            await axios.delete(`${process.env.REACT_APP_API_URL}/api/residents/${residentId}/`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             alert('Residente removido com sucesso.');
+
+            // Update the local residents state
+            setResidents((prev) => prev.filter((resident) => resident.id !== residentId));
         } catch (error) {
             alert('Erro ao remover residente.');
         }
     };
 
     const handleSaveOwnerDetails = async () => {
+        const token = localStorage.getItem('accessToken');
         try {
-            await axios.patch(`/api/owners/${selectedApartment.owner_details.id}`, ownerDetails);
+            await axios.patch(`${process.env.REACT_APP_API_URL}/api/owners/${selectedApartment.owner_details.id}/`, ownerDetails);
             alert('Proprietário atualizado com sucesso.');
         } catch (error) {
             alert('Erro ao atualizar proprietário.');
@@ -244,8 +281,8 @@ function Modal({ selectedApartment, profile, onClose }) {
                     {selectedApartment.type_name === 'Moradia' ? (
                         <>
                             <h3>Residentes Ativos</h3>
-                            {selectedApartment.residents.length > 0 ? (
-                                selectedApartment.residents.map((resident) => (
+                            {residents.length > 0 ? (
+                                residents.map((resident) => (
                                     <ReservationCard key={resident.id}>
                                         <h4>{resident.name}</h4>
                                         <span>Telefone: {resident.phone}</span>
@@ -306,6 +343,40 @@ function Modal({ selectedApartment, profile, onClose }) {
                                                     }))
                                                 }
                                             />
+                                            <ModalInput
+                                                type="text"
+                                                placeholder="Documento"
+                                                value={residentToAdd.document}
+                                                onChange={(e) =>
+                                                    setResidentToAdd((prev) => ({
+                                                        ...prev,
+                                                        document: e.target.value,
+                                                    }))
+                                                }
+                                            />
+                                            <ModalInput
+                                                type="text"
+                                                placeholder="Username"
+                                                value={residentToAdd.username}
+                                                onChange={(e) =>
+                                                    setResidentToAdd((prev) => ({
+                                                        ...prev,
+                                                        username: e.target.value,
+                                                    }))
+                                                }
+                                            />
+                                            <ModalInput
+                                                type="password"
+                                                placeholder="Senha"
+                                                value={residentToAdd.password}
+                                                onChange={(e) =>
+                                                    setResidentToAdd((prev) => ({
+                                                        ...prev,
+                                                        password: e.target.value,
+                                                    }))
+                                                }
+                                            />
+
                                             <SaveButton onClick={handleAddResident}>
                                                 Confirmar Residente
                                             </SaveButton>
@@ -338,3 +409,4 @@ function Modal({ selectedApartment, profile, onClose }) {
 }
 
 export default Modal;
+
