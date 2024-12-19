@@ -8,8 +8,9 @@ import styled from 'styled-components';
 const Container = styled.div`
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
-    width: 100%;
+    width: 99%;
     background-color: #f6f9fc;
 `;
 

@@ -165,7 +165,7 @@ const CondominiumSelection = ({ condominiums: initialCondominiums = [], onSelect
             <CardGrid>
                 {condominiums.map((condo) => (
                     <Card key={condo} onClick={() => handleCondominiumSelect(condo)}>
-                        <CardImage src="apartament.png" alt="Apartment" />
+                        <CardImage src="condo.png" alt="Apartment" />
                         <CardTitle>{condo}</CardTitle>
                     </Card>
                 ))}

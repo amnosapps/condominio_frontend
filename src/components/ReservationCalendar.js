@@ -35,7 +35,8 @@ const slideDown = keyframes`
 
 // Styled components for the UI
 const CalendarContainer = styled.div`
-  width: 90%;
+  width: 100%;
+  height: 100%;
   margin: auto;
   font-family: 'Roboto', Arial, sans-serif;
   background-color: #ffffff;
@@ -43,6 +44,39 @@ const CalendarContainer = styled.div`
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   overflow-x: hidden;
+  /* overflow-y: hidden; */
+  scrollbar-width: thin; /* For Firefox */
+  /* justify-content: space-between; */
+
+   /* For Webkit-based browsers */
+   &::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #e0e0e0;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+`;
+
+const CalendarWrapper = styled.div`
+  width: 98%;
+  height: 98%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  justify-items: center;
+  margin: auto;
+  font-family: 'Roboto', Arial, sans-serif;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 `;
 
 const CalendarHeader = styled.div`
@@ -140,6 +174,53 @@ const RoomLabel = styled.div`
   font-weight: bold;
   color: #666;
   border-right: 1px solid #e0e0e0;
+`;
+
+const OccupationRow = styled.div`
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #e0e0e0;
+  align-items: stretch; /* Ensure content aligns properly */
+  position: sticky; /* Makes the row stick in place */
+  bottom: 0; /* Sticks to the bottom of the container */
+  background-color: #ffffff; /* Ensure consistent background color */
+  z-index: 10; /* Ensure it is above other content */
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1); /* Add subtle shadow for visibility */
+
+  &:nth-child(even) {
+    background-color: #fafafa;
+  }
+`;
+
+const OccupationLabel = styled.div`
+  flex: 0 0 120px; /* Fixed width of 120px */
+  padding: 15px;
+  background-color: #f5f5f5;
+  text-align: center;
+  font-weight: bold;
+  color: #666;
+  border-right: 1px solid #e0e0e0;
+`;
+
+const OccupationCell = styled.div`
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex: 1;
+  font-size: 0.9rem;
+  color: #555;
+  border-right: 1px solid #e0e0e0;
+  background-color: ${(props) =>
+    props.isCurrentDay ? '#e3f2fd' : props.isWeekend ? '#ffe0dd' : 'white'};
+  transition: background-color 0.3s;
+
+  &:last-child {
+    border-right: none;
+  }
+
+  &:hover {
+    background-color: #f1f1f1;
+  }
 `;
 
 
@@ -600,62 +681,62 @@ const ReservationCalendar = ({ condominium }) => {
   };
 
   return (
-    <CalendarContainer>
+    <CalendarWrapper>
+      <FilterContainer>
+        <FilterInput
+          type="text"
+          placeholder="Filtrar por nome"
+          value={guestNameFilter}
+          onChange={(e) => setGuestNameFilter(e.target.value)}
+        />
+        <DateInputContainer>
+          {/* <CustomDateInput
+            value={startDateFilter}
+            onChange={(date) => setStartDateFilter(date)}
+          />
+          <CustomDateInput
+            value={endDateFilter}
+            onChange={(e) => setEndDateFilter(e.target.value)}
+          /> */}
+          <ClearButton onClick={() => clearFilters()}>Limpar Filtros</ClearButton>
+        </DateInputContainer>
+      </FilterContainer>
+      <CalendarHeader>
+        <div>
+          <div>
+          <select onChange={(e) => setViewType(e.target.value)} value={viewType}>
+            <option value="7">Semana</option>
+            <option value="15">Quinzena</option>
+            <option value="30">Mês</option>
+          </select>
+          </div>
+        </div>
+        <div>
+          <button style={{ marginRight: '100px' }} onClick={handlePrev}>{"<"}</button>
+          <span>{`${format(currentStartDate, "dd MMM yyyy", { locale: ptBR  })} - ${format(addDays(currentStartDate, daysInView.length - 1), "dd MMM yyyy", { locale: ptBR  })}`}</span>
+          <button style={{ marginLeft: '100px' }} onClick={handleNext}>{">"}</button>
+        </div>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <select onChange={handleMonthChange} value={currentStartDate.getMonth()}>
+            {monthNames.map((month, index) => (
+              <option key={month} value={index}>
+                {month}
+              </option>
+            ))}
+          </select>
+          <select onChange={handleYearChange} value={currentStartDate.getFullYear()}>
+            {generateYearRange().map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+      </CalendarHeader>
       {loading ? (
         <LoadingSpinner />
       ) : (
-        <>
-          <FilterContainer>
-            <FilterInput
-              type="text"
-              placeholder="Filtrar por nome"
-              value={guestNameFilter}
-              onChange={(e) => setGuestNameFilter(e.target.value)}
-            />
-            <DateInputContainer>
-              {/* <CustomDateInput
-                value={startDateFilter}
-                onChange={(date) => setStartDateFilter(date)}
-              />
-              <CustomDateInput
-                value={endDateFilter}
-                onChange={(e) => setEndDateFilter(e.target.value)}
-              /> */}
-              <ClearButton onClick={() => clearFilters()}>Limpar Filtros</ClearButton>
-            </DateInputContainer>
-          </FilterContainer>
-          <CalendarHeader>
-            <div>
-              <div>
-              <select onChange={(e) => setViewType(e.target.value)} value={viewType}>
-                <option value="7">Semana</option>
-                <option value="15">Quinzena</option>
-                <option value="30">Mês</option>
-              </select>
-              </div>
-            </div>
-            <div>
-              <button style={{ marginRight: '100px' }} onClick={handlePrev}>{"<"}</button>
-              <span>{`${format(currentStartDate, "dd MMM yyyy", { locale: ptBR  })} - ${format(addDays(currentStartDate, daysInView.length - 1), "dd MMM yyyy", { locale: ptBR  })}`}</span>
-              <button style={{ marginLeft: '100px' }} onClick={handleNext}>{">"}</button>
-            </div>
-            <div style={{ display: "flex", gap: "10px" }}>
-              <select onChange={handleMonthChange} value={currentStartDate.getMonth()}>
-                {monthNames.map((month, index) => (
-                  <option key={month} value={index}>
-                    {month}
-                  </option>
-                ))}
-              </select>
-              <select onChange={handleYearChange} value={currentStartDate.getFullYear()}>
-                {generateYearRange().map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </CalendarHeader>
+        <CalendarContainer>
           <ScrollableContainer>
           {loadingNavigation && <LoadingSpinner />}
             <DaysRow>
@@ -697,18 +778,18 @@ const ReservationCalendar = ({ condominium }) => {
                   </DayCell>
                 ))}
               </RoomRow>
+              
             ))}
-            
-            <RoomRow>
-              <RoomLabel>Ocupação</RoomLabel>
-              {daysInView.map((day, dayIndex) => (
-                <DayCell key={dayIndex}>
-                  <p>{getTotalGuestsForDay(day)}</p>
-                </DayCell>
-              ))}
-            </RoomRow>
+            <OccupationRow>
+                <OccupationLabel>Ocupação</OccupationLabel>
+                {daysInView.map((day, dayIndex) => (
+                  <OccupationCell key={dayIndex}>
+                    <p>{getTotalGuestsForDay(day)}</p>
+                  </OccupationCell>
+                ))}
+              </OccupationRow>
           </ScrollableContainer>
-        </>
+        </CalendarContainer>
       )}
       {selectedReservation && (
           <ReservationModal
@@ -719,7 +800,7 @@ const ReservationCalendar = ({ condominium }) => {
           />
         )}
       <RodapeCalendar />
-    </CalendarContainer>
+    </CalendarWrapper>
   );
 };
 
