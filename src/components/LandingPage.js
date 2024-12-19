@@ -239,7 +239,7 @@ const LandingPage = () => {
                     <HeroSubtitle>
                         Gestão de condomínio sem dor de cabeça
                     </HeroSubtitle>
-                    <HeroTitle>A solução em <b>tecnologia</b> que garante <br /><b>governança</b> para seu condomínio</HeroTitle>
+                    <HeroTitle>A solução em <b>tecnologia</b> que garante <b>governança</b> para seu condomínio</HeroTitle>
                     <GradientButton onClick={handleLoginClick}>Fale com nossa equipe</GradientButton>
                 </HeroContent>
                 <HeroContent>
