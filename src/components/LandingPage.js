@@ -26,6 +26,12 @@ const ImgLogo = styled.img`
     margin-bottom: -50px;
 `;
 
+const ImgHeroSection = styled.img`
+    width: 400px;
+    /* margin-top: -80px; */
+    /* margin-bottom: -50px; */
+`;
+
 const HeaderContent = styled.div`
     width: 70%;
     margin: 0 auto;
@@ -76,8 +82,9 @@ const LoginButton = styled.a`
 
 const HeroSection = styled.section`
     width: 100%;
+    height: 70vh;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
     padding: 4rem 0;
@@ -86,7 +93,10 @@ const HeroSection = styled.section`
 `;
 
 const HeroContent = styled.div`
-    max-width: 900px;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    max-width: 600px;
     margin-bottom: 2rem;
 `;
 
@@ -128,6 +138,7 @@ const GradientButton = styled.button`
     font-size: 18px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    width: 300px;
 
     &:hover {
         background: linear-gradient(135deg, #F16D61, #F46600);
@@ -228,12 +239,15 @@ const LandingPage = () => {
                     <HeroSubtitle>
                         Gestão de condomínio sem dor de cabeça
                     </HeroSubtitle>
-                    <HeroTitle><b>Antecipe Problemas e</b> <br />  Garanta a Tranquilidade no Seu Condomínio!</HeroTitle>
+                    <HeroTitle>A solução em <b>tecnologia</b> que garante <br /><b>governança</b> para seu condomínio</HeroTitle>
                     <GradientButton onClick={handleLoginClick}>Fale com nossa equipe</GradientButton>
+                </HeroContent>
+                <HeroContent>
+                    <ImgHeroSection src="/hero.png" alt="home" />
                 </HeroContent>
             </HeroSection>
 
-            <FeaturesSection>
+            {/* <FeaturesSection>
                 <FeaturesGrid>
                     <FeatureCard>
                         <FeatureTitle>Gestão de Reservas</FeatureTitle>
@@ -254,7 +268,7 @@ const LandingPage = () => {
                         </FeatureDescription>
                     </FeatureCard>
                 </FeaturesGrid>
-            </FeaturesSection>
+            </FeaturesSection> */}
 
             <Footer>
                 <FooterText>© {new Date().getFullYear()} Desenvolvido por <a href='https://www.instagram.com/amnosapps/'>Amnos Apps 🚀</a></FooterText>
