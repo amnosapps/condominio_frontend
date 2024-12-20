@@ -312,6 +312,20 @@ const FilterContainer = styled.div`
   }
 `;
 
+const FiltersWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+  border-radius: 8px 8px 0 0;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 15px;
+  }
+`;
+
 const FilterInput = styled.input`
   padding: 8px 15px;
   font-size: 1rem;
@@ -328,6 +342,22 @@ const FilterInput = styled.input`
   &::placeholder {
     color: #888;
     font-size: 0.9rem;
+  }
+`;
+
+const FilterDropdown = styled.select`
+  background: white;
+  border: 1px solid #ccc;
+  padding: 8px 10px;
+  border-radius: 4px;
+  margin-left: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: #1e88e5;
+    box-shadow: 0 0 8px rgba(30, 136, 229, 0.2);
   }
 `;
 
@@ -426,6 +456,8 @@ const ReservationCalendar = ({ condominium }) => {
 
   const [selectedReservation, setSelectedReservation] = useState(null);
 
+  const [filterType, setFilterType] = useState("Temporada"); // Default filter for "Temporada"
+
   const fetchApartments = async () => {
     const token = localStorage.getItem("accessToken");
     try {
@@ -433,7 +465,12 @@ const ReservationCalendar = ({ condominium }) => {
         headers: { Authorization: `Bearer ${token}` },
         params: { condominium: selectedCondominium },
       });
-      setApartments(response.data.map(apartment => `${apartment.number}`));
+
+      const filteredApartments = response.data.filter((apartment) =>
+        filterType === "All" ? true : apartment.type_name === filterType
+      );
+
+      setApartments(filteredApartments.map((apartment) => `${apartment.number}`));
     } catch (error) {
       console.error("Error fetching apartments:", error);
     }
@@ -478,7 +515,11 @@ const ReservationCalendar = ({ condominium }) => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [filterType]);
+
+  const handleFilterTypeChange = (e) => {
+    setFilterType(e.target.value); // Update the filter type
+  };
 
   useEffect(() => {
     const reopenModalId = sessionStorage.getItem("reopenModalId");
@@ -683,12 +724,19 @@ const ReservationCalendar = ({ condominium }) => {
   return (
     <CalendarWrapper>
       <FilterContainer>
-        <FilterInput
-          type="text"
-          placeholder="Filtrar por nome"
-          value={guestNameFilter}
-          onChange={(e) => setGuestNameFilter(e.target.value)}
-        />
+        <FiltersWrapper>
+          <FilterInput
+            type="text"
+            placeholder="Busque por nome"
+            value={guestNameFilter}
+            onChange={(e) => setGuestNameFilter(e.target.value)}
+          />
+          <FilterDropdown value={filterType} onChange={handleFilterTypeChange}>
+            <option value="Temporada">Temporada</option>
+            <option value="All">Todos</option>
+          </FilterDropdown>
+        </FiltersWrapper>
+        
         <DateInputContainer>
           {/* <CustomDateInput
             value={startDateFilter}
