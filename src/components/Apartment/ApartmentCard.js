@@ -52,7 +52,7 @@ function ApartmentCard({ apartment, onClick }) {
             <ApartmentDescription>Status: {apartment.status_name}</ApartmentDescription>
             <ApartmentDescription>Tipo: {apartment.type_name}</ApartmentDescription>
             <ApartmentDescription>Capacidade: {apartment.max_occupation}</ApartmentDescription>
-            <ApartmentDescription>Dono: {apartment.owner_details.name}</ApartmentDescription>
+            <ApartmentDescription>Dono: {apartment.owner_details?.name}</ApartmentDescription>
         </ApartmentCardContainer>
     );
 }

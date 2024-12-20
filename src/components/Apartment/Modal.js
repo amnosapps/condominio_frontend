@@ -89,6 +89,7 @@ const SaveButton = styled.button`
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s;
+    margin-top: 8px;
 
     &:hover {
         background-color: #0056b3;
@@ -150,10 +151,11 @@ const ReservationCard = styled.div`
 
 function Modal({ selectedApartment, profile, onClose }) {
     const [residentToAdd, setResidentToAdd] = useState({ name: '', email: '', phone: '' });
+    const [ownerToAdd, setOwnerToAdd] = useState({ name: '', email: '', phone: '', username: '', password: '' });
     const [ownerDetails, setOwnerDetails] = useState({
-        name: selectedApartment.owner_details.name,
-        email: selectedApartment.owner_details.email,
-        phone: selectedApartment.owner_details.phone,
+        name: selectedApartment.owner_details?.name,
+        email: selectedApartment.owner_details?.email,
+        phone: selectedApartment.owner_details?.phone,
     });
     const [isEditingOwner, setIsEditingOwner] = useState(false);
     const [showAddResidentInputs, setShowAddResidentInputs] = useState(false);
@@ -176,6 +178,7 @@ function Modal({ selectedApartment, profile, onClose }) {
                 password: residentToAdd.password || 'defaultPassword123', // Default password if not provided
             },
             condominium: selectedApartment.condominium, // Assuming the ID of the condominium is stored here
+            apartment: selectedApartment.id, // Assuming the ID of the condominium is stored here
             phone: residentToAdd.phone,
             document: residentToAdd.document || '',
             email: residentToAdd.email,
@@ -217,13 +220,55 @@ function Modal({ selectedApartment, profile, onClose }) {
         }
     };
 
-    const handleSaveOwnerDetails = async () => {
+    const handleAddOwner = async () => {
         const token = localStorage.getItem('accessToken');
+
+        if (!ownerToAdd.name || !ownerToAdd.email || !ownerToAdd.phone || !ownerToAdd.username || !ownerToAdd.password) {
+            alert('Preencha todos os campos do proprietário.');
+            return;
+        }
+
+        const newOwner = {
+            name: ownerToAdd.name,
+            user: {
+                username: ownerToAdd.username,
+                password: ownerToAdd.password,
+            },
+            condominiums: [selectedApartment.condominium], // Assuming the ID of the condominium is stored here
+            apartment: selectedApartment.id, // Assuming the ID of the condominium is stored here
+            phone: ownerToAdd.phone,
+            email: ownerToAdd.email,
+        };
+
         try {
-            await axios.patch(`${process.env.REACT_APP_API_URL}/api/owners/${selectedApartment.owner_details.id}/`, ownerDetails);
-            alert('Proprietário atualizado com sucesso.');
+            const response = await axios.post(
+                `${process.env.REACT_APP_API_URL}/api/owners/`,
+                newOwner,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            alert('Proprietário adicionado com sucesso.');
+
+            // Update the owner details
+            setOwnerDetails(response.data);
+            setOwnerToAdd({ name: '', email: '', phone: '', username: '', password: '' });
         } catch (error) {
-            alert('Erro ao atualizar proprietário.');
+            console.error('Erro ao adicionar proprietário:', error.response || error);
+            alert('Erro ao adicionar proprietário.');
+        }
+    };
+
+    const handleRemoveOwner = async () => {
+        const token = localStorage.getItem('accessToken');
+
+        try {
+            await axios.delete(`${process.env.REACT_APP_API_URL}/api/owners/${selectedApartment.owner_details.id}/`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            alert('Proprietário removido com sucesso.');
+            setOwnerDetails({ name: '', email: '', phone: '' });
+        } catch (error) {
+            console.error('Erro ao remover proprietário:', error.response || error);
+            alert('Erro ao remover proprietário.');
         }
     };
 
@@ -237,44 +282,49 @@ function Modal({ selectedApartment, profile, onClose }) {
                 </ModalHeader>
                 <ModalContent>
                     <h3>Proprietário</h3>
-                    {!isEditingOwner ? (
+                    {!ownerDetails.name ? (
+                        <>
+                            <h4>Adicionar Proprietário</h4>
+                            <ModalInput
+                                type="text"
+                                placeholder="Nome"
+                                value={ownerToAdd.name}
+                                onChange={(e) => setOwnerToAdd((prev) => ({ ...prev, name: e.target.value }))}
+                            />
+                            <ModalInput
+                                type="email"
+                                placeholder="Email"
+                                value={ownerToAdd.email}
+                                onChange={(e) => setOwnerToAdd((prev) => ({ ...prev, email: e.target.value }))}
+                            />
+                            <ModalInput
+                                type="text"
+                                placeholder="Telefone"
+                                value={ownerToAdd.phone}
+                                onChange={(e) => setOwnerToAdd((prev) => ({ ...prev, phone: e.target.value }))}
+                            />
+                            <ModalInput
+                                type="text"
+                                placeholder="Username"
+                                value={ownerToAdd.username}
+                                onChange={(e) => setOwnerToAdd((prev) => ({ ...prev, username: e.target.value }))}
+                            />
+                            <ModalInput
+                                type="password"
+                                placeholder="Senha"
+                                value={ownerToAdd.password}
+                                onChange={(e) => setOwnerToAdd((prev) => ({ ...prev, password: e.target.value }))}
+                            />
+                            <SaveButton onClick={handleAddOwner}>Adicionar Proprietário</SaveButton>
+                        </>
+                    ) : (
                         <>
                             <ModalLabel>Nome: {ownerDetails.name || 'N/A'}</ModalLabel>
                             <ModalLabel>Email: {ownerDetails.email || 'N/A'}</ModalLabel>
                             <ModalLabel>Telefone: {ownerDetails.phone || 'N/A'}</ModalLabel>
                             {profile?.is_staff && (
-                                <EditButton onClick={() => setIsEditingOwner(true)}>
-                                    Editar Proprietário
-                                </EditButton>
+                                <RemoveButton onClick={handleRemoveOwner}>Remover Proprietário</RemoveButton>
                             )}
-                        </>
-                    ) : (
-                        <>
-                            <ModalLabel>Nome:</ModalLabel>
-                            <ModalInput
-                                type="text"
-                                value={ownerDetails.name || ''}
-                                onChange={(e) =>
-                                    setOwnerDetails((prev) => ({ ...prev, name: e.target.value }))
-                                }
-                            />
-                            <ModalLabel>Email:</ModalLabel>
-                            <ModalInput
-                                type="email"
-                                value={ownerDetails.email || ''}
-                                onChange={(e) =>
-                                    setOwnerDetails((prev) => ({ ...prev, email: e.target.value }))
-                                }
-                            />
-                            <ModalLabel>Telefone:</ModalLabel>
-                            <ModalInput
-                                type="text"
-                                value={ownerDetails.phone || ''}
-                                onChange={(e) =>
-                                    setOwnerDetails((prev) => ({ ...prev, phone: e.target.value }))
-                                }
-                            />
-                            <SaveButton onClick={handleSaveOwnerDetails}>Salvar Proprietário</SaveButton>
                         </>
                     )}
 
@@ -309,7 +359,8 @@ function Modal({ selectedApartment, profile, onClose }) {
                                         </AddResidentButton>
                                     ) : (
                                         <>
-                                            <h3>Adicionar Residente</h3>
+                                            <h3 style={{ marginBottom: '-9px' }}>Adicionar Residente</h3>
+                                            <h4 style={{ marginBottom: '-6px' }}>Dados do residente</h4>
                                             <ModalInput
                                                 type="text"
                                                 placeholder="Nome"
@@ -354,9 +405,11 @@ function Modal({ selectedApartment, profile, onClose }) {
                                                     }))
                                                 }
                                             />
+
+                                            <h4 style={{ marginBottom: '-6px' }}>Acesso do residente</h4>
                                             <ModalInput
                                                 type="text"
-                                                placeholder="Username"
+                                                placeholder="username"
                                                 value={residentToAdd.username}
                                                 onChange={(e) =>
                                                     setResidentToAdd((prev) => ({
@@ -367,7 +420,7 @@ function Modal({ selectedApartment, profile, onClose }) {
                                             />
                                             <ModalInput
                                                 type="password"
-                                                placeholder="Senha"
+                                                placeholder="senha"
                                                 value={residentToAdd.password}
                                                 onChange={(e) =>
                                                     setResidentToAdd((prev) => ({
@@ -378,7 +431,7 @@ function Modal({ selectedApartment, profile, onClose }) {
                                             />
 
                                             <SaveButton onClick={handleAddResident}>
-                                                Confirmar Residente
+                                                Adicionar Residente
                                             </SaveButton>
                                         </>
                                     )}
