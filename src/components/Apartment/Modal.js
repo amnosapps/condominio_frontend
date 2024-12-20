@@ -12,6 +12,35 @@ const Backdrop = styled.div`
     z-index: 999;
 `;
 
+const statusColors = {
+    Disponível: '#36a2eb', // Blue for available
+    Ocupado: '#ff6384',    // Red for occupied
+    Manutenção: '#ffce56', // Yellow for maintenance
+};
+
+// Circle for Status Indicator
+const StatusCircle = styled.div`
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: ${(props) => props.color || '#ccc'};
+    margin-right: 8px;
+`;
+
+const StatusContainer = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+`;
+
+const ApartmentInfo = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 0.9rem;
+    color: #666;
+`;
+
 const ModalContainer = styled.div`
     position: fixed;
     top: 50%;
@@ -149,6 +178,22 @@ const ReservationCard = styled.div`
     }
 `;
 
+const ReservationButton = styled.button`
+    background-color: #17a2b8;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+
+    &:hover {
+        background-color: #138496;
+    }
+`;
+
 function Modal({ selectedApartment, profile, onClose }) {
     const [residentToAdd, setResidentToAdd] = useState({ name: '', email: '', phone: '' });
     const [ownerToAdd, setOwnerToAdd] = useState({ name: '', email: '', phone: '', username: '', password: '' });
@@ -238,6 +283,7 @@ function Modal({ selectedApartment, profile, onClose }) {
             apartment: selectedApartment.id, // Assuming the ID of the condominium is stored here
             phone: ownerToAdd.phone,
             email: ownerToAdd.email,
+            document: ownerToAdd.document,
         };
 
         try {
@@ -272,19 +318,56 @@ function Modal({ selectedApartment, profile, onClose }) {
         }
     };
 
+    const handleRegisterReservation = async () => {
+        const token = localStorage.getItem('accessToken');
+        const newReservation = {
+            apartment: selectedApartment.id,
+            guest_name: "New Guest",
+            checkin: new Date().toISOString(),
+            checkout: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // Example: 2 days later
+            additional_guests: [],
+        };
+
+        try {
+            await axios.post(
+                `${process.env.REACT_APP_API_URL}/api/reservations/`,
+                newReservation,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            alert('Reserva registrada com sucesso.');
+        } catch (error) {
+            console.error('Erro ao registrar reserva:', error.response || error);
+            alert('Erro ao registrar reserva.');
+        }
+    };
+
     return (
         <>
             <Backdrop onClick={onClose} />
             <ModalContainer>
                 <ModalHeader>
-                    <ModalTitle>Detalhes do Apartamento {selectedApartment.number}</ModalTitle>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <ModalTitle>
+                            Apartamento {selectedApartment.number}
+                        </ModalTitle>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <StatusContainer>
+                                <StatusCircle
+                                    color={statusColors[selectedApartment.status_name]}
+                                />
+                                <span>Status: {selectedApartment.status_name}</span>
+                                <span>Tipo: {selectedApartment.type_name}</span>
+                                <span>Capacidade: {selectedApartment.max_occupation}</span>
+                            </StatusContainer>
+                        </div>
+                    </div>
                     <CloseButton onClick={onClose}>&times;</CloseButton>
                 </ModalHeader>
                 <ModalContent>
-                    <h3>Proprietário</h3>
+                    <h3 style={{ marginBottom: '-9px' }} >Proprietário</h3>
                     {!ownerDetails.name ? (
                         <>
-                            <h4>Adicionar Proprietário</h4>
+                            <h4 style={{ marginBottom: '-3px' }} >Adicionar Proprietário</h4>
                             <ModalInput
                                 type="text"
                                 placeholder="Nome"
@@ -296,6 +379,12 @@ function Modal({ selectedApartment, profile, onClose }) {
                                 placeholder="Email"
                                 value={ownerToAdd.email}
                                 onChange={(e) => setOwnerToAdd((prev) => ({ ...prev, email: e.target.value }))}
+                            />
+                            <ModalInput
+                                type="text"
+                                placeholder="Documento"
+                                value={ownerToAdd.document}
+                                onChange={(e) => setOwnerToAdd((prev) => ({ ...prev, document: e.target.value }))}
                             />
                             <ModalInput
                                 type="text"
@@ -441,6 +530,9 @@ function Modal({ selectedApartment, profile, onClose }) {
                     ) : (
                         <>
                             <h3>Últimas Reservas</h3>
+                            {/* <ReservationButton onClick={handleRegisterReservation}>
+                                Registrar Reserva
+                            </ReservationButton> */}
                             {selectedApartment.last_reservations.length > 0 ? (
                                 selectedApartment.last_reservations.map((reservation) => (
                                     <ReservationCard key={reservation.id}>
