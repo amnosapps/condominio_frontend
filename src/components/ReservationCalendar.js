@@ -21,17 +21,12 @@ import {
 import { ptBR  } from "date-fns/locale"; // Import Portuguese locale
 import ReservationModal from "./ReservationModal";
 import RodapeCalendar from "./Calendar/RodapeComponent";
+import { registerLocale } from "react-datepicker";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
-const slideDown = keyframes`
-  from {
-    transform: translateY(-30%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-`;
+registerLocale("pt-BR", ptBR);
+
 
 // Styled components for the UI
 const CalendarContainer = styled.div`
@@ -361,30 +356,33 @@ const FilterDropdown = styled.select`
   }
 `;
 
-const DateInputContainer = styled.div`
-  display: flex;
-  gap: 10px;
+const DatePickerButton = styled.button`
+  background-color: #fff;
+  color: #f46600;
+  border: 1px solid #f46600;
+  padding: 8px 15px;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-left: 6px;
 
-  input[type="date"] {
-    padding: 5px 15px;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    outline: none;
-    transition: border-color 0.3s, box-shadow 0.3s;
-
-    &:focus {
-      border-color: #1e88e5;
-      box-shadow: 0 0 8px rgba(30, 136, 229, 0.2);
-    }
-
-    &::placeholder {
-      color: #888;
-      font-size: 0.9rem;
-    }
+  &:hover {
+    background-color: #f46600;
+    color: #fff;
   }
 `;
 
+const DatePickerContainer = styled.div`
+  position: relative;
+
+  .react-datepicker {
+    position: absolute;
+    top: 50px;
+    right: 100px;
+    z-index: 1050;
+  }
+`;
 
 const ClearButton = styled.button`
   background-color: #F46600;
@@ -455,6 +453,13 @@ const ReservationCalendar = ({ condominium }) => {
   const [endDateFilter, setEndDateFilter] = useState("");
 
   const [selectedReservation, setSelectedReservation] = useState(null);
+
+  const [selectedDateRange, setSelectedDateRange] = useState({
+    startDate: null,
+    endDate: null,
+  });
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const [filterType, setFilterType] = useState("Temporada"); // Default filter for "Temporada"
 
@@ -551,7 +556,12 @@ const ReservationCalendar = ({ condominium }) => {
     setSelectedReservation(reservation);
   };
 
-  const daysInView = Array.from({ length: parseInt(viewType, 10) }, (_, i) => addDays(currentStartDate, i));
+  const daysInView = selectedDateRange.startDate && selectedDateRange.endDate
+    ? Array.from(
+        { length: Math.ceil((selectedDateRange.endDate - selectedDateRange.startDate) / (24 * 60 * 60 * 1000)) + 1 },
+        (_, i) => addDays(selectedDateRange.startDate, i)
+      )
+    : Array.from({ length: parseInt(viewType, 10) }, (_, i) => addDays(currentStartDate, i));
 
   const handlePrev = () => setCurrentStartDate(addDays(currentStartDate, -parseInt(viewType, 10)));
   const handleNext = () => setCurrentStartDate(addDays(currentStartDate, parseInt(viewType, 10)));
@@ -688,37 +698,24 @@ const ReservationCalendar = ({ condominium }) => {
     setGuestNameFilter("");
     setStartDateFilter("");
     setEndDateFilter("");
+    setSelectedDateRange({ startDate: null, endDate: null });
+    setCurrentStartDate(new Date()); // Reset to today's date
   };
 
   const closeModal = () => {
     setSelectedReservation(null);
   };
 
-  const CustomDateInput = ({ value, onChange }) => {
-    const handleInputChange = (e) => {
-      const rawValue = e.target.value; // Get the value in dd/MM/yyyy format
-      const parsedDate = parse(rawValue, "dd/MM/yyyy", new Date(), { locale: ptBR });
-  
-      if (isValid(parsedDate)) {
-        const isoValue = format(parsedDate, "yyyy-MM-dd"); // Convert to ISO format
-        onChange(isoValue);
-      } else {
-        onChange(""); // Invalid input
-      }
-    };
-  
-    const displayValue = value
-      ? format(parse(value, "yyyy-MM-dd", new Date()), "dd/MM/yyyy", { locale: ptBR })
-      : "";
-  
-    return (
-      <input
-        type="text"
-        placeholder="dd/mm/yyyy"
-        value={displayValue}
-        onChange={handleInputChange}
-      />
-    );
+  const handleDateRangeChange = (dates) => {
+    const [start, end] = dates;
+    setSelectedDateRange({ startDate: start, endDate: end });
+    if (start && end) {
+      setShowDatePicker(false); // Close the DatePicker after selection
+    }
+  };
+
+  const toggleDatePicker = () => {
+    setShowDatePicker((prev) => !prev);
   };
 
   return (
@@ -736,18 +733,7 @@ const ReservationCalendar = ({ condominium }) => {
             <option value="All">Todos</option>
           </FilterDropdown>
         </FiltersWrapper>
-        
-        <DateInputContainer>
-          {/* <CustomDateInput
-            value={startDateFilter}
-            onChange={(date) => setStartDateFilter(date)}
-          />
-          <CustomDateInput
-            value={endDateFilter}
-            onChange={(e) => setEndDateFilter(e.target.value)}
-          /> */}
-          <ClearButton onClick={() => clearFilters()}>Limpar Filtros</ClearButton>
-        </DateInputContainer>
+        <ClearButton onClick={() => clearFilters()}>Limpar Filtros</ClearButton>
       </FilterContainer>
       <CalendarHeader>
         <div>
@@ -760,8 +746,26 @@ const ReservationCalendar = ({ condominium }) => {
           </div>
         </div>
         <div>
+         <DatePickerContainer>
+            {showDatePicker && (
+              <DatePicker
+                selected={selectedDateRange.startDate}
+                onChange={handleDateRangeChange}
+                startDate={selectedDateRange.startDate}
+                endDate={selectedDateRange.endDate}
+                selectsRange
+                inline
+                dateFormat="dd/MM/yyyy"
+                locale="pt-BR"
+              />
+            )}
+          </DatePickerContainer>
           <button style={{ marginRight: '100px' }} onClick={handlePrev}>{"<"}</button>
-          <span>{`${format(currentStartDate, "dd MMM yyyy", { locale: ptBR  })} - ${format(addDays(currentStartDate, daysInView.length - 1), "dd MMM yyyy", { locale: ptBR  })}`}</span>
+          {selectedDateRange.startDate && selectedDateRange.endDate ? (
+            <span style={{ cursor: 'pointer' }} onClick={toggleDatePicker}>{`${format(selectedDateRange.startDate, "dd MMM yyyy", { locale: ptBR  })} - ${format(selectedDateRange.endDate, "dd MMM yyyy", { locale: ptBR  })}`}</span>
+          ) : (
+            <span style={{ cursor: 'pointer' }} onClick={toggleDatePicker}>{`${format(currentStartDate, "dd MMM yyyy", { locale: ptBR  })} - ${format(addDays(currentStartDate, daysInView.length - 1), "dd MMM yyyy", { locale: ptBR  })}`}</span>
+          )}
           <button style={{ marginLeft: '100px' }} onClick={handleNext}>{">"}</button>
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
