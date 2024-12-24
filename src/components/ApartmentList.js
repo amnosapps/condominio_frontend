@@ -258,6 +258,7 @@ function ApartmentList({ condominium }) {
                             <option value="1">Ocupado</option>
                             <option value="2">Manutenção</option>
                         </FilterSelect>
+                        <CreateButton onClick={() => setCreateModalOpen(true)}>Criar Apartamento</CreateButton>
                     </ControlsContainer>
                     <ChartSection
                         apartments={apartments}
