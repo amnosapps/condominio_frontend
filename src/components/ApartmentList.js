@@ -5,13 +5,26 @@ import ApartmentCard from './Apartment/ApartmentCard';
 import ChartSection from './Apartment/ChartSection';
 import Modal from './Apartment/Modal';
 import styled from 'styled-components';
+import CreateApartmentModal from './Apartment/CreateApartmentModal';
+import LoadingSpinner from './utils/loader';
 
 const ApartmentListContainer = styled.div`
     margin-top: 100px;
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.6rem;
     padding: 1rem;
+
+    @media (max-width: 768px) {
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    @media (max-width: 480px) {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
 `;
 
 const ControlsContainer = styled.div`
@@ -21,6 +34,11 @@ const ControlsContainer = styled.div`
     margin: 1rem;
     flex-wrap: wrap;
     gap: 1rem;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
 `;
 
 const SearchInput = styled.input`
@@ -33,6 +51,10 @@ const SearchInput = styled.input`
     &:focus {
         outline: none;
         border-color: #007bff;
+    }
+
+    @media (max-width: 480px) {
+        width: 100%;
     }
 `;
 
@@ -47,6 +69,10 @@ const FilterSelect = styled.select`
         outline: none;
         border-color: #007bff;
     }
+
+    @media (max-width: 480px) {
+        width: 100%;
+    }
 `;
 
 const Loader = styled.div`
@@ -54,6 +80,73 @@ const Loader = styled.div`
     font-size: 18px;
     color: #007bff;
     margin-top: 2rem;
+
+    @media (max-width: 480px) {
+        font-size: 16px;
+    }
+`;
+
+const CreateButton = styled.button`
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    background-color: #F46600;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+
+    &:hover {
+        background-color:rgb(185, 77, 0);
+    }
+
+    @media (max-width: 480px) {
+        width: 100%;
+        padding: 0.5rem;
+    }
+`;
+
+const ModalOverlay = styled.div`
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+
+    @media (max-width: 480px) {
+        padding: 1rem;
+    }
+`;
+
+const ModalContent = styled.div`
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    @media (max-width: 480px) {
+        width: 90%;
+        padding: 1rem;
+    }
+`;
+
+const ModalCloseButton = styled.button`
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    align-self: flex-end;
+    cursor: pointer;
+
+    @media (max-width: 480px) {
+        font-size: 1.25rem;
+    }
 `;
 
 function ApartmentList({ condominium }) {
@@ -68,6 +161,7 @@ function ApartmentList({ condominium }) {
     const [search, setSearch] = useState('');
     const [typeFilter, setTypeFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [createModalOpen, setCreateModalOpen] = useState(false);
 
     const fetchUserProfile = async () => {
         const token = localStorage.getItem('accessToken');
@@ -116,19 +210,28 @@ function ApartmentList({ condominium }) {
         setFilter(status);
     };
 
+    const handleChartClick = ({ filterType, value }) => {
+        if (filterType === 'status') setStatusFilter(value);
+        if (filterType === 'type_name') setTypeFilter(value);
+    };
+
     // Apply filters and search
     const filteredApartments = apartments.filter((apartment) => {
         const matchesSearch = search === '' || apartment.number.includes(search);
         const matchesType = typeFilter === '' || apartment.type_name === typeFilter;
-        const matchesStatus = statusFilter === '' || apartment.status_name === statusFilter;
+        const matchesStatus = statusFilter === '' || apartment.status === parseInt(statusFilter, 10);
 
         return matchesSearch && matchesType && matchesStatus;
     });
 
+    const handleApartmentCreated = (newApartment) => {
+        setApartments((prev) => [...prev, newApartment]);
+    };
+
     return (
         <>
             {loading ? (
-                <Loader>Carregando...</Loader>
+                <LoadingSpinner />
             ) : (
                 <>
                     <ControlsContainer>
@@ -151,14 +254,14 @@ function ApartmentList({ condominium }) {
                             onChange={(e) => setStatusFilter(e.target.value)}
                         >
                             <option value="">Filtrar por status</option>
-                            <option value="Disponível">Disponível</option>
-                            <option value="Ocupado">Ocupado</option>
-                            <option value="Manutenção">Manutenção</option>
+                            <option value="0">Disponível</option>
+                            <option value="1">Ocupado</option>
+                            <option value="2">Manutenção</option>
                         </FilterSelect>
                     </ControlsContainer>
                     <ChartSection
-                        apartments={filteredApartments}
-                        onChartClick={handleFilterChange}
+                        apartments={apartments}
+                        onChartClick={handleChartClick}
                     />
                     <ApartmentListContainer>
                         {filteredApartments.map((apartment) => (
@@ -169,6 +272,12 @@ function ApartmentList({ condominium }) {
                             />
                         ))}
                     </ApartmentListContainer>
+                    <CreateApartmentModal
+                        isOpen={createModalOpen}
+                        onClose={() => setCreateModalOpen(false)}
+                        condominium={selectedCondominium}
+                        onApartmentCreated={handleApartmentCreated}
+                    />
                     {modalOpen && (
                         <Modal
                             selectedApartment={selectedApartment}

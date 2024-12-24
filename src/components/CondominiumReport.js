@@ -25,6 +25,7 @@ import {
   getYear,
   getMonth,
 } from "date-fns";
+import LoadingSpinner from "./utils/loader";
 
 ChartJS.register(
   ArcElement,
@@ -39,11 +40,18 @@ ChartJS.register(
 const ReportContainer = styled.div`
   padding: 2rem;
   font-family: Arial, sans-serif;
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 const Title = styled.h1`
   text-align: center;
   margin-bottom: 2rem;
+  font-size: 2rem;
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 `;
 
 const StatsGrid = styled.div`
@@ -51,6 +59,9 @@ const StatsGrid = styled.div`
   flex-wrap: wrap;
   gap: 2rem;
   justify-content: space-around;
+  @media (max-width: 768px) {
+    gap: 1rem;
+  }
 `;
 
 const StatCard = styled.div`
@@ -60,24 +71,47 @@ const StatCard = styled.div`
   padding: 1.5rem;
   text-align: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 200px;
+  width: calc(33% - 2rem);
+  min-width: 200px;
+  flex: 1;
+
+  @media (max-width: 768px) {
+    width: calc(50% - 1rem);
+    padding: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+    padding: 0.8rem;
+  }
 `;
 
 const StatNumber = styled.div`
   font-size: 2rem;
   font-weight: bold;
   color: #343a40;
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 `;
 
 const StatLabel = styled.div`
   font-size: 1rem;
   color: #6c757d;
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+  }
 `;
 
 const ChartContainer = styled.div`
   width: 80%;
   margin: 2rem auto;
   text-align: center;
+
+  @media (max-width: 768px) {
+    width: 95%;
+    margin: 1.5rem auto;
+  }
 `;
 
 const YearNavigation = styled.div`
@@ -88,7 +122,7 @@ const YearNavigation = styled.div`
   margin-bottom: 1rem;
 
   button {
-    background-color: #F46600;
+    background-color: #f46600;
     color: white;
     border: none;
     padding: 8px 12px;
@@ -109,6 +143,9 @@ const YearNavigation = styled.div`
   span {
     font-size: 1.2rem;
     font-weight: bold;
+    @media (max-width: 768px) {
+      font-size: 1rem;
+    }
   }
 `;
 
@@ -119,7 +156,7 @@ const ViewSelector = styled.div`
   margin-bottom: 2rem;
 
   button {
-    background-color: #F46600;
+    background-color: #f46600;
     color: white;
     border: none;
     padding: 8px 12px;
@@ -135,6 +172,11 @@ const ViewSelector = styled.div`
       background-color: #0056b3;
       font-weight: bold;
     }
+
+    @media (max-width: 768px) {
+      padding: 6px 10px;
+      font-size: 0.9rem;
+    }
   }
 `;
 
@@ -143,14 +185,22 @@ const OccupationTable = styled.table`
   border-collapse: collapse;
   margin-top: 2rem;
   font-size: 0.9rem;
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+  }
 `;
 
 const TableHeader = styled.th`
-  background-color: #F46600;
+  background-color: #f46600;
   color: white;
   padding: 10px;
   border: 1px solid #dee2e6;
   text-align: left;
+
+  @media (max-width: 768px) {
+    padding: 8px;
+  }
 `;
 
 const TableRow = styled.tr`
@@ -162,10 +212,18 @@ const TableRow = styled.tr`
 const TableCell = styled.td`
   padding: 10px;
   border: 1px solid #dee2e6;
+
+  @media (max-width: 768px) {
+    padding: 8px;
+  }
 `;
 
 const OccupationSection = styled.div`
   margin-top: 3rem;
+
+  @media (max-width: 768px) {
+    margin-top: 2rem;
+  }
 `;
 
 function CondominiumReport({ condominium }) {
@@ -222,7 +280,7 @@ function CondominiumReport({ condominium }) {
   }, [selectedCondominium]);
 
   if (loading) {
-    return <p>Loading...</p>;
+    return <LoadingSpinner />
   }
 
   const filterReservationsByDateRange = (start, end) => {

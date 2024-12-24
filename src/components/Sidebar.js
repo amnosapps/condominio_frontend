@@ -5,20 +5,45 @@ import axios from 'axios';
 
 const SidebarContainer = styled.div`
     background-color: #fff;
-    width: 250px;
+    width: ${(props) => (props.isMobile ? (props.isOpen ? '250px' : '0') : '250px')};
     height: 100%;
     position: fixed;
     top: 0;
     left: 0;
     display: flex;
     flex-direction: column;
-    padding: 1.5rem;
+    padding: ${(props) => (props.isMobile ? (props.isOpen ? '1.5rem' : '0') : '1.5rem')};
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     align-items: center;
     z-index: 100;
+    overflow-x: hidden;
+    transition: all 0.3s ease;
 
     @media (max-width: 768px) {
-        width: 200px;
+        width: ${(props) => (props.isOpen ? '300px' : '0')};
+    }
+
+    @media (max-width: 480px) {
+        width: ${(props) => (props.isOpen ? '250px' : '0')};
+        /* height: 90%; */
+    }
+`;
+
+const HamburgerButton = styled.button`
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    background: #f46600;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    z-index: 110;
+    display: none;
+    /* position: fixed; */
+
+    @media (max-width: 768px) {
+        display: block;
     }
 `;
 
@@ -49,6 +74,10 @@ const ProfileAndLogoutContainer = styled.div`
     align-items: center;
     gap: 15px;
     margin-bottom: 4rem;
+
+    @media (max-width: 480px) {
+        margin-bottom: 8rem;
+    }
 `;
 
 const ProfileContainer = styled.div`
@@ -92,12 +121,13 @@ const NavList = styled.ul`
     padding: 0;
     display: flex;
     flex-direction: column;
+    opacity: ${(props) => (props.isMobile && !props.isOpen ? '0' : '1')};
+    visibility: ${(props) => (props.isMobile && !props.isOpen ? 'hidden' : 'visible')};
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 `;
 
 const NavItem = styled.li`
-    display: flex;
     margin-bottom: 1rem;
-    align-items: center;
 `;
 
 const NavButton = styled.button`
@@ -319,6 +349,9 @@ const Sidebar = ({ condominium }) => {
     const [unreadCount, setUnreadCount] = useState(0);
     const [showNotifications, setShowNotifications] = useState(false);
 
+    const [isOpen, setIsOpen] = useState(true); // Open by default for desktop
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
     useEffect(() => {
         const fetchUserProfile = async () => {
             const token = localStorage.getItem('accessToken');
@@ -355,9 +388,29 @@ const Sidebar = ({ condominium }) => {
             }
         };
 
+        const handleResize = () => {
+            const isNowMobile = window.innerWidth <= 768;
+            setIsMobile(isNowMobile);
+            if (!isNowMobile) setIsOpen(true); // Ensure sidebar is open for desktop
+        };
+
         fetchUserProfile();
         fetchNotifications();
+
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+
     }, [navigate]);
+
+    const handleNavigation = (path) => {
+        navigate(path);
+        if (isMobile) {
+            setIsOpen(false); // Close sidebar on mobile navigation
+        }
+    };
 
     const markNotificationAsRead = async (id) => {
         const token = localStorage.getItem('accessToken');
@@ -439,134 +492,148 @@ const Sidebar = ({ condominium }) => {
     }
 
     return (
-        <SidebarContainer>
-            <ImgLogo src="/IMG_0659.PNG" alt="home" />
-            
-            <NavList>
-                <NavItem>
-                    <NavButton
-                        onClick={() => navigate(`/${selectedCondominium}/home`)}
-                        active={location.pathname.includes(`${selectedCondominium}/home`)}
-                    >
-                        <ImgSidebar src="/home.png" alt="home" />
-                        Início
-                    </NavButton>
-                </NavItem>
-                <NavItem>
-                    <NavButton
-                        onClick={() => navigate(`/${selectedCondominium}/occupation`)}
-                        active={location.pathname.includes(`${selectedCondominium}/occupation`)}
-                    >
-                        <ImgSidebar src="/calendar.png" alt="Calendar" />
-                        Mapa de Ocupação
-                    </NavButton>
-                </NavItem>
-                <NavItem>
-                    <NavButton
-                        onClick={() => navigate(`/${selectedCondominium}/apartments`)}
-                        active={location.pathname.includes(`${selectedCondominium}/apartments`)}
-                    >
-                        <ImgSidebar src="/apartments.png" alt="Apartments" />
-                        Apartamentos
-                    </NavButton>
-                </NavItem>
-                <NavItem>
-                    <NavButton
-                        onClick={() => navigate(`/${selectedCondominium}/reports`)}
-                        active={location.pathname.includes(`${selectedCondominium}/reports`)}
-                    >
-                        <ImgSidebar src="/report.png" alt="Reports" />
-                        Relatórios
-                    </NavButton>
-                </NavItem>
-                <NavItem>
-                    <NavButton>
-                    <ImgSidebar src="/common_area.png" alt="Espaço Comum" />
-                    Espaço
-                    </NavButton>
-                </NavItem>
-                <NavItem>
-                    <NavButton>
-                    <ImgSidebar src="/services.png" alt="Serviços" />
-                    Serviços
-                    </NavButton>
-                </NavItem>
-                <NavItem>
-                    <NavButton>
-                    <ImgSidebar src="/finance.png" alt="Serviços" />
-                    Financeiro
-                    </NavButton>
-                </NavItem>
-                <NavItem>
-                    <NavButton>
-                    <ImgSidebar src="/condo.png" alt="Meu Condomínio" />
-                    Condomínio
-                    </NavButton>
-                </NavItem>
-            </NavList>
-            
-            <ProfileAndLogoutContainer>
-                {profile && (
-                    <ProfileContainer>
-                        <Avatar>
-                            {profile.name?.charAt(0).toUpperCase() || "?"}
-                                <NotificationBellContainer onClick={toggleNotifications}>
-                                    <BellIcon>🔔</BellIcon>
-                                    <UnreadCount count={unreadCount}>{unreadCount}</UnreadCount>
-                                </NotificationBellContainer>
-                                {showNotifications && (
-                                    <NotificationContainer>
-                                        <NotificationListContainer>
-                                            <NotificationHeader>
-                                                Notificações
-                                                <span onClick={markAllNotificationsAsRead} style={{ cursor: 'pointer', fontSize: 12 }}>
-                                                    Marcar todos como lido
-                                                </span>
-                                            </NotificationHeader>
-                                            <NotificationBody>
-                                                {notifications.length > 0 ? (
-                                                    notifications.map((notif) => (
-                                                        <NotificationItem
-                                                            key={notif.id}
-                                                            unread={!notif.is_read}
-                                                            onClick={() => {
-                                                                markNotificationAsRead(notif.id);
-                                                            }}
-                                                        >
-                                                            <NotificationTitle>{notif.title}</NotificationTitle>
-                                                            <NotificationMessage>{notif.message}</NotificationMessage>
-                                                            <NotificationTime>{formatTime(notif.created_at)}</NotificationTime>
-                                                        </NotificationItem>
-                                                    ))
-                                                ) : (
-                                                    <p style={{ padding: '15px', textAlign: 'center' }}>No notifications</p>
-                                                )}
-                                            </NotificationBody>
-                                                
-                                            <NotificationFooter onClick={toggleNotifications}>
-                                                <>Fechar</>
-                                            </NotificationFooter>
-                                        </NotificationListContainer>
-                                    </NotificationContainer>
-                                )}
-                        </Avatar>
-                        <ProfileInfo>
-                            <UserName>Olá, {profile.name || "Usuário Desconhecido"}!</UserName>
-                            <StyledSelect value={selectedCondominium} onChange={handleCondominiumChange}>
-                                {condominiums.map((condo) => (
-                                    <option key={condo} value={condo}>
-                                        {condo}
-                                    </option>
-                                ))}
-                            </StyledSelect>
-                        </ProfileInfo>
-                    </ProfileContainer>
-                )}
-                <LogoutButton onClick={handleLogout}>
-                    Sair
-                </LogoutButton>
-            </ProfileAndLogoutContainer>
-        </SidebarContainer>
+        <>
+             {isMobile && (
+                <HamburgerButton onClick={() => setIsOpen((prev) => !prev)}>
+                    ☰
+                </HamburgerButton>
+            )}
+            <SidebarContainer isOpen={isOpen} isMobile={isMobile}>
+                <NavList isMobile={isMobile} isOpen={isOpen}>
+                    <ImgLogo src="/IMG_0659.PNG" alt="home" />
+                    <NavItem>
+                        <NavButton
+                            onClick={() => handleNavigation(`/${selectedCondominium}/home`)}
+                            active={location.pathname.includes(`${selectedCondominium}/home`)}
+                        >
+                            <ImgSidebar src="/home.png" alt="home" />
+                            Início
+                        </NavButton>
+                    </NavItem>
+                    <NavItem>
+                        <NavButton
+                            onClick={() => handleNavigation(`/${selectedCondominium}/occupation`)}
+                            active={location.pathname.includes(`${selectedCondominium}/occupation`)}
+                        >
+                            <ImgSidebar src="/calendar.png" alt="Calendar" />
+                            Mapa de Ocupação
+                        </NavButton>
+                    </NavItem>
+                    <NavItem>
+                        <NavButton
+                            onClick={() => handleNavigation(`/${selectedCondominium}/apartments`)}
+                            active={location.pathname.includes(`${selectedCondominium}/apartments`)}
+                        >
+                            <ImgSidebar src="/apartments.png" alt="Apartments" />
+                            Apartamentos
+                        </NavButton>
+                    </NavItem>
+                    <NavItem>
+                        <NavButton
+                            onClick={() => handleNavigation(`/${selectedCondominium}/reports`)}
+                            active={location.pathname.includes(`${selectedCondominium}/reports`)}
+                        >
+                            <ImgSidebar src="/report.png" alt="Reports" />
+                            Relatórios
+                        </NavButton>
+                    </NavItem>
+                    <NavItem>
+                        <NavButton
+                            onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
+                        >
+                            <ImgSidebar src="/common_area.png" alt="Espaço Comum" />
+                            Espaço
+                        </NavButton>
+                    </NavItem>
+                    <NavItem>
+                        <NavButton
+                            onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
+                        >
+                        <ImgSidebar src="/services.png" alt="Serviços" />
+                        Serviços
+                        </NavButton>
+                    </NavItem>
+                    <NavItem>
+                        <NavButton
+                            onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
+                        >
+                        <ImgSidebar src="/finance.png" alt="Serviços" />
+                        Financeiro
+                        </NavButton>
+                    </NavItem>
+                    <NavItem>
+                        <NavButton
+                            onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
+                        >
+                        <ImgSidebar src="/condo.png" alt="Meu Condomínio" />
+                        Condomínio
+                        </NavButton>
+                    </NavItem>
+                </NavList>
+                
+                <ProfileAndLogoutContainer>
+                    {profile && (
+                        <ProfileContainer>
+                            <Avatar>
+                                {profile.name?.charAt(0).toUpperCase() || "?"}
+                                    <NotificationBellContainer onClick={toggleNotifications}>
+                                        <BellIcon>🔔</BellIcon>
+                                        <UnreadCount count={unreadCount}>{unreadCount}</UnreadCount>
+                                    </NotificationBellContainer>
+                                    {showNotifications && (
+                                        <NotificationContainer>
+                                            <NotificationListContainer>
+                                                <NotificationHeader>
+                                                    Notificações
+                                                    <span onClick={markAllNotificationsAsRead} style={{ cursor: 'pointer', fontSize: 12 }}>
+                                                        Marcar todos como lido
+                                                    </span>
+                                                </NotificationHeader>
+                                                <NotificationBody>
+                                                    {notifications.length > 0 ? (
+                                                        notifications.map((notif) => (
+                                                            <NotificationItem
+                                                                key={notif.id}
+                                                                unread={!notif.is_read}
+                                                                onClick={() => {
+                                                                    markNotificationAsRead(notif.id);
+                                                                }}
+                                                            >
+                                                                <NotificationTitle>{notif.title}</NotificationTitle>
+                                                                <NotificationMessage>{notif.message}</NotificationMessage>
+                                                                <NotificationTime>{formatTime(notif.created_at)}</NotificationTime>
+                                                            </NotificationItem>
+                                                        ))
+                                                    ) : (
+                                                        <p style={{ padding: '15px', textAlign: 'center' }}>No notifications</p>
+                                                    )}
+                                                </NotificationBody>
+                                                    
+                                                <NotificationFooter onClick={toggleNotifications}>
+                                                    <>Fechar</>
+                                                </NotificationFooter>
+                                            </NotificationListContainer>
+                                        </NotificationContainer>
+                                    )}
+                            </Avatar>
+                            <ProfileInfo>
+                                <UserName>Olá, {profile.name || "Usuário Desconhecido"}!</UserName>
+                                <StyledSelect value={selectedCondominium} onChange={handleCondominiumChange}>
+                                    {condominiums.map((condo) => (
+                                        <option key={condo} value={condo}>
+                                            {condo}
+                                        </option>
+                                    ))}
+                                </StyledSelect>
+                            </ProfileInfo>
+                        </ProfileContainer>
+                    )}
+                    <LogoutButton onClick={handleLogout}>
+                        Sair
+                    </LogoutButton>
+                </ProfileAndLogoutContainer>
+            </SidebarContainer>
+        </>
     );
 };
 

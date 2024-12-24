@@ -12,12 +12,25 @@ const Container = styled.div`
     padding: 20px;
     font-family: 'Roboto', sans-serif;
     text-align: center;
+
+    @media (max-width: 768px) {
+        padding: 10px;
+        max-width: 300px;
+    }
 `;
 
 const Title = styled.h2`
     color: #F46600;
     margin-bottom: 20px;
     font-size: 1.5rem;
+
+    @media (max-width: 768px) {
+        font-size: 2.3rem;
+    }
+
+    @media (max-width: 480px) {
+        font-size: 1.6rem;
+    }
 `;
 
 const CardGrid = styled.div`
@@ -26,6 +39,16 @@ const CardGrid = styled.div`
     gap: 20px;
     justify-content: center;
     align-items: center;
+
+    @media (max-width: 768px) {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 20px;
+    }
+
+    @media (max-width: 480px) {
+        grid-template-columns: 1fr; /* Single column for mobile */
+        gap: 20px;
+    }
 `;
 
 const Card = styled.div`
@@ -42,6 +65,10 @@ const Card = styled.div`
         transform: scale(1.05);
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
     }
+
+    @media (max-width: 480px) {
+        padding: 15px;
+    }
 `;
 
 const CardImage = styled.img`
@@ -49,12 +76,30 @@ const CardImage = styled.img`
     height: 60px;
     margin-bottom: 15px;
     object-fit: contain;
+
+    @media (max-width: 768px) {
+        width: 50px;
+        height: 50px;
+    }
+
+    @media (max-width: 480px) {
+        width: 60px;
+        height: 60px;
+    }
 `;
 
 const CardTitle = styled.h3`
     color: #F46600;
     font-size: 1.2rem;
     margin-bottom: 10px;
+
+    @media (max-width: 768px) {
+        font-size: 1rem;
+    }
+
+    @media (max-width: 480px) {
+        font-size: 1.4rem;
+    }
 `;
 
 const CardButton = styled.button`
@@ -70,18 +115,44 @@ const CardButton = styled.button`
     &:hover {
         background-color: #C95C58;
     }
+
+    @media (max-width: 768px) {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+
+    @media (max-width: 480px) {
+        padding: 5px 10px;
+        font-size: 0.7rem;
+    }
 `;
 
 const ErrorMessage = styled.div`
     color: red;
     font-size: 0.9rem;
     margin-top: 10px;
+
+    @media (max-width: 768px) {
+        font-size: 0.8rem;
+    }
+
+    @media (max-width: 480px) {
+        font-size: 0.7rem;
+    }
 `;
 
 const LoadingMessage = styled.div`
     color: #F46600;
     font-size: 1rem;
     margin-top: 20px;
+
+    @media (max-width: 768px) {
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 480px) {
+        font-size: 0.8rem;
+    }
 `;
 
 // Component

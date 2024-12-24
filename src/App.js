@@ -11,6 +11,7 @@ import CondominiumReport from './components/CondominiumReport';
 import ServicesPage from './pages/Services';
 import Dashboard from './pages/Services/Dashboard';
 import HomePage from './pages/Home/HomePage';
+import Soon from './pages/Soon'
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('accessToken'));
@@ -147,6 +148,7 @@ function App() {
                         path="dashboard"
                         element={<Dashboard services={services} />}
                     />
+                    <Route path="soon" element={<Soon />} />
                 </Route>
 
                 {/* Fallback Route */}

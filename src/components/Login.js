@@ -11,6 +11,10 @@ const Container = styled.div`
     min-height: 100vh;
     background-color: #f7f9fc;
     padding: 1rem;
+
+    @media (max-width: 768px) {
+        padding: 2rem;
+    }
 `;
 
 const LoginBox = styled.div`
@@ -25,12 +29,19 @@ const LoginBox = styled.div`
     width: 100%;
     max-width: 400px;
     box-sizing: border-box;
+
+    @media (max-width: 480px) {
+        padding: 2rem 2rem;
+    }
 `;
 
 const ImgLogo = styled.img`
     width: 200px;
-    margin-top: -80px;
-    margin-bottom: -50px;
+    /* margin-bottom: 1rem; */
+
+    @media (max-width: 480px) {
+        width: 200px;
+    }
 `;
 
 const Title = styled.a`
@@ -40,10 +51,9 @@ const Title = styled.a`
     color: #F46600;
     text-decoration: none;
     font-weight: 600;
-    padding: 7.5rem;
 
-    @media (max-width: 768px) {
-        padding: 5rem;
+    @media (max-width: 480px) {
+        font-size: 20px;
     }
 
     &:hover {
@@ -59,6 +69,10 @@ const Form = styled.form`
 
 const InputGroup = styled.div`
     margin-bottom: 1.5rem;
+
+    @media (max-width: 480px) {
+        margin-bottom: 1rem;
+    }
 `;
 
 const Label = styled.label`
@@ -66,6 +80,10 @@ const Label = styled.label`
     margin-bottom: 0.5rem;
     color: #555;
     font-size: 14px;
+
+    @media (max-width: 480px) {
+        font-size: 16px;
+    }
 `;
 
 const Input = styled.input`
@@ -80,6 +98,11 @@ const Input = styled.input`
     &:focus {
         border-color: #F46600;
         outline: none;
+    }
+
+    @media (max-width: 480px) {
+        padding: 0.8rem;
+        font-size: 16px;
     }
 `;
 
@@ -101,17 +124,27 @@ const Button = styled.button`
         background-color: #b3d7ff;
         cursor: not-allowed;
     }
+
+    @media (max-width: 480px) {
+        padding: 0.6rem;
+        font-size: 16px;
+    }
 `;
 
 const FooterCallToAction = styled.div`
     display: flex;
     align-items: center;
-    align-content: center;
-    padding-left: 1.5rem;
+    justify-content: center;
+    margin-top: 1rem;
 
     > p {
         text-align: center;
         opacity: 60%;
+        font-size: 14px;
+
+        @media (max-width: 480px) {
+            font-size: 16px;
+        }
     }
 `;
 
@@ -121,7 +154,11 @@ const ErrorMessage = styled.p`
     text-align: center;
     margin-top: -1rem;
     margin-bottom: 1.5rem;
-`;
+
+    @media (max-width: 480px) {
+        font-size: 16px;
+    }
+`
 
 function Login({ onLoginSuccess }) {
     const [username, setUsername] = useState('');

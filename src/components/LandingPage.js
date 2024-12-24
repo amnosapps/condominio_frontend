@@ -10,7 +10,7 @@ const Container = styled.div`
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 99%;
+    width: 100%;
     background-color: #f6f9fc;
 `;
 
@@ -25,12 +25,25 @@ const ImgLogo = styled.img`
     width: 200px;
     margin-top: -80px;
     margin-bottom: -50px;
+
+    @media (max-width: 768px) {
+        width: 250px;
+        margin-top: -60px;
+        margin-bottom: -60px;
+    }
 `;
 
 const ImgHeroSection = styled.img`
     width: 400px;
-    /* margin-top: -80px; */
-    /* margin-bottom: -50px; */
+
+    @media (max-width: 768px) {
+        width: 300px;
+        margin-top: 1rem;
+    }
+
+    @media (max-width: 480px) {
+        width: 100%;
+    }
 `;
 
 const HeaderContent = styled.div`
@@ -42,21 +55,20 @@ const HeaderContent = styled.div`
 
     @media (max-width: 768px) {
         width: 90%;
+        flex-direction: column;
+        gap: 1rem;
     }
-`;
-
-const Logo = styled.h1`
-    font-size: 24px;
-    font-weight: bold;
-    color: #F46600;
 `;
 
 const Nav = styled.nav`
     display: flex;
     gap: 2rem;
     align-items: center;
-`;
 
+    @media (max-width: 768px) {
+        gap: 1rem;
+    }
+`;
 
 const LoginButton = styled.a`
     font-size: 16px;
@@ -76,21 +88,26 @@ const LoginButton = styled.a`
     }
 
     @media (max-width: 768px) {
-        font-size: 16px;
-        padding: 0.75rem 1.0rem;
+        font-size: 18px;
+        padding: 0.5rem 1.5rem;
     }
 `;
 
 const HeroSection = styled.section`
     width: 100%;
-    height: 70vh;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    padding: 4rem 0;
+    padding: 4rem 1rem;
     background-color: white;
     text-align: center;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        text-align: center;
+        padding: 2rem 1rem;
+    }
 `;
 
 const HeroContent = styled.div`
@@ -99,6 +116,12 @@ const HeroContent = styled.div`
     justify-content: start;
     max-width: 600px;
     margin-bottom: 2rem;
+
+    @media (max-width: 768px) {
+        align-items: center;
+        text-align: center;
+        padding: 1rem 2rem;
+    }
 `;
 
 const HeroTitle = styled.h1`
@@ -108,14 +131,20 @@ const HeroTitle = styled.h1`
     text-align: start;
     color: #3C3C3C;
     line-height: 1.2;
-    
+
     > b {
-        color: #F46600 ;
-        
+        color: #F46600;
     }
 
     @media (max-width: 768px) {
-        font-size: 48px;
+        font-size: 36px;
+        text-align: center;
+        /* margin-bottom: 1rem; */
+    }
+
+    @media (max-width: 480px) {
+        font-size: 36px;
+        /* margin-bottom: 1rem; */
     }
 `;
 
@@ -127,6 +156,8 @@ const HeroSubtitle = styled.p`
 
     @media (max-width: 768px) {
         font-size: 18px;
+        text-align: center;
+        margin-bottom: -20px;
     }
 `;
 
@@ -146,55 +177,10 @@ const GradientButton = styled.button`
     }
 
     @media (max-width: 768px) {
-        font-size: 16px;
+        font-size: 24px;
         padding: 0.75rem 1.5rem;
+        width: 100%;
     }
-`;
-
-const FeaturesSection = styled.section`
-    width: 100%;
-    padding: 4rem 0;
-    background-color: #f6f9fc;
-`;
-
-const FeaturesGrid = styled.div`
-    display: flex;
-    justify-content: space-between;
-    max-width: 1200px;
-    gap: 2rem;
-    margin: 0 auto;
-    flex-wrap: wrap;
-
-    @media (max-width: 768px) {
-        flex-direction: column;
-    }
-`;
-
-const FeatureCard = styled.div`
-    flex: 1;
-    min-width: 250px;
-    max-width: 350px;
-    background-color: white;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    transition: box-shadow 0.3s ease;
-
-    &:hover {
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-    }
-`;
-
-const FeatureTitle = styled.h3`
-    font-size: 20px;
-    margin-bottom: 1rem;
-    color: #32325d;
-`;
-
-const FeatureDescription = styled.p`
-    font-size: 16px;
-    color: #525f7f;
 `;
 
 const Footer = styled.footer`
@@ -203,11 +189,6 @@ const Footer = styled.footer`
     background-color: #3C3C3C;
     color: white;
     text-align: center;
-`;
-
-const FooterText = styled.p`
-    font-size: 14px;
-    margin: 0;
 
     > a {
         text-decoration: none;
@@ -219,7 +200,6 @@ const FooterText = styled.p`
 const LandingPage = () => {
     const navigate = useNavigate();
 
-    // Navigate to the login page on button click
     const handleLoginClick = () => {
         navigate('/login');
     };
@@ -230,17 +210,17 @@ const LandingPage = () => {
                 <HeaderContent>
                     <ImgLogo src="/IMG_0659.PNG" alt="home" />
                     <Nav>
-                        <LoginButton onClick={() => navigate('/login')}>Entrar</LoginButton>
+                        <LoginButton onClick={handleLoginClick}>Entrar</LoginButton>
                     </Nav>
                 </HeaderContent>
             </Header>
 
             <HeroSection>
                 <HeroContent>
-                    <HeroSubtitle>
-                        Gestão de condomínio sem dor de cabeça
-                    </HeroSubtitle>
-                    <HeroTitle>A solução em <b>tecnologia</b> que garante <b>governança</b> para seu condomínio</HeroTitle>
+                    <HeroSubtitle>Gestão de condomínio sem dor de cabeça</HeroSubtitle>
+                    <HeroTitle>
+                        A solução em <b>tecnologia</b> que garante <b>governança</b> para seu condomínio
+                    </HeroTitle>
                     <GradientButton onClick={handleLoginClick}>Fale com nossa equipe</GradientButton>
                 </HeroContent>
                 <HeroContent>
@@ -248,31 +228,11 @@ const LandingPage = () => {
                 </HeroContent>
             </HeroSection>
 
-            {/* <FeaturesSection>
-                <FeaturesGrid>
-                    <FeatureCard>
-                        <FeatureTitle>Gestão de Reservas</FeatureTitle>
-                        <FeatureDescription>
-                            -
-                        </FeatureDescription>
-                    </FeatureCard>
-                    <FeatureCard>
-                        <FeatureTitle>Controle de Ocupação</FeatureTitle>
-                        <FeatureDescription>
-                            -
-                        </FeatureDescription>
-                    </FeatureCard>
-                    <FeatureCard>
-                        <FeatureTitle>Relatórios</FeatureTitle>
-                        <FeatureDescription>
-                            -
-                        </FeatureDescription>
-                    </FeatureCard>
-                </FeaturesGrid>
-            </FeaturesSection> */}
-
             <Footer>
-                <FooterText>© {new Date().getFullYear()} Desenvolvido por <a href='https://www.instagram.com/amnosapps/'>Amnos Apps 🚀</a></FooterText>
+                <p>
+                    © {new Date().getFullYear()} Desenvolvido por{' '}
+                    <a href="https://www.instagram.com/amnosapps/">Amnos Apps 🚀</a>
+                </p>
             </Footer>
         </Container>
     );

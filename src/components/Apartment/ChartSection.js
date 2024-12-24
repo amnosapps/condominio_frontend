@@ -40,7 +40,7 @@ function ChartSection({ apartments, onChartClick }) {
     );
 
     const createDonutData = (count, label, color) => ({
-        labels: [label, 'outros'],
+        labels: [label, 'Outros'],
         datasets: [
             {
                 data: [count, totalApartments - count],
@@ -62,7 +62,7 @@ function ChartSection({ apartments, onChartClick }) {
                             legend: { display: true, position: 'top' },
                         },
                         onClick: (_, elements) => {
-                            if (elements.length > 0) onChartClick(1);
+                            if (elements.length > 0) onChartClick({ filterType: 'status', value: 1 });
                         },
                     }}
                 />
@@ -76,7 +76,7 @@ function ChartSection({ apartments, onChartClick }) {
                             legend: { display: true, position: 'top' },
                         },
                         onClick: (_, elements) => {
-                            if (elements.length > 0) onChartClick(0);
+                            if (elements.length > 0) onChartClick({ filterType: 'status', value: 0 });
                         },
                     }}
                 />
@@ -90,7 +90,7 @@ function ChartSection({ apartments, onChartClick }) {
                             legend: { display: true, position: 'top' },
                         },
                         onClick: (_, elements) => {
-                            if (elements.length > 0) onChartClick(2);
+                            if (elements.length > 0) onChartClick({ filterType: 'status', value: 2 });
                         },
                     }}
                 />
@@ -105,6 +105,9 @@ function ChartSection({ apartments, onChartClick }) {
                         plugins: {
                             legend: { display: true, position: 'top' },
                         },
+                        onClick: (_, elements) => {
+                            if (elements.length > 0) onChartClick({ filterType: 'type_name', value: 'Temporada' });
+                        },
                     }}
                 />
             </ChartWrapper>
@@ -115,6 +118,9 @@ function ChartSection({ apartments, onChartClick }) {
                     options={{
                         plugins: {
                             legend: { display: true, position: 'top' },
+                        },
+                        onClick: (_, elements) => {
+                            if (elements.length > 0) onChartClick({ filterType: 'type_name', value: 'Moradia' });
                         },
                     }}
                 />

@@ -24,6 +24,7 @@ import RodapeCalendar from "./Calendar/RodapeComponent";
 import { registerLocale } from "react-datepicker";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import ReservationCreationModal from "./Reservation/ReservationCreation";
 
 registerLocale("pt-BR", ptBR);
 
@@ -72,6 +73,10 @@ const CalendarWrapper = styled.div`
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 const CalendarHeader = styled.div`
@@ -98,6 +103,10 @@ const CalendarHeader = styled.div`
     &:hover {
       background-color: rgba(255, 255, 255, 0.2);
     }
+
+    @media (max-width: 768px) {
+      font-size: 1.2rem;
+    }
   }
 
   select {
@@ -115,6 +124,15 @@ const CalendarHeader = styled.div`
       border-color: #C95C58; /* Match the border to the new background */
       outline: none; /* Remove the default outline */
     }
+
+    @media (max-width: 768px) {
+      font-size: 1.2rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1px;
   }
 `;
 
@@ -124,6 +142,10 @@ const DaysRow = styled.div`
   background-color: #f9f9f9;
   padding: 10px 0;
   border-bottom: 1px solid #e0e0e0;
+
+  @media (max-width: 768px) {
+    padding: 5px 0;
+  }
 `;
 
 const DayCell = styled.div`
@@ -428,6 +450,21 @@ const LoadingSpinner = styled.div`
   z-index: 1000;
 `;
 
+const CreateReservationButton = styled.button`
+  background-color: #fff;
+  color: #F46600;
+  border: 1px solid #F46600;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #F46600;
+    color: #fff;
+  }
+`;
+
 
 // List of month names in Portuguese
 const monthNames = [
@@ -440,6 +477,7 @@ const ReservationCalendar = ({ condominium }) => {
   const params = useParams();
   const selectedCondominium = condominium || params.condominium;
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loadingNavigation, setLoadingNavigation] = useState(false);
 
   const [viewType, setViewType] = useState("7");
@@ -475,7 +513,7 @@ const ReservationCalendar = ({ condominium }) => {
         filterType === "All" ? true : apartment.type_name === filterType
       );
 
-      setApartments(filteredApartments.map((apartment) => `${apartment.number}`));
+      setApartments(filteredApartments);
     } catch (error) {
       console.error("Error fetching apartments:", error);
     }
@@ -718,6 +756,8 @@ const ReservationCalendar = ({ condominium }) => {
     setShowDatePicker((prev) => !prev);
   };
 
+  const toggleModal = () => setIsModalOpen(!isModalOpen);
+
   return (
     <CalendarWrapper>
       <FilterContainer>
@@ -733,6 +773,9 @@ const ReservationCalendar = ({ condominium }) => {
             <option value="All">Todos</option>
           </FilterDropdown>
         </FiltersWrapper>
+        <CreateReservationButton onClick={toggleModal}>
+          + Criar Reserva
+        </CreateReservationButton>
         <ClearButton onClick={() => clearFilters()}>Limpar Filtros</ClearButton>
       </FilterContainer>
       <CalendarHeader>
@@ -801,11 +844,11 @@ const ReservationCalendar = ({ condominium }) => {
             </DaysRow>
 
             {apartments.map(apartment => (
-              <RoomRow key={apartment}>
-                <RoomLabel>{`Quarto ${apartment}`}</RoomLabel>
+              <RoomRow key={apartment.id}>
+                <RoomLabel>{`Quarto ${apartment.number}`}</RoomLabel>
                 {daysInView.map((day, dayIndex) => (
                   <DayCell key={dayIndex}>
-                    {getReservationBars(apartment, day).map((bar) => (
+                    {getReservationBars(apartment.number, day).map((bar) => (
                       <ReservationBar
                         key={bar.id}
                         style={{
@@ -842,6 +885,14 @@ const ReservationCalendar = ({ condominium }) => {
               </OccupationRow>
           </ScrollableContainer>
         </CalendarContainer>
+      )}
+      
+      {isModalOpen && (
+        <ReservationCreationModal
+          onClose={toggleModal}
+          loadReservations={fetchReservations}
+          apartments={apartments}
+        />
       )}
       {selectedReservation && (
           <ReservationModal
