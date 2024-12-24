@@ -344,7 +344,7 @@ const FiltersWrapper = styled.div`
 `;
 
 const FilterInput = styled.input`
-  padding: 8px 15px;
+  padding: 8px 6px;
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -368,6 +368,7 @@ const FilterDropdown = styled.select`
   padding: 8px 10px;
   border-radius: 4px;
   margin-left: 5px;
+  margin-right: 5px;
   font-size: 1rem;
   cursor: pointer;
 
@@ -761,6 +762,9 @@ const ReservationCalendar = ({ condominium }) => {
   return (
     <CalendarWrapper>
       <FilterContainer>
+        <CreateReservationButton onClick={toggleModal}>
+          + Criar Reserva
+        </CreateReservationButton>
         <FiltersWrapper>
           <FilterInput
             type="text"
@@ -772,11 +776,8 @@ const ReservationCalendar = ({ condominium }) => {
             <option value="Temporada">Temporada</option>
             <option value="All">Todos</option>
           </FilterDropdown>
+          <ClearButton onClick={() => clearFilters()}>Limpar Filtros</ClearButton>
         </FiltersWrapper>
-        <CreateReservationButton onClick={toggleModal}>
-          + Criar Reserva
-        </CreateReservationButton>
-        <ClearButton onClick={() => clearFilters()}>Limpar Filtros</ClearButton>
       </FilterContainer>
       <CalendarHeader>
         <div>
