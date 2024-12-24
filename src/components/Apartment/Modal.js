@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
+import LoadingSpinner from '../utils/loader';
+import MessageDropdown from './MessageDropdown';
 
 const Backdrop = styled.div`
     position: fixed;
@@ -194,6 +196,41 @@ const ReservationButton = styled.button`
     }
 `;
 
+const MessageSection = styled.div`
+    margin-top: 1rem;
+`;
+
+const Message = styled.div`
+    background: ${({ read }) => (read ? '#f8f9fa' : '#fff3cd')};
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    span {
+        font-size: 0.9rem;
+        color: #495057;
+    }
+`;
+
+const MarkAsReadButton = styled.button`
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+        background-color: #218838;
+    }
+`;
+
 function Modal({ selectedApartment, profile, onClose }) {
     const [residentToAdd, setResidentToAdd] = useState({ name: '', email: '', phone: '' });
     const [ownerToAdd, setOwnerToAdd] = useState({ name: '', email: '', phone: '', username: '', password: '' });
@@ -202,11 +239,32 @@ function Modal({ selectedApartment, profile, onClose }) {
         email: selectedApartment.owner_details?.email,
         phone: selectedApartment.owner_details?.phone,
     });
+
     const [isEditingOwner, setIsEditingOwner] = useState(false);
     const [showAddResidentInputs, setShowAddResidentInputs] = useState(false);
     const [residents, setResidents] = useState(selectedApartment.residents);
+    const [apartmentDetails, setApartmentDetails] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [newMessage, setNewMessage] = useState('');
 
-    console.log(selectedApartment)
+    
+    const fetchApartmentDetails = async (id) => {
+        const token = localStorage.getItem('accessToken');
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/${id}/`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setApartmentDetails(response.data);
+        } catch (error) {
+            console.error('Error fetching apartment details:', error.response || error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    useEffect(() => {
+        fetchApartmentDetails(selectedApartment.id);
+    }, [selectedApartment.id]);
 
     const handleAddResident = async () => {
         const token = localStorage.getItem('accessToken');
@@ -318,6 +376,37 @@ function Modal({ selectedApartment, profile, onClose }) {
         }
     };
 
+    const handleSendMessage = async () => {
+        const token = localStorage.getItem('accessToken');
+        try {
+            await axios.post(
+                `${process.env.REACT_APP_API_URL}/api/apartments/${selectedApartment.id}/add_message/`,
+                { message: newMessage },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setNewMessage('');
+            fetchApartmentDetails(selectedApartment.id); // Reload details
+        } catch (error) {
+            console.error('Error sending message:', error.response || error);
+            alert('Error sending message.');
+        }
+    };
+
+    const markMessageAsRead = async (index) => {
+        const token = localStorage.getItem('accessToken');
+        try {
+            await axios.post(
+                `${process.env.REACT_APP_API_URL}/api/apartments/${selectedApartment.id}/mark_message_read/`,
+                { message_index: index },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            fetchApartmentDetails(selectedApartment.id);
+        } catch (error) {
+            console.error('Error marking message as read:', error.response || error);
+            alert('Error marking message as read.');
+        }
+    };
+
     const handleRegisterReservation = async () => {
         const token = localStorage.getItem('accessToken');
         const newReservation = {
@@ -340,6 +429,10 @@ function Modal({ selectedApartment, profile, onClose }) {
             alert('Erro ao registrar reserva.');
         }
     };
+
+    if (loading) {
+        return <LoadingSpinner />
+    }
 
     return (
         <>
@@ -364,6 +457,14 @@ function Modal({ selectedApartment, profile, onClose }) {
                     <CloseButton onClick={onClose}>&times;</CloseButton>
                 </ModalHeader>
                 <ModalContent>
+                    <MessageDropdown
+                        messages={apartmentDetails?.messages || []}
+                        profile={profile}
+                        markMessageAsRead={markMessageAsRead}
+                        handleSendMessage={handleSendMessage}
+                        newMessage={newMessage}
+                        setNewMessage={setNewMessage}
+                    />
                     <h3 style={{ marginBottom: '-9px' }} >Proprietário</h3>
                     {!ownerDetails.name ? (
                         <>
