@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Doughnut } from 'react-chartjs-2';
+import Chart from 'chart.js/auto';
 
 const ChartContainer = styled.div`
     display: flex;
@@ -12,8 +13,8 @@ const ChartContainer = styled.div`
 `;
 
 const ChartWrapper = styled.div`
-    width: 150px;
-    height: 150px;
+    width: 120px;
+    height: 120px;
     text-align: center;
 `;
 
@@ -50,6 +51,21 @@ function ChartSection({ apartments, onChartClick }) {
         ],
     });
 
+    const centerTextPlugin = {
+        id: 'centerText',
+        beforeDraw(chart) {
+            const { ctx, width, height } = chart;
+            const count = chart.data.datasets[0].data[0];
+            ctx.save();
+            ctx.font = 'bold 16px Arial';
+            ctx.fillStyle = '#000';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(count, width / 2, height / 2);
+            ctx.restore();
+        },
+    };
+
     return (
         <ChartContainer>
             {/* Status Charts */}
@@ -57,10 +73,12 @@ function ChartSection({ apartments, onChartClick }) {
                 <h3>Ocupados</h3>
                 <Doughnut
                     data={createDonutData(statusCounts.occupied, 'Ocupados', '#ff6384')}
+                    plugins={[centerTextPlugin]}
                     options={{
                         plugins: {
-                            legend: { display: true, position: 'top' },
+                            legend: { display: false }, // Hide legend for better focus on count
                         },
+                        maintainAspectRatio: false,
                         onClick: (_, elements) => {
                             if (elements.length > 0) onChartClick({ filterType: 'status', value: 1 });
                         },
@@ -71,10 +89,12 @@ function ChartSection({ apartments, onChartClick }) {
                 <h3>Disponíveis</h3>
                 <Doughnut
                     data={createDonutData(statusCounts.available, 'Disponíveis', '#36a2eb')}
+                    plugins={[centerTextPlugin]}
                     options={{
                         plugins: {
-                            legend: { display: true, position: 'top' },
+                            legend: { display: false },
                         },
+                        maintainAspectRatio: false,
                         onClick: (_, elements) => {
                             if (elements.length > 0) onChartClick({ filterType: 'status', value: 0 });
                         },
@@ -85,10 +105,12 @@ function ChartSection({ apartments, onChartClick }) {
                 <h3>Manutenção</h3>
                 <Doughnut
                     data={createDonutData(statusCounts.maintenance, 'Manutenção', '#ffce56')}
+                    plugins={[centerTextPlugin]}
                     options={{
                         plugins: {
-                            legend: { display: true, position: 'top' },
+                            legend: { display: false },
                         },
+                        maintainAspectRatio: false,
                         onClick: (_, elements) => {
                             if (elements.length > 0) onChartClick({ filterType: 'status', value: 2 });
                         },
@@ -101,10 +123,12 @@ function ChartSection({ apartments, onChartClick }) {
                 <h3>Temporada</h3>
                 <Doughnut
                     data={createDonutData(typeCounts.temporada, 'Temporada', '#4caf50')}
+                    plugins={[centerTextPlugin]}
                     options={{
                         plugins: {
-                            legend: { display: true, position: 'top' },
+                            legend: { display: false },
                         },
+                        maintainAspectRatio: false,
                         onClick: (_, elements) => {
                             if (elements.length > 0) onChartClick({ filterType: 'type_name', value: 'Temporada' });
                         },
@@ -115,10 +139,12 @@ function ChartSection({ apartments, onChartClick }) {
                 <h3>Moradia</h3>
                 <Doughnut
                     data={createDonutData(typeCounts.moradia, 'Moradia', '#ff9800')}
+                    plugins={[centerTextPlugin]}
                     options={{
                         plugins: {
-                            legend: { display: true, position: 'top' },
+                            legend: { display: false },
                         },
+                        maintainAspectRatio: false,
                         onClick: (_, elements) => {
                             if (elements.length > 0) onChartClick({ filterType: 'type_name', value: 'Moradia' });
                         },
