@@ -79,12 +79,13 @@ function ApartmentCard({ apartment, onClick }) {
         return today >= checkin && today <= checkout;
     };
 
-    const activeReservation = apartment.last_reservations?.find(isReservationActive);
+    const activeReservation = apartment?.last_reservations?.find(isReservationActive);
 
     const guestCount = activeReservation
-        ? (activeReservation.additional_guests?.length || 0) + 1
+        ? (activeReservation?.additional_guests?.length || 0) + 1
         : 0;
 
+    console.log(activeReservation)
     return (
         <ApartmentCardContainer status={apartment.status} onClick={onClick}>
             <ApartmentNumber>{apartment.number}</ApartmentNumber>
@@ -109,7 +110,7 @@ function ApartmentCard({ apartment, onClick }) {
                 {apartment.type_name === 'Temporada' && (
                     <div>
                         <FaUser />
-                        Pessoas: {activeReservation ? ({guestCount}) : 0}
+                        Pessoas: {activeReservation ? guestCount : 0}
                     </div>
                 )}
             </InfoContainer>
