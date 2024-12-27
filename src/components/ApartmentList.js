@@ -185,6 +185,26 @@ const ModalCloseButton = styled.button`
     }
 `;
 
+const ClearFiltersButton = styled.button`
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    background-color: #fff;
+    color: #F46600;
+    border: 1px solid #F46600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+        background-color: #c82333;
+    }
+
+    @media (max-width: 480px) {
+        width: 100%;
+        padding: 0.5rem;
+    }
+`;
+
 function ApartmentList({ condominium }) {
     const params = useParams();
     const selectedCondominium = condominium || params.condominium;
@@ -277,6 +297,13 @@ function ApartmentList({ condominium }) {
         return matchesSearch && matchesType && matchesStatus && matchesCheckinToday;
     });
 
+    const clearFilters = () => {
+        setSearch('');
+        setTypeFilter('');
+        setStatusFilter('');
+        setCheckinTodayFilter(false);
+    };
+
     const handleApartmentCreated = (newApartment) => {
         setApartments((prev) => [...prev, newApartment]);
     };
@@ -319,8 +346,11 @@ function ApartmentList({ condominium }) {
                             <option value="1">Ocupado</option>
                             <option value="2">Manutenção</option>
                         </FilterSelect>
+                        <ClearFiltersButton onClick={clearFilters}>
+                            Limpar Filtros
+                        </ClearFiltersButton>
                         {profile.user_type === 'admin' && (
-                            <CreateButton onClick={() => setCreateModalOpen(true)}>Criar Apartamento</CreateButton>
+                            <CreateButton onClick={() => setCreateModalOpen(true)}>+ Apartamento</CreateButton>
                         )}
                     </ControlsContainer>
                     <ChartSection
