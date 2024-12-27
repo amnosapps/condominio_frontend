@@ -85,7 +85,6 @@ function ApartmentCard({ apartment, onClick }) {
         ? (activeReservation?.additional_guests?.length || 0) + 1
         : 0;
 
-    console.log(activeReservation)
     return (
         <ApartmentCardContainer status={apartment.status} onClick={onClick}>
             <ApartmentNumber>{apartment.number}</ApartmentNumber>
@@ -104,12 +103,12 @@ function ApartmentCard({ apartment, onClick }) {
                 {apartment.type_name === 'Moradia' && (
                     <div>
                         <FaUsers />
-                        {apartment.residents?.length || 0}
+                        Pessoas {apartment.residents?.length || 0}
                     </div>
                 )}
                 {apartment.type_name === 'Temporada' && (
                     <div>
-                        <FaUser />
+                        <FaUsers />
                         Pessoas: {activeReservation ? guestCount : 0}
                     </div>
                 )}

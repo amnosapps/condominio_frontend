@@ -220,6 +220,7 @@ const TableCell = styled.td`
 
 const OccupationSection = styled.div`
   margin-top: 3rem;
+  text-align: center;
 
   @media (max-width: 768px) {
     margin-top: 2rem;
@@ -280,7 +281,7 @@ function CondominiumReport({ condominium }) {
   }, [selectedCondominium]);
 
   if (loading) {
-    return <LoadingSpinner />
+    return <LoadingSpinner />;
   }
 
   const filterReservationsByDateRange = (start, end) => {
@@ -320,8 +321,7 @@ function CondominiumReport({ condominium }) {
     );
 
     const vacantApartments =
-      apartments.length -
-      filteredReservations.filter((reservation) =>
+      apartments.length - filteredReservations.filter((reservation) =>
         apartments.some(
           (apartment) => apartment.number === reservation.apartment
         )
@@ -330,75 +330,79 @@ function CondominiumReport({ condominium }) {
     return { totalPeople, vacantApartments };
   };
 
-    const getOccupationData = () => {
-        const now = new Date();
-        let dateRange;
-    
-        switch (viewMode) {
-        case "today":
-            dateRange = { start: startOfDay(now), end: endOfDay(now) };
-            break;
-        case "week":
-            dateRange = { start: startOfWeek(now), end: endOfWeek(now) };
-            break;
-        case "month":
-            dateRange = { start: startOfMonth(now), end: endOfMonth(now) };
-            break;
-        default:
-            dateRange = { start: startOfDay(now), end: endOfDay(now) };
-        }
-    
-        const filteredReservations = filterReservationsByDateRange(
-        dateRange.start,
-        dateRange.end
-        );
-    
-        return apartments.map((apartment) => {
+  const getOccupationData = () => {
+    const now = new Date();
+    let dateRange;
+
+    switch (viewMode) {
+      case "today":
+        dateRange = { start: startOfDay(now), end: endOfDay(now) };
+        break;
+      case "week":
+        dateRange = { start: startOfWeek(now), end: endOfWeek(now) };
+        break;
+      case "month":
+        dateRange = { start: startOfMonth(now), end: endOfMonth(now) };
+        break;
+      default:
+        dateRange = { start: startOfDay(now), end: endOfDay(now) };
+    }
+
+    const filteredReservations = filterReservationsByDateRange(
+      dateRange.start,
+      dateRange.end
+    );
+
+    return apartments
+      .filter((apartment) => apartment.type_name === "Temporada") // Filter by "Temporada"
+      .map((apartment) => {
         const relatedReservations = filteredReservations.filter(
-            (reservation) => reservation.apartment === apartment.id
+          (reservation) => reservation.apartment === apartment.id
         );
-    
+
         const totalGuests = relatedReservations.reduce(
-            (sum, reservation) => sum + (reservation.additional_guests.length + 1),
-            0
+          (sum, reservation) => sum + (reservation.additional_guests.length + 1),
+          0
         );
-    
+
         const totalDaysOccupied = relatedReservations.reduce((sum, reservation) => {
-            const checkin = reservation.checkin ? parseISO(reservation.checkin) : null;
-            const checkout = reservation.checkout
+          const checkin = reservation.checkin ? parseISO(reservation.checkin) : null;
+          const checkout = reservation.checkout
             ? parseISO(reservation.checkout)
             : null;
-    
-            if (checkin && checkout) {
+
+          if (checkin && checkout) {
             const overlapStart = checkin > dateRange.start ? checkin : dateRange.start;
             const overlapEnd = checkout < dateRange.end ? checkout : dateRange.end;
-    
-            if (isWithinInterval(overlapStart, { start: dateRange.start, end: dateRange.end }) ||
-                isWithinInterval(overlapEnd, { start: dateRange.start, end: dateRange.end })) {
-                const occupiedDays = Math.ceil(
+
+            if (
+              isWithinInterval(overlapStart, { start: dateRange.start, end: dateRange.end }) ||
+              isWithinInterval(overlapEnd, { start: dateRange.start, end: dateRange.end })
+            ) {
+              const occupiedDays = Math.ceil(
                 (overlapEnd - overlapStart) / (1000 * 60 * 60 * 24)
-                );
-                return sum + occupiedDays;
+              );
+              return sum + occupiedDays;
             }
-            }
-            return sum;
+          }
+          return sum;
         }, 0);
-    
+
         return {
-            apartment: apartment.number,
-            status: relatedReservations.length > 0 ? "Ocupado" : "Livre",
-            guests: totalGuests,
-            daysOccupied: totalDaysOccupied,
+          apartment: apartment.number,
+          status: relatedReservations.length > 0 ? "Ocupado" : "Livre",
+          guests: totalGuests,
+          daysOccupied: totalDaysOccupied,
         };
-        });
-    };
-  
+      });
+  };
 
   const occupationData = getOccupationData();
+
   const { totalPeople, vacantApartments } = getStats();
   const totalApartments = apartments.length;
   const maintenanceApartments = apartments.filter(
-    (apartment) => apartment.is_under_maintenance
+    (apartment) => apartment.status === 2
   ).length;
 
   // Stats Calculation
@@ -445,6 +449,19 @@ function CondominiumReport({ condominium }) {
     }
   });
 
+  // Add residents to monthly guests count
+  apartments
+    .filter((apartment) => apartment.type_name === "Moradia")
+    .forEach((apartment) => {
+      if (apartment.residents?.length) {
+        apartment.residents.forEach(() => {
+          reservationsByMonth.forEach((_, month) => {
+            reservationsByMonth[month] += 1; // Add 1 for each resident
+          });
+        });
+      }
+    });
+
   const guestsByMonthData = {
     labels: [
       "Janeiro",
@@ -471,16 +488,9 @@ function CondominiumReport({ condominium }) {
     ],
   };
 
-  const handleYearChange = (direction) => {
-    if (direction === "prev") {
-      setSelectedYear((prevYear) => prevYear - 1);
-    } else if (direction === "next") {
-      setSelectedYear((prevYear) => prevYear + 1);
-    }
-  };
-
   return (
     <ReportContainer>
+      {/* View Selector */}
       <ViewSelector>
         <button
           onClick={() => setViewMode("today")}
@@ -501,7 +511,8 @@ function CondominiumReport({ condominium }) {
           Esse Mês
         </button>
       </ViewSelector>
-      <h3>Ocupação por Apartamento</h3>
+
+      {/* Stats and Table */}
       <StatsGrid>
         <StatCard>
           <StatNumber>{totalPeople}</StatNumber>
@@ -521,7 +532,9 @@ function CondominiumReport({ condominium }) {
         </StatCard>
       </StatsGrid>
 
+      {/* Occupation Section */}
       <OccupationSection>
+        <h3>Ocupação por temporada</h3>
         <OccupationTable>
           <thead>
             <tr>
@@ -546,22 +559,7 @@ function CondominiumReport({ condominium }) {
 
       {/* Guests by Month Section */}
       <ChartContainer>
-        <h3>Hóspedes por mês</h3>
-        <YearNavigation>
-          <button
-            onClick={() => handleYearChange("prev")}
-            disabled={selectedYear <= new Date().getFullYear() - 2}
-          >
-            Ano Anterior
-          </button>
-          <span>{selectedYear}</span>
-          <button
-            onClick={() => handleYearChange("next")}
-            disabled={selectedYear >= new Date().getFullYear() + 2}
-          >
-            Próximo Ano
-          </button>
-        </YearNavigation>
+        <h3>Ocupação Total mês/mês</h3>
         <Bar
           data={guestsByMonthData}
           options={{
@@ -580,9 +578,9 @@ function CondominiumReport({ condominium }) {
           }}
         />
       </ChartContainer>
-
     </ReportContainer>
   );
 }
 
 export default CondominiumReport;
+

@@ -194,6 +194,7 @@ const RoomLabel = styled.div`
 `;
 
 const OccupationRow = styled.div`
+  /* max-width: ; */
   display: flex;
   align-items: center;
   border-top: 1px solid #e0e0e0;
@@ -203,6 +204,7 @@ const OccupationRow = styled.div`
   background-color: #ffffff; /* Ensure consistent background color */
   z-index: 10; /* Ensure it is above other content */
   box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1); /* Add subtle shadow for visibility */
+  height: 30px;
 
   &:nth-child(even) {
     background-color: #fafafa;
@@ -217,6 +219,9 @@ const OccupationLabel = styled.div`
   font-weight: bold;
   color: #666;
   border-right: 1px solid #e0e0e0;
+  justify-content: center;
+  align-items: center;
+  display: flex;
 `;
 
 const OccupationCell = styled.div`
@@ -511,7 +516,7 @@ const ReservationCalendar = ({ condominium }) => {
       });
 
       const filteredApartments = response.data.filter((apartment) =>
-        filterType === "All" ? true : apartment.type_name === filterType
+        filterType === "Todos" ? true : apartment.type_name === filterType
       );
 
       setApartments(filteredApartments);
@@ -589,6 +594,18 @@ const ReservationCalendar = ({ condominium }) => {
       normalizeDate(day) >= normalizeDate(reservation.checkin) && 
       normalizeDate(day) <= normalizeDate(reservation.checkout))
     .reduce((totalGuests, reservation) => totalGuests + (reservation.additional_guests.length + 1),0);
+  };
+
+  const getTotalResidentsForDay = (day) => {
+    return apartments
+      .filter((apartment) => apartment.type_name === "Moradia")
+      .reduce((totalResidents, apartment) => totalResidents + (apartment.residents?.length || 0), 0);
+  };
+
+  const getTotalGuestsAndResidentsForDay = (day) => {
+    const totalGuests = getTotalGuestsForDay(day);
+    const totalResidents = getTotalResidentsForDay(day);
+    return totalGuests + totalResidents;
   };
 
   const handleReservationClick = (reservation) => {
@@ -774,7 +791,7 @@ const ReservationCalendar = ({ condominium }) => {
           />
           <FilterDropdown value={filterType} onChange={handleFilterTypeChange}>
             <option value="Temporada">Temporada</option>
-            <option value="All">Todos</option>
+            <option value="Todos">Todos</option>
           </FilterDropdown>
           <ClearButton onClick={() => clearFilters()}>Limpar Filtros</ClearButton>
         </FiltersWrapper>
@@ -877,13 +894,38 @@ const ReservationCalendar = ({ condominium }) => {
               
             ))}
             <OccupationRow>
-                <OccupationLabel>Ocupação</OccupationLabel>
-                {daysInView.map((day, dayIndex) => (
-                  <OccupationCell key={dayIndex}>
-                    <p>{getTotalGuestsForDay(day)}</p>
-                  </OccupationCell>
-                ))}
-              </OccupationRow>
+              <OccupationLabel>Hóspedes</OccupationLabel>
+              {daysInView.map((day, dayIndex) => (
+                <OccupationCell key={dayIndex}>
+                  <p>{getTotalGuestsForDay(day)}</p>
+                </OccupationCell>
+              ))}
+            </OccupationRow>
+
+            
+            {filterType === 'Todos' && (
+              <>
+                <OccupationRow>
+                  <OccupationLabel>Moradores</OccupationLabel>
+                  {daysInView.map((day, dayIndex) => (
+                    <OccupationCell key={dayIndex}>
+                      <p>{getTotalResidentsForDay(day)}</p>
+                    </OccupationCell>
+                  ))}
+                </OccupationRow>
+                
+                <OccupationRow>
+                  <OccupationLabel>Ocupação Total</OccupationLabel>
+                  {daysInView.map((day, dayIndex) => (
+                    <OccupationCell key={dayIndex}>
+                      <p>{getTotalGuestsAndResidentsForDay(day)}</p>
+                    </OccupationCell>
+                  ))}
+                </OccupationRow>
+              </>
+            )}
+            {/* Total Occupation Row */}
+            
           </ScrollableContainer>
         </CalendarContainer>
       )}
