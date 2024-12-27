@@ -466,7 +466,7 @@ function Modal({ selectedApartment, profile, onClose }) {
                         setNewMessage={setNewMessage}
                     />
                     <h3 style={{ marginBottom: '-9px' }} >Proprietário</h3>
-                    {!ownerDetails.name ? (
+                    {!ownerDetails.name && profile.user_type === 'admin' ? (
                         <>
                             <h4 style={{ marginBottom: '-3px' }} >Adicionar Proprietário</h4>
                             <ModalInput
@@ -512,7 +512,7 @@ function Modal({ selectedApartment, profile, onClose }) {
                             <ModalLabel>Nome: {ownerDetails.name || 'N/A'}</ModalLabel>
                             <ModalLabel>Email: {ownerDetails.email || 'N/A'}</ModalLabel>
                             <ModalLabel>Telefone: {ownerDetails.phone || 'N/A'}</ModalLabel>
-                            {profile?.is_staff && (
+                            {profile.user_type === 'admin' && (
                                 <RemoveButton onClick={handleRemoveOwner}>Remover Proprietário</RemoveButton>
                             )}
                         </>
@@ -527,7 +527,7 @@ function Modal({ selectedApartment, profile, onClose }) {
                                         <h4>{resident.name}</h4>
                                         <span>Telefone: {resident.phone}</span>
                                         <span>Email: {resident.email}</span>
-                                        {profile?.is_staff && (
+                                        {profile.user_type === 'admin' && (
                                             <RemoveButton
                                                 onClick={() => handleRemoveResident(resident.id)}
                                             >
@@ -539,7 +539,7 @@ function Modal({ selectedApartment, profile, onClose }) {
                             ) : (
                                 <p>Sem residentes ativos no momento.</p>
                             )}
-                            {profile?.is_staff && (
+                            {profile.user_type === 'admin' && (
                                 <>
                                     {!showAddResidentInputs ? (
                                         <AddResidentButton
