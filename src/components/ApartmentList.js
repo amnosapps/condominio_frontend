@@ -7,6 +7,7 @@ import Modal from './Apartment/Modal';
 import styled from 'styled-components';
 import CreateApartmentModal from './Apartment/CreateApartmentModal';
 import LoadingSpinner from './utils/loader';
+import { startOfDay, endOfDay, parseISO, isWithinInterval } from 'date-fns';
 
 const ApartmentListContainer = styled.div`
     margin-top: 100px;
@@ -38,6 +39,41 @@ const ControlsContainer = styled.div`
     @media (max-width: 768px) {
         flex-direction: column;
         gap: 0.75rem;
+    }
+`;
+
+const CheckboxLabel = styled.label`
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #555;
+    cursor: pointer;
+    margin-right: 20px;
+
+    input {
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #0056b3;
+        border-radius: 4px;
+        background-color: #fff;
+        cursor: pointer;
+        transition: background-color 0.2s, border-color 0.2s;
+
+        &:checked {
+            background-color: #007bff;
+            border-color: #0056b3;
+        }
+
+        &:hover {
+            border-color: #007bff;
+        }
+
+        &:focus {
+            outline: 2px solid rgba(0, 123, 255, 0.5);
+        }
     }
 `;
 
@@ -161,6 +197,7 @@ function ApartmentList({ condominium }) {
     const [search, setSearch] = useState('');
     const [typeFilter, setTypeFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [checkinTodayFilter, setCheckinTodayFilter] = useState(false);
     const [createModalOpen, setCreateModalOpen] = useState(false);
 
     const fetchUserProfile = async () => {
@@ -210,6 +247,21 @@ function ApartmentList({ condominium }) {
         setFilter(status);
     };
 
+    const handleCheckinTodayChange = (e) => {
+        setCheckinTodayFilter(e.target.checked);
+    };
+
+    const isCheckinToday = (apartment) => {
+        const today = new Date();
+        const todayStart = startOfDay(today);
+        const todayEnd = endOfDay(today);
+
+        return apartment.last_reservations.some((reservation) => {
+            const checkinDate = reservation.checkin ? parseISO(reservation.checkin) : null;
+            return checkinDate && isWithinInterval(checkinDate, { start: todayStart, end: todayEnd });
+        });
+    };
+
     const handleChartClick = ({ filterType, value }) => {
         if (filterType === 'status') setStatusFilter(value);
         if (filterType === 'type_name') setTypeFilter(value);
@@ -220,8 +272,9 @@ function ApartmentList({ condominium }) {
         const matchesSearch = search === '' || apartment.number.includes(search);
         const matchesType = typeFilter === '' || apartment.type_name === typeFilter;
         const matchesStatus = statusFilter === '' || apartment.status === parseInt(statusFilter, 10);
+        const matchesCheckinToday = !checkinTodayFilter || isCheckinToday(apartment);
 
-        return matchesSearch && matchesType && matchesStatus;
+        return matchesSearch && matchesType && matchesStatus && matchesCheckinToday;
     });
 
     const handleApartmentCreated = (newApartment) => {
@@ -235,6 +288,14 @@ function ApartmentList({ condominium }) {
             ) : (
                 <>
                     <ControlsContainer>
+                        <CheckboxLabel>
+                            <input
+                                type="checkbox"
+                                checked={checkinTodayFilter}
+                                onChange={handleCheckinTodayChange}
+                            />
+                            Check-ins Hoje
+                        </CheckboxLabel>
                         <SearchInput
                             type="text"
                             placeholder="Buscar por número"

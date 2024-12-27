@@ -159,7 +159,20 @@ const RemoveButton = styled.button`
 `;
 
 const ReservationCard = styled.div`
-    background: #f8f9fa;
+    background: ${(props) => {
+        const today = new Date();
+        const checkinDate = new Date(props.checkin);
+        const checkoutDate = new Date(props.checkout);
+
+        if (checkinDate.toDateString() === today.toDateString()) {
+            return 'rgba(255, 165, 0, 0.3)'; // Light orange for check-in today
+        } else if (checkinDate < today && checkoutDate >= today) {
+            return 'rgba(76, 175, 80, 0.3)'; // Light green for active reservation
+        } else if (checkoutDate < today) {
+            return 'rgba(158, 158, 158, 0.3)'; // Light grey for past reservation
+        }
+        return '#f8f9fa'; // Default background
+    }};
     border: 1px solid #e9ecef;
     border-radius: 8px;
     padding: 1rem;
@@ -636,7 +649,11 @@ function Modal({ selectedApartment, profile, onClose }) {
                             </ReservationButton> */}
                             {selectedApartment.last_reservations.length > 0 ? (
                                 selectedApartment.last_reservations.map((reservation) => (
-                                    <ReservationCard key={reservation.id}>
+                                    <ReservationCard 
+                                        key={reservation.id}
+                                        checkin={reservation.checkin}
+                                        checkout={reservation.checkout}
+                                    >
                                         <h4>{reservation.guest_name}</h4>
                                         <span>Check-in: {new Date(reservation.checkin).toLocaleString()}</span>
                                         <span>Check-out: {new Date(reservation.checkout).toLocaleString()}</span>
