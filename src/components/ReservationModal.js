@@ -412,6 +412,60 @@ const ReservationModal = ({
     handleChange("guest_phone", value);
   };
 
+  const handleUpdateReservation = async () => {
+    if (!window.confirm("Você tem certeza que deseja atualizar as informações?")) return;
+  
+    setIsSubmitting(true);
+  
+    const token = localStorage.getItem("accessToken");
+    const formData = new FormData();
+  
+    // Append updated reservation data
+    formData.append("guest_name", reservationData.guest_name);
+    formData.append("guest_document", reservationData.guest_document);
+    formData.append("guest_phone", reservationData.guest_phone || "");
+    formData.append("guests_qty", 1 + additionalGuests.length); // Main guest + additional guests
+    formData.append("has_children", additionalGuests.some((guest) => guest.is_child));
+    
+    // Address data
+    Object.entries(address).forEach(([key, value]) => {
+      formData.append(key, value || "");
+    });
+  
+    // Vehicle plate if applicable
+    if (hasCar) {
+      formData.append("vehicle_plate", vehiclePlate);
+    }
+  
+    // Append additional guests
+    formData.append("additional_guests", JSON.stringify(additionalGuests));
+  
+    try {
+      const response = await axios.patch(
+        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        alert("Informações atualizadas com sucesso!");
+        loadData();
+      } else {
+        alert("Falha ao atualizar as informações. Tente novamente.");
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar a reserva:", error);
+      alert("Erro ao atualizar as informações. Verifique os dados e tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleSaveCheckin = async () => {
     const confirmMessage = reservationData.checkin_at
       ? "Você tem certeza que deseja atualizar as informações?"
@@ -824,12 +878,14 @@ const ReservationModal = ({
           existingPhotos={reservationData.additional_photos}
           onPhotosChange={updatePhotos}
         />
-
         <div style={{ display: "flex", justifyContent: "start", gap: "10px" }}>
+          <GreenButton onClick={handleUpdateReservation} disabled={isSubmitting}>
+            {isSubmitting ? "Atualizando..." : "Atualizar Informações"}
+          </GreenButton>
           {reservationData.checkin_at ? (
             <>
               <GreenButton onClick={handleSaveCheckin} disabled={isSubmitting}>
-                {isSubmitting ? "Enviando..." : "Atualizar Informações"}
+                {isSubmitting ? "Enviando..." : "Checkin"}
               </GreenButton>
               {reservationData.checkout_at ? (
                 <RedButton style={{ backgroundColor: 'grey' }} disabled={true}>
