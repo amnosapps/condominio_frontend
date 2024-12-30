@@ -1,24 +1,8 @@
-# Stage 1: Build the React app
-FROM node:18.17.0 AS build
-
-# Set working directory
-WORKDIR /app
-
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm install
-
-# Copy the rest of the application source code
-COPY . .
-
-# Build the React app for production
-RUN npm run build
-
-# Stage 2: Serve the app with Nginx
+# Use Nginx to serve the pre-built app
 FROM nginx:alpine
 
-# Copy the built static files from the build stage
-COPY --from=build /app/build /usr/share/nginx/html
+# Copy the Nginx configuration if you have a custom one (optional)
+# COPY nginx.conf /etc/nginx/nginx.conf
 
 # Expose port 80
 EXPOSE 80
