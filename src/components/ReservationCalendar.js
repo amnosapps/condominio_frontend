@@ -63,7 +63,6 @@ const CalendarWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  justify-items: center;
   margin: auto;
   font-family: 'Roboto', Arial, sans-serif;
   background-color: #ffffff;
@@ -236,16 +235,15 @@ const RoomLabel = styled.div`
 `;
 
 const OccupationRow = styled.div`
-  /* max-width: ; */
+  width: ${(props) => `${props.daysInView * 120}px`}; 
   display: flex;
-  align-items: center;
+  align-items: stretch; 
   border-top: 1px solid #e0e0e0;
-  align-items: stretch; /* Ensure content aligns properly */
   position: sticky; /* Makes the row stick in place */
   bottom: 0; /* Sticks to the bottom of the container */
   background-color: #ffffff; /* Ensure consistent background color */
   z-index: 10; /* Ensure it is above other content */
-  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1); /* Add subtle shadow for visibility */
+  box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.1); /* Add subtle shadow for visibility */
   height: 30px;
 
   &:nth-child(even) {
@@ -256,6 +254,8 @@ const OccupationRow = styled.div`
 const OccupationLabel = styled.div`
   flex: 0 0 120px; /* Fixed width of 120px */
   padding: 15px;
+  left: 0;
+  position: sticky;
   background-color: #f5f5f5;
   text-align: center;
   font-weight: bold;
@@ -264,22 +264,26 @@ const OccupationLabel = styled.div`
   justify-content: center;
   align-items: center;
   display: flex;
+  z-index: 25; /* Ensure it stays on top */
 `;
 
 const OccupationCell = styled.div`
+  flex: 0 0 120px; /* Fixed width for each day cell */
+  display: flex;
   align-items: center;
   justify-content: center;
-  display: flex;
-  flex: 1;
   font-size: 0.9rem;
   color: #555;
+  padding: 8px;
   border-right: 1px solid #e0e0e0;
+  border-top: 1px solid #e0e0e0;
+
   background-color: ${(props) =>
     props.isCurrentDay ? '#e3f2fd' : props.isWeekend ? '#ffe0dd' : 'white'};
   transition: background-color 0.3s;
 
   &:last-child {
-    border-right: none;
+    border-right: none; /* Remove border for the last cell */
   }
 
   &:hover {
@@ -291,7 +295,6 @@ const OccupationCell = styled.div`
 const ReservationBar = styled.div`
   position: absolute;
   left: ${(props) => `calc(${props.startOffset}% + 5px)`}; 
-  top: ${(props) => (props.stackIndex || 0) * 40}px;
   background-color: ${(props) => {
     // checkin proximo
     if (!props.checkinAt && isToday(props.checkin)) {
@@ -343,8 +346,6 @@ const Tooltip = styled.div`
   border-radius: 4px;
   position: absolute;
   z-index: 10;
-  top: -50px;
-  left: 50%;
   transform: translateX(-50%);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   transition: opacity 0.3s;
@@ -941,9 +942,6 @@ const ReservationCalendar = ({ condominium }) => {
                         onClick={() => handleReservationClick(bar)}
                       >
                         <strong>{bar.guest_name}</strong>
-                        <Tooltip className="tooltip">
-                          <p><strong>Hóspede:</strong> {bar.guest_name}</p>
-                        </Tooltip>
                       </ReservationBar>
                     ))}
 
@@ -952,14 +950,14 @@ const ReservationCalendar = ({ condominium }) => {
               </RoomRow>
               
             ))}
-            {/* <OccupationRow>
+            <OccupationRow daysInView={daysInView.length}>
               <OccupationLabel>Hóspedes</OccupationLabel>
               {daysInView.map((day, dayIndex) => (
                 <OccupationCell key={dayIndex}>
                   <p>{getTotalGuestsForDay(day)}</p>
                 </OccupationCell>
               ))}
-            </OccupationRow> */}
+            </OccupationRow>
 
             
             {filterType === 'Todos' && (
