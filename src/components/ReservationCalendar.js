@@ -962,7 +962,7 @@ const ReservationCalendar = ({ condominium }) => {
             
             {filterType === 'Todos' && (
               <>
-                <OccupationRow>
+                <OccupationRow daysInView={daysInView.length}>
                   <OccupationLabel>Moradores</OccupationLabel>
                   {daysInView.map((day, dayIndex) => (
                     <OccupationCell key={dayIndex}>
@@ -971,7 +971,7 @@ const ReservationCalendar = ({ condominium }) => {
                   ))}
                 </OccupationRow>
                 
-                <OccupationRow>
+                <OccupationRow daysInView={daysInView.length}>
                   <OccupationLabel>Ocupação Total</OccupationLabel>
                   {daysInView.map((day, dayIndex) => (
                     <OccupationCell key={dayIndex}>
@@ -981,7 +981,6 @@ const ReservationCalendar = ({ condominium }) => {
                 </OccupationRow>
               </>
             )}
-            {/* Total Occupation Row */}
             
           </ScrollableContainer>
         </CalendarContainer>
