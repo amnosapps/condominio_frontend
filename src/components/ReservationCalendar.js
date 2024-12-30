@@ -61,7 +61,7 @@ const CalendarContainer = styled.div`
 `;
 
 const CalendarWrapper = styled.div`
-  width: 98%;
+  max-width: 1400px;
   max-height: 98%;
   display: flex;
   flex-direction: column;
@@ -139,31 +139,58 @@ const CalendarHeader = styled.div`
 
 const DaysRow = styled.div`
   display: flex;
-  background-color: #f9f9f9;
-  padding: 10px 0;
-  border-bottom: 1px solid #e0e0e0;
+  width: ${(props) => `${props.daysInView * 120}px`}; 
+  position: sticky;
+  top: 0;
+  z-index: 10;
 
   @media (max-width: 768px) {
-    padding: 5px 0;
+    width: ${(props) => `${props.daysInView * 100}px`};
   }
 `;
 
 const DayCell = styled.div`
+  flex: 0 0 120px; /* Fixed width for each day cell */
+  display: flex;
   align-items: center;
   justify-content: center;
-  display: flex;
-  flex: 1;
-  position: relative; /* To position bars inside */
+  position: relative;
   font-size: 0.9rem;
   color: #555;
-  padding: 8px; /* Consistent padding */
+  padding: 8px;
   border-right: 1px solid #e0e0e0;
+  border-top: 1px solid #e0e0e0;
+
   background-color: ${(props) =>
     props.isCurrentDay ? '#e3f2fd' : props.isWeekend ? '#ffe0dd' : 'white'};
   transition: background-color 0.3s;
 
   &:last-child {
-    border-right: none;
+    border-right: none; /* Remove border for the last cell */
+  }
+
+  &:hover {
+    background-color: #f1f1f1;
+  }
+`;
+
+const CalendarDayCell = styled.div`
+  flex: 0 0 120px; /* Fixed width for each day cell */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: #555;
+  padding: 8px;
+  border-right: 1px solid #e0e0e0;
+  border-top: 1px solid #e0e0e0;
+
+  background-color: ${(props) =>
+    props.isCurrentDay ? '#e3f2fd' : props.isWeekend ? '#ffe0dd' : 'white'};
+  transition: background-color 0.3s;
+
+  &:last-child {
+    border-right: none; /* Remove border for the last cell */
   }
 
   &:hover {
@@ -173,9 +200,8 @@ const DayCell = styled.div`
 
 const RoomRow = styled.div`
   display: flex;
-  align-items: center;
-  border-top: 1px solid #e0e0e0;
   align-items: stretch; /* Ensure content aligns properly */
+  width: ${(props) => `${props.daysInView * 120}px`};
 
   &:nth-child(even) {
     background-color: #fafafa;
@@ -185,12 +211,16 @@ const RoomRow = styled.div`
 
 const RoomLabel = styled.div`
   flex: 0 0 120px; /* Fixed width of 120px */
+  position: sticky;
+  left: 0;
+  z-index: 10;
   padding: 15px;
   background-color: #f5f5f5;
   text-align: center;
   font-weight: bold;
   color: #666;
   border-right: 1px solid #e0e0e0;
+  border-top: 1px solid #e0e0e0;
 `;
 
 const OccupationRow = styled.div`
@@ -428,9 +458,12 @@ const ClearButton = styled.button`
 `;
 
 const ScrollableContainer = styled.div`
-  white-space: nowrap; /* Prevent wrapping */
+  width: 100%; /* Limit the width to the screen or parent container */
+  overflow-x: auto; /* Enable horizontal scrolling */
+  overflow-y: auto; /* Enable vertical scrolling */
   display: flex;
   flex-direction: column;
+  /* max-width: 1500px; */
 `;
 
 const spin = keyframes`
@@ -486,7 +519,7 @@ const ReservationCalendar = ({ condominium }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loadingNavigation, setLoadingNavigation] = useState(false);
 
-  const [viewType, setViewType] = useState("7");
+  const [viewType, setViewType] = useState("15");
   const [currentStartDate, setCurrentStartDate] = useState(new Date());
   const [apartments, setApartments] = useState([]);
   const [reservations, setReservations] = useState([]);
@@ -506,6 +539,8 @@ const ReservationCalendar = ({ condominium }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const [filterType, setFilterType] = useState("Temporada"); // Default filter for "Temporada"
+
+  const scrollableRef = useRef(null);
 
   const fetchApartments = async () => {
     const token = localStorage.getItem("accessToken");
@@ -619,8 +654,21 @@ const ReservationCalendar = ({ condominium }) => {
       )
     : Array.from({ length: parseInt(viewType, 10) }, (_, i) => addDays(currentStartDate, i));
 
-  const handlePrev = () => setCurrentStartDate(addDays(currentStartDate, -parseInt(viewType, 10)));
-  const handleNext = () => setCurrentStartDate(addDays(currentStartDate, parseInt(viewType, 10)));
+    const handlePrev = () => {
+      setCurrentStartDate(addDays(currentStartDate, -parseInt(viewType, 10)));
+      // Reset the scroll position after updating the date
+      if (scrollableRef.current) {
+        scrollableRef.current.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+      }
+    };
+    
+  const handleNext = () => {
+    setCurrentStartDate(addDays(currentStartDate, parseInt(viewType, 10)));
+    // Reset the scroll position after updating the date
+    if (scrollableRef.current) {
+      scrollableRef.current.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    }
+  };
 
   const handleMonthChange = (event) => {
     const selectedMonthIndex = parseInt(event.target.value, 10);
@@ -850,19 +898,19 @@ const ReservationCalendar = ({ condominium }) => {
         <LoadingSpinner />
       ) : (
         <CalendarContainer>
-          <ScrollableContainer>
+          <ScrollableContainer ref={scrollableRef}>
           {loadingNavigation && <LoadingSpinner />}
-            <DaysRow>
+            <DaysRow daysInView={daysInView.length}>
               <RoomLabel>Quarto</RoomLabel>
               {daysInView.map((day, dayIndex) => (
-                <DayCell key={dayIndex} isCurrentDay={isToday(day)} isWeekend={isWeekend(day)}>
+                <CalendarDayCell key={dayIndex} isCurrentDay={isToday(day)} isWeekend={isWeekend(day)}>
                   <strong>{format(day, "EEE dd", { locale: ptBR }).slice(0, 3) + " " + format(day, "dd")}</strong>
-                </DayCell>
+                </CalendarDayCell>
               ))}
             </DaysRow>
 
             {apartments.map(apartment => (
-              <RoomRow key={apartment.id}>
+              <RoomRow key={apartment.id} daysInView={daysInView.length}>
                 <RoomLabel>{`Quarto ${apartment.number}`}</RoomLabel>
                 {daysInView.map((day, dayIndex) => (
                   <DayCell key={dayIndex}>
@@ -893,14 +941,14 @@ const ReservationCalendar = ({ condominium }) => {
               </RoomRow>
               
             ))}
-            <OccupationRow>
+            {/* <OccupationRow>
               <OccupationLabel>Hóspedes</OccupationLabel>
               {daysInView.map((day, dayIndex) => (
                 <OccupationCell key={dayIndex}>
                   <p>{getTotalGuestsForDay(day)}</p>
                 </OccupationCell>
               ))}
-            </OccupationRow>
+            </OccupationRow> */}
 
             
             {filterType === 'Todos' && (
