@@ -884,9 +884,6 @@ const ReservationModal = ({
           </GreenButton>
           {reservationData.checkin_at ? (
             <>
-              <GreenButton onClick={handleSaveCheckin} disabled={isSubmitting}>
-                {isSubmitting ? "Enviando..." : "Checkin"}
-              </GreenButton>
               {reservationData.checkout_at ? (
                 <RedButton style={{ backgroundColor: 'grey' }} disabled={true}>
                   {isSubmitting ? "Processando..." : "Checkout"}
