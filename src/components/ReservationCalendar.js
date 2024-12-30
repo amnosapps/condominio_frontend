@@ -472,7 +472,7 @@ const ClearButton = styled.button`
 
 const ScrollableContainer = styled.div`
   width: 100%;
-  /* height: calc(100vh - 200px); Adjust height to leave room for the header */
+  height: calc(100vh - 200px);
   overflow: auto; /* Single scrollable container */
   position: relative;
   scrollbar-width: thin;
