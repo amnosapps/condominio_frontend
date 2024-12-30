@@ -219,7 +219,6 @@ const NotificationListContainer = styled.div`
     border-radius: 8px;
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
     overflow: hidden;
-    z-index: 100;
 `;
 
 const NotificationHeader = styled.div`
@@ -231,6 +230,7 @@ const NotificationHeader = styled.div`
     color: #fff;
     font-size: 16px;
     font-weight: bold;
+    /* z-index: 1000; */
 `;
 
 const NotificationBody = styled.div`
@@ -312,6 +312,8 @@ const NotificationBellContainer = styled.div`
 const NotificationContainer = styled.div`
     position: absolute;
     cursor: pointer;
+    z-index: 200;
+    /* flex: 1; */
 `;
 
 const BellIcon = styled.div`

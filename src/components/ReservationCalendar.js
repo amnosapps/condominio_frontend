@@ -39,9 +39,6 @@ const CalendarContainer = styled.div`
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  overflow-x: hidden;
-  /* overflow-y: hidden; */
-  scrollbar-width: thin; /* For Firefox */
   /* justify-content: space-between; */
 
    /* For Webkit-based browsers */
@@ -142,7 +139,22 @@ const DaysRow = styled.div`
   width: ${(props) => `${props.daysInView * 120}px`}; 
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
+  border-bottom: 1px solid #e0e0e0;
+
+  > strong {
+    flex: 0 0 120px; /* Fixed width of 120px */
+    position: sticky;
+    left: 0;
+    z-index: 20;
+    padding: 15px;
+    background-color: #f5f5f5;
+    text-align: center;
+    font-weight: bold;
+    color: #666;
+    border-right: 1px solid #e0e0e0;
+    border-top: 1px solid #e0e0e0;
+  }
 
   @media (max-width: 768px) {
     width: ${(props) => `${props.daysInView * 100}px`};
@@ -438,7 +450,7 @@ const DatePickerContainer = styled.div`
     position: absolute;
     top: 50px;
     right: 100px;
-    z-index: 1050;
+    z-index: 200;
   }
 `;
 
@@ -458,12 +470,11 @@ const ClearButton = styled.button`
 `;
 
 const ScrollableContainer = styled.div`
-  width: 100%; /* Limit the width to the screen or parent container */
-  overflow-x: auto; /* Enable horizontal scrolling */
-  overflow-y: auto; /* Enable vertical scrolling */
-  display: flex;
-  flex-direction: column;
-  /* max-width: 1500px; */
+  width: 100%;
+  height: calc(100vh - 200px); /* Adjust height to leave room for the header */
+  overflow: auto; /* Single scrollable container */
+  position: relative;
+  scrollbar-width: thin;
 `;
 
 const spin = keyframes`
@@ -658,7 +669,7 @@ const ReservationCalendar = ({ condominium }) => {
       setCurrentStartDate(addDays(currentStartDate, -parseInt(viewType, 10)));
       // Reset the scroll position after updating the date
       if (scrollableRef.current) {
-        scrollableRef.current.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+        scrollableRef.current.scrollTo({ left: 0, behavior: "smooth" });
       }
     };
     
@@ -666,7 +677,7 @@ const ReservationCalendar = ({ condominium }) => {
     setCurrentStartDate(addDays(currentStartDate, parseInt(viewType, 10)));
     // Reset the scroll position after updating the date
     if (scrollableRef.current) {
-      scrollableRef.current.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+      scrollableRef.current.scrollTo({ left: 0, behavior: "smooth" });
     }
   };
 
@@ -901,14 +912,14 @@ const ReservationCalendar = ({ condominium }) => {
           <ScrollableContainer ref={scrollableRef}>
           {loadingNavigation && <LoadingSpinner />}
             <DaysRow daysInView={daysInView.length}>
-              <RoomLabel>Quarto</RoomLabel>
+              <strong>Quarto</strong>
               {daysInView.map((day, dayIndex) => (
                 <CalendarDayCell key={dayIndex} isCurrentDay={isToday(day)} isWeekend={isWeekend(day)}>
                   <strong>{format(day, "EEE dd", { locale: ptBR }).slice(0, 3) + " " + format(day, "dd")}</strong>
                 </CalendarDayCell>
               ))}
             </DaysRow>
-
+              
             {apartments.map(apartment => (
               <RoomRow key={apartment.id} daysInView={daysInView.length}>
                 <RoomLabel>{`Quarto ${apartment.number}`}</RoomLabel>
