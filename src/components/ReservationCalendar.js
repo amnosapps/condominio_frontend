@@ -554,6 +554,8 @@ const ReservationCalendar = ({ condominium }) => {
 
   const scrollableRef = useRef(null);
 
+  const [currentPage, setCurrentPage] = useState(1); // For horizontal pagination
+
   const fetchApartments = async () => {
     const token = localStorage.getItem("accessToken");
     try {
@@ -572,12 +574,18 @@ const ReservationCalendar = ({ condominium }) => {
     }
   };
 
-  const fetchReservations = async () => {
+  const fetchReservations = async (page = 1) => {
     const token = localStorage.getItem("accessToken");
+    const startDate = addDays(currentStartDate, (page - 1) * parseInt(viewType, 10));
+    const endDate = addDays(startDate, parseInt(viewType, 10));
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reservations/`, {
         headers: { Authorization: `Bearer ${token}` },
-        params: { condominium: selectedCondominium },
+        params: {
+          condominium: selectedCondominium,
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString(),
+        },
       });
       setReservations(response.data.map(reservation => ({
         id: reservation.id,
@@ -605,13 +613,13 @@ const ReservationCalendar = ({ condominium }) => {
   };
 
   const loadData = async () => {
-    await Promise.all([fetchApartments(), fetchReservations()]);
+    await Promise.all([fetchApartments(), fetchReservations(currentPage)]);
     setLoading(false);
   };
 
   useEffect(() => {
     loadData();
-  }, [filterType]);
+  }, [currentPage, filterType]);
 
   const handleFilterTypeChange = (e) => {
     setFilterType(e.target.value); // Update the filter type
@@ -659,20 +667,30 @@ const ReservationCalendar = ({ condominium }) => {
     setSelectedReservation(reservation);
   };
 
-  const daysInView = selectedDateRange.startDate && selectedDateRange.endDate
-    ? Array.from(
-        { length: Math.ceil((selectedDateRange.endDate - selectedDateRange.startDate) / (24 * 60 * 60 * 1000)) + 1 },
-        (_, i) => addDays(selectedDateRange.startDate, i)
-      )
-    : Array.from({ length: parseInt(viewType, 10) }, (_, i) => addDays(currentStartDate, i));
+  const handleScroll = () => {
+    if (scrollableRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollableRef.current;
 
-    const handlePrev = () => {
-      setCurrentStartDate(addDays(currentStartDate, -parseInt(viewType, 10)));
-      // Reset the scroll position after updating the date
-      if (scrollableRef.current) {
-        scrollableRef.current.scrollTo({ left: 0, behavior: "smooth" });
+      // Check if user scrolled to the end of the container
+      if (scrollLeft + clientWidth >= scrollWidth - 50) {
+        setCurrentPage((prevPage) => prevPage + 1);
       }
-    };
+    }
+  };
+
+  const daysInView = Array.from(
+    { length: parseInt(viewType, 10) * currentPage },
+    (_, i) => addDays(currentStartDate, i)
+  );
+
+
+  const handlePrev = () => {
+    setCurrentStartDate(addDays(currentStartDate, -parseInt(viewType, 10)));
+    // Reset the scroll position after updating the date
+    if (scrollableRef.current) {
+      scrollableRef.current.scrollTo({ left: 0, behavior: "smooth" });
+    }
+  };
     
   const handleNext = () => {
     setCurrentStartDate(addDays(currentStartDate, parseInt(viewType, 10)));
@@ -910,7 +928,7 @@ const ReservationCalendar = ({ condominium }) => {
         <LoadingSpinner />
       ) : (
         <CalendarContainer>
-          <ScrollableContainer ref={scrollableRef}>
+          <ScrollableContainer ref={scrollableRef} onScroll={handleScroll}>
           {loadingNavigation && <LoadingSpinner />}
             <DaysRow daysInView={daysInView.length}>
               <strong>Quarto</strong>
