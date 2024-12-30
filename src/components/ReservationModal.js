@@ -127,6 +127,36 @@ const CheckboxContainer = styled.div`
   margin-top: 10px;
 `;
 
+const StyledSelect = styled.select`
+  margin-top: 5px;
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  color: #333;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+  overflow-y: auto; /* Enables scrolling */
+  max-height: 100%; /* Limits dropdown size */
+
+  &:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
+
+  &:hover {
+    border-color: #555;
+  }
+
+  option {
+    font-size: 16px;
+    color: #333;
+  }
+`;
+
+
 const HiddenCheckbox = styled.input.attrs({ type: "checkbox" })`
   border: 0;
   clip: rect(0 0 0 0);
@@ -766,14 +796,19 @@ const ReservationModal = ({
                       <Label>É criança?</Label>
                     </CheckboxContainer>
                     {guest.is_child && (
-                      <EditableInput
-                        type="number"
-                        placeholder="Idade"
+                     <StyledSelect
                         value={guest.age}
                         onChange={(e) =>
-                          updateGuestDetails(index, "age", e.target.value)
+                          updateGuestDetails(index, "age", parseInt(e.target.value, 10))
                         }
-                      />
+                      >
+                        <option value="">Selecione a idade</option>
+                        {Array.from({ length: 18 }, (_, i) => (
+                          <option key={i} value={i}>
+                            {i}
+                          </option>
+                        ))}
+                      </StyledSelect>
                     )}
                   </div>
                 </div>

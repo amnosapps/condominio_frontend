@@ -29,9 +29,20 @@ const ModalContent = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  max-height: 80vh;
+  overflow-y: auto;
 
-  > h2 {
-    margin-top: -20px;
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: #f5f5f5;
   }
 `;
 
@@ -44,8 +55,23 @@ const CloseButton = styled.button`
   margin-top: -20px;
 `;
 
+const ToggleButton = styled.button`
+  background-color: ${(props) => (props.active ? "#F46600" : "#ccc")};
+  color: white;
+  border: none;
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${(props) => (props.active ? "#d95c00" : "#aaa")};
+  }
+`;
+
 const SubmitButton = styled.button`
-  background-color: #F46600;
+  margin-top: 20px;
+  background-color: #28a745;
   color: white;
   border: none;
   padding: 10px;
@@ -58,6 +84,34 @@ const SubmitButton = styled.button`
   }
 `;
 
+const AddGuestButton = styled.button`
+  margin: 15px 15px;
+  padding: 5px 8px;
+  background-color: #F46600;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+
+  &:hover {
+    background-color: #d89591;
+  }
+`;
+
+const RemoveGuestButton = styled.button`
+  background-color: red;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  margin: 10px 0;
+  border-radius: 5px;
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
 const InputGroup = styled.div`
   display: flex;
   flex-direction: column;
@@ -65,7 +119,6 @@ const InputGroup = styled.div`
 `;
 
 const Label = styled.label`
-  margin-bottom: 0.5rem;
   font-size: 1rem;
   font-weight: bold;
   color: #333;
@@ -74,6 +127,8 @@ const Label = styled.label`
 const Input = styled.input`
   width: 100%;
   padding: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 4px;
 
@@ -121,12 +176,23 @@ function ReservationCreationModal({ onClose, loadReservations, apartments }) {
   const [formData, setFormData] = useState({
     guest_name: "",
     guest_document: "",
+    guest_phone: "",
     guests: "",
     has_children: false,
     apartment: "",
     checkin: null,
     checkout: null,
+    endereco: "",
+    bairro: "",
+    cep: "",
+    cidade: "",
+    estado: "",
+    pais: "",
+    vehicle_plate: "",
   });
+
+  const [additionalGuests, setAdditionalGuests] = useState([]);
+  const [isCompleteReservation, setIsCompleteReservation] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -135,6 +201,29 @@ function ReservationCreationModal({ onClose, loadReservations, apartments }) {
 
   const handleDateChange = (date, field) => {
     setFormData({ ...formData, [field]: date });
+  };
+
+  const addAdditionalGuest = (e) => {
+    e.preventDefault();
+    setAdditionalGuests((prev) => [
+      ...prev,
+      { name: "", document: "", is_child: false, age: "" },
+    ]);
+  };
+
+  const updateGuestDetails = (index, field, value) => {
+    setAdditionalGuests((prev) => {
+      const updated = [...prev];
+      updated[index] = {
+        ...updated[index],
+        [field]: value,
+      };
+      return updated;
+    });
+  };
+
+  const removeAdditionalGuest = (index) => {
+    setAdditionalGuests((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -150,19 +239,29 @@ function ReservationCreationModal({ onClose, loadReservations, apartments }) {
         return;
       }
 
-      // Adjust time for PT_BR timezone (UTC-3)
       checkinDate.setHours(15, 0, 0); // Set to 3:00 PM
       checkoutDate.setHours(9, 0, 0); // Set to 9:00 AM
 
-      // Prepare `FormData` object
       const multipartData = new FormData();
       multipartData.append("guest_name", formData.guest_name);
       multipartData.append("guest_document", formData.guest_document);
+      multipartData.append("guest_phone", formData.guest_phone);
       multipartData.append("guests", formData.guests);
       multipartData.append("has_children", formData.has_children);
       multipartData.append("apartment", formData.apartment);
       multipartData.append("checkin", checkinDate.toISOString());
       multipartData.append("checkout", checkoutDate.toISOString());
+
+      if (isCompleteReservation) {
+        multipartData.append("endereco", formData.endereco);
+        multipartData.append("bairro", formData.bairro);
+        multipartData.append("cep", formData.cep);
+        multipartData.append("cidade", formData.cidade);
+        multipartData.append("estado", formData.estado);
+        multipartData.append("pais", formData.pais);
+        multipartData.append("vehicle_plate", formData.vehicle_plate);
+        multipartData.append("additional_guests", JSON.stringify(additionalGuests));
+      }
 
       await axios.post(`${process.env.REACT_APP_API_URL}/api/reservations/`, multipartData, {
         headers: {
@@ -185,6 +284,22 @@ function ReservationCreationModal({ onClose, loadReservations, apartments }) {
       <ModalContent>
         <CloseButton onClick={onClose}>&times;</CloseButton>
         <h2>Criar Reserva</h2>
+
+        <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+          <ToggleButton
+            active={!isCompleteReservation}
+            onClick={() => setIsCompleteReservation(false)}
+          >
+            Reserva Simplificada
+          </ToggleButton>
+          <ToggleButton
+            active={isCompleteReservation}
+            onClick={() => setIsCompleteReservation(true)}
+          >
+            Reserva Completa
+          </ToggleButton>
+        </div>
+
         <form onSubmit={handleSubmit}>
           <InputGroup>
             <Label>Data de Check-in:</Label>
@@ -243,34 +358,134 @@ function ReservationCreationModal({ onClose, loadReservations, apartments }) {
               name="guest_document"
               value={formData.guest_document}
               onChange={handleChange}
-              required
             />
           </InputGroup>
           <InputGroup>
-            <Label>Quantidade de Hóspedes:</Label>
+            <Label>Contato do Hóspede:</Label>
             <Input
-              type="number"
-              name="guests"
-              value={formData.guests}
+              type="text"
+              name="guest_phone"
+              value={formData.guest_phone}
               onChange={handleChange}
-              required
             />
           </InputGroup>
-          <InputGroup>
-            <Label>Há Crianças:</Label>
-            <Select
-              name="has_children"
-              value={formData.has_children ? "Sim" : "Não"}
-              onChange={(e) =>
-                handleChange({
-                  target: { name: "has_children", value: e.target.value === "Sim" },
-                })
-              }
-            >
-              <option value="Sim">Sim</option>
-              <option value="Não">Não</option>
-            </Select>
-          </InputGroup>
+          {isCompleteReservation && (
+            <>
+              <InputGroup>
+                <Label>Endereço:</Label>
+                <Input
+                  type="text"
+                  name="endereco"
+                  value={formData.endereco}
+                  onChange={handleChange}
+                  placeholder="Endereço"
+                />
+                <Input
+                  type="text"
+                  name="bairro"
+                  value={formData.bairro}
+                  onChange={handleChange}
+                  placeholder="Bairro"
+                />
+                <Input
+                  type="text"
+                  name="cep"
+                  value={formData.cep}
+                  onChange={handleChange}
+                  placeholder="CEP"
+                />
+                <Input
+                  type="text"
+                  name="cidade"
+                  value={formData.cidade}
+                  onChange={handleChange}
+                  placeholder="Cidade"
+                />
+                <Input
+                  type="text"
+                  name="estado"
+                  value={formData.estado}
+                  onChange={handleChange}
+                  placeholder="Estado"
+                />
+                <Input
+                  type="text"
+                  name="pais"
+                  value={formData.pais}
+                  onChange={handleChange}
+                  placeholder="País"
+                />
+              </InputGroup>
+              <InputGroup>
+                <Label>Placa do Veículo:</Label>
+                <Input
+                  type="text"
+                  name="vehicle_plate"
+                  value={formData.vehicle_plate}
+                  onChange={handleChange}
+                />
+              </InputGroup>
+              <div>
+                <Label>Hóspedes Adicionais: 
+                  <AddGuestButton onClick={addAdditionalGuest}>
+                    + Hóspede
+                  </AddGuestButton>
+                </Label>
+                {additionalGuests.map((guest, index) => (
+                  <div key={index} style={{ marginBottom: "10px" }}>
+                    <Input
+                      type="text"
+                      placeholder="Nome"
+                      value={guest.name}
+                      onChange={(e) =>
+                        updateGuestDetails(index, "name", e.target.value)
+                      }
+                    />
+                    <Input
+                      type="text"
+                      placeholder="Documento"
+                      value={guest.document}
+                      onChange={(e) =>
+                        updateGuestDetails(index, "document", e.target.value)
+                      }
+                    />
+                    <Select
+                      value={guest.is_child ? "Sim" : "Não"}
+                      onChange={(e) =>
+                        updateGuestDetails(
+                          index,
+                          "is_child",
+                          e.target.value === "Sim"
+                        )
+                      }
+                    >
+                      <option value="Sim">Criança</option>
+                      <option value="Não">Adulto</option>
+                    </Select>
+                    {guest.is_child && (
+                      <Select
+                        value={guest.age}
+                        onChange={(e) =>
+                          updateGuestDetails(index, "age", parseInt(e.target.value, 10))
+                        }
+                      >
+                        <option value="">Idade</option>
+                        {Array.from({ length: 18 }, (_, i) => (
+                          <option key={i} value={i}>
+                            {i}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
+                    <RemoveGuestButton onClick={() => removeAdditionalGuest(index)}>
+                      Remover
+                    </RemoveGuestButton>
+                  </div>
+                ))}
+                
+              </div>
+            </>
+          )}
           <SubmitButton type="submit">Criar Reserva</SubmitButton>
         </form>
       </ModalContent>
