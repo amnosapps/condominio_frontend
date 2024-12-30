@@ -469,10 +469,10 @@ function ReservationCreationModal({ onClose, loadReservations, apartments }) {
                           updateGuestDetails(index, "age", parseInt(e.target.value, 10))
                         }
                       >
-                        <option value="">Idade</option>
-                        {Array.from({ length: 18 }, (_, i) => (
-                          <option key={i} value={i}>
-                            {i}
+                        <option value="">Selecione a idade</option>
+                        {Array.from({ length: 8 }, (_, i) => (
+                          <option key={i + 5} value={i + 5}>
+                            {i + 5}
                           </option>
                         ))}
                       </Select>

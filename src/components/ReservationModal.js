@@ -803,9 +803,9 @@ const ReservationModal = ({
                         }
                       >
                         <option value="">Selecione a idade</option>
-                        {Array.from({ length: 18 }, (_, i) => (
-                          <option key={i} value={i}>
-                            {i}
+                        {Array.from({ length: 8 }, (_, i) => (
+                          <option key={i + 5} value={i + 5}>
+                            {i + 5}
                           </option>
                         ))}
                       </StyledSelect>
