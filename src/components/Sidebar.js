@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
+import { FaCalendarAlt, FaChartLine, FaCity, FaCloudSun, FaCog, FaHome, FaKey, FaMoneyCheckAlt, FaPoll, FaUsers } from 'react-icons/fa';
 
 const SidebarContainer = styled.div`
     background-color: #fff;
@@ -508,7 +509,7 @@ const Sidebar = ({ condominium }) => {
                             onClick={() => handleNavigation(`/${selectedCondominium}/home`)}
                             active={location.pathname.includes(`${selectedCondominium}/home`)}
                         >
-                            <ImgSidebar src="/home.png" alt="home" />
+                            <FaHome />
                             Início
                         </NavButton>
                     </NavItem>
@@ -517,7 +518,7 @@ const Sidebar = ({ condominium }) => {
                             onClick={() => handleNavigation(`/${selectedCondominium}/occupation`)}
                             active={location.pathname.includes(`${selectedCondominium}/occupation`)}
                         >
-                            <ImgSidebar src="/calendar.png" alt="Calendar" />
+                            <FaCalendarAlt />
                             Mapa de Ocupação
                         </NavButton>
                     </NavItem>
@@ -526,7 +527,7 @@ const Sidebar = ({ condominium }) => {
                             onClick={() => handleNavigation(`/${selectedCondominium}/apartments`)}
                             active={location.pathname.includes(`${selectedCondominium}/apartments`)}
                         >
-                            <ImgSidebar src="/apartments.png" alt="Apartments" />
+                            <FaKey />
                             Apartamentos
                         </NavButton>
                     </NavItem>
@@ -535,7 +536,7 @@ const Sidebar = ({ condominium }) => {
                             onClick={() => handleNavigation(`/${selectedCondominium}/reports`)}
                             active={location.pathname.includes(`${selectedCondominium}/reports`)}
                         >
-                            <ImgSidebar src="/report.png" alt="Reports" />
+                            <FaChartLine />
                             Relatórios
                         </NavButton>
                     </NavItem>
@@ -543,7 +544,7 @@ const Sidebar = ({ condominium }) => {
                         <NavButton
                             onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
                         >
-                            <ImgSidebar src="/common_area.png" alt="Espaço Comum" />
+                            <FaCloudSun />
                             Espaço
                         </NavButton>
                     </NavItem>
@@ -551,7 +552,7 @@ const Sidebar = ({ condominium }) => {
                         <NavButton
                             onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
                         >
-                        <ImgSidebar src="/services.png" alt="Serviços" />
+                        <FaCog />
                         Serviços
                         </NavButton>
                     </NavItem>
@@ -559,7 +560,7 @@ const Sidebar = ({ condominium }) => {
                         <NavButton
                             onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
                         >
-                        <ImgSidebar src="/finance.png" alt="Serviços" />
+                        <FaMoneyCheckAlt />
                         Financeiro
                         </NavButton>
                     </NavItem>
@@ -567,8 +568,16 @@ const Sidebar = ({ condominium }) => {
                         <NavButton
                             onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
                         >
-                        <ImgSidebar src="/condo.png" alt="Meu Condomínio" />
+                        <FaCity />
                         Condomínio
+                        </NavButton>
+                    </NavItem>
+                    <NavItem>
+                        <NavButton
+                            onClick={() => handleNavigation(`/${selectedCondominium}/users`)}
+                        >
+                        <FaUsers />
+                        Usuários
                         </NavButton>
                     </NavItem>
                 </NavList>

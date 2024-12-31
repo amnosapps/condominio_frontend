@@ -834,6 +834,7 @@ const ReservationCalendar = ({ condominium }) => {
     setEndDateFilter("");
     setSelectedDateRange({ startDate: null, endDate: null });
     setCurrentStartDate(new Date()); // Reset to today's date
+    setCurrentPage(1)
   };
 
   const closeModal = () => {
