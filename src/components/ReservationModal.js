@@ -8,6 +8,7 @@ import { printFormData } from "../utils/print";
 import PhotoCapture from "./PhotoCapture";
 import LogsVisualization from "./Logs/LogsVizualization";
 import LogsListComponent from "./Logs/LogsVizualization";
+import { FaArrowAltCircleRight, FaCheck, FaEdit, FaPlus } from "react-icons/fa";
 
 // Styled Components
 const ModalOverlay = styled.div`
@@ -65,15 +66,17 @@ const CloseButton = styled.button`
 
 const GreenButton = styled.button`
   margin: 10px 5px;
-  padding: 20px 30px;
-  background-color: #28a745;
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  background-color: #0056B3;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 
   &:hover {
-    background-color: #218838;
+    background-color:rgb(33, 107, 185);
   }
 `;
 
@@ -200,7 +203,7 @@ const StyledCheckbox = styled.div`
 
 const Label = styled.label`
   margin-left: 10px;
-  font-size: 16px;
+  font-size: 14px;
   color: #333;
   cursor: pointer;
 `;
@@ -211,7 +214,7 @@ const EditableInput = styled.input`
   margin: 10px 0;
   border: 1px solid #ccc;
   border-radius: 5px;
-  font-size: 16px;
+  font-size: 14px;
 `;
 
 const LogsModalContainer = styled.div`
@@ -243,8 +246,8 @@ const LogsModalContainer = styled.div`
 `;
 
 const LogsButton = styled.button`
-  margin-left: 10px;
-  padding: 5px 10px;
+  margin: 10px 5px;
+  padding: 10px 20px;
   background-color: #007bff;
   color: white;
   border: none;
@@ -313,6 +316,7 @@ const Column = styled.div`
 const FieldLabel = styled.strong`
   display: block;
   margin-bottom: 5px;
+  font-size: 14px;
 `;
 
 const FieldValue = styled.span`
@@ -381,6 +385,8 @@ const ReservationModal = ({
   
   const [address, setAddress] = useState(reservationData.address);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [isEditing, setIsEditing] = useState(false);
 
   const fetchLogs = async () => {
     try {
@@ -725,11 +731,13 @@ const ReservationModal = ({
     }
   };
 
+  const toggleEditing = () => {
+    setIsEditing(!isEditing); // Toggle edit mode
+  };
+
   const isCheckinToday = reservationData.checkin
     ? isSameDay(new Date(), reservationData.checkin) // Use the Date object directly
     : false;
-
-  console.log(isCheckinToday, reservationData.checkin)
 
   if (!selectedReservation) return null;
 
@@ -738,7 +746,7 @@ const ReservationModal = ({
       <ModalContainer onClick={(e) => e.stopPropagation()}>
         <div style={{ display: 'flex', alignContent: 'center', alignItems: 'center' }}>
           <div><strong>Apto {reservationData.apartment}</strong> {reservationData.apartment_owner != '' && (<>({reservationData.apartment_owner})</>)} </div>
-          <LogsButton onClick={fetchLogs}>Auditoria</LogsButton> 
+          
           <CloseButton onClick={closeModal1}>X</CloseButton>
         </div>
         <div style={{ marginBottom: "10px" }}>
@@ -771,6 +779,7 @@ const ReservationModal = ({
             <FieldLabel>Nome:</FieldLabel>
             <FieldValue>
               <EditableInput
+                disabled={!isEditing} 
                 type="text"
                 value={reservationData.guest_name}
                 onChange={(e) => handleChange("guest_name", e.target.value)}
@@ -783,6 +792,7 @@ const ReservationModal = ({
             <StyledSelect
               value={reservationData.document_type || ""}
               onChange={(e) => handleChange("document_type", e.target.value)}
+              disabled={!isEditing} 
             >
               <option value="">Selecione</option>
               <option value="cpf">CPF</option>
@@ -798,6 +808,7 @@ const ReservationModal = ({
                 type="text"
                 value={reservationData.guest_document}
                 onChange={(e) => handleChange("guest_document", e.target.value)}
+                disabled={!isEditing} 
               />
             </FieldValue>
           </Column>
@@ -809,6 +820,7 @@ const ReservationModal = ({
                 value={reservationData.guest_phone || ""}
                 onChange={handlePhoneChange}
                 placeholder="88 88888-8888"
+                disabled={!isEditing} 
               />
             </FieldValue>
           </Column>
@@ -823,6 +835,7 @@ const ReservationModal = ({
                   type="text"
                   value={vehiclePlate}
                   onChange={(e) => setVehiclePlate(e.target.value)}
+                  disabled={!isEditing} 
                 />
               </FieldValue>
             </Column>
@@ -833,10 +846,12 @@ const ReservationModal = ({
             <HiddenCheckbox
               checked={hasCar}
               onChange={handleHasCarChange}
+              disabled={!isEditing} 
             />
             <StyledCheckbox
               checked={hasCar}
               onClick={() => handleHasCarChange({ target: { checked: !hasCar } })}
+              disabled={!isEditing} 
             />
             <Label>Tem veículo?</Label>
           </CheckboxContainer>
@@ -849,6 +864,7 @@ const ReservationModal = ({
               type="text"
               value={address.endereco || ""}
               onChange={(e) => handleAddressChange("endereco", e.target.value)}
+              disabled={!isEditing} 
             />
             </FieldValue>
           </Column>
@@ -859,6 +875,7 @@ const ReservationModal = ({
                 type="text"
                 value={address.bairro || ""}
                 onChange={(e) => handleAddressChange("bairro", e.target.value)}
+                disabled={!isEditing} 
               />
             </FieldValue>
           </Column>
@@ -869,6 +886,7 @@ const ReservationModal = ({
                 type="text"
                 value={address.cep || ""}
                 onChange={(e) => handleAddressChange("cep", e.target.value)}
+                disabled={!isEditing} 
               />
             </FieldValue>
           </Column>
@@ -881,6 +899,7 @@ const ReservationModal = ({
                 type="text"
                 value={address.cidade || ""}
                 onChange={(e) => handleAddressChange("cidade", e.target.value)}
+                disabled={!isEditing} 
               />
             </FieldValue>
           </Column>
@@ -891,6 +910,7 @@ const ReservationModal = ({
                 type="text"
                 value={address.estado || ""}
                 onChange={(e) => handleAddressChange("estado", e.target.value)}
+                disabled={!isEditing} 
               />
             </FieldValue>
           </Column>
@@ -901,6 +921,7 @@ const ReservationModal = ({
                 type="text"
                 value={address.pais || ""}
                 onChange={(e) => handleAddressChange("pais", e.target.value)}
+                disabled={!isEditing} 
               />
             </FieldValue>
           </Column>
@@ -911,7 +932,7 @@ const ReservationModal = ({
             <div key={index} style={{ margin: '15px 0' }}>
               <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <strong>Hóspede Adicional:</strong>
-                <RemoveGuestButton onClick={() => removeAdditionalGuest(index)}>
+                <RemoveGuestButton onClick={() => removeAdditionalGuest(index)} disabled={!isEditing} >
                   <img width={20} src="/trash.png" />
                 </RemoveGuestButton>
               </div>
@@ -923,6 +944,7 @@ const ReservationModal = ({
                     placeholder="Nome"
                     value={guest.name}
                     onChange={(e) => updateGuestDetails(index, "name", e.target.value)}
+                    disabled={!isEditing} 
                   />
                 </Column>
                 <Column>
@@ -930,6 +952,7 @@ const ReservationModal = ({
                     <StyledSelect
                       value={reservationData.document_type || ""}
                       onChange={(e) => handleChange("document_type", e.target.value)}
+                      disabled={!isEditing} 
                     >
                       <option value="">Tipo Documento</option>
                       <option value="cpf">CPF</option>
@@ -946,6 +969,7 @@ const ReservationModal = ({
                     onChange={(e) =>
                       updateGuestDetails(index, "document", e.target.value)
                     }
+                    disabled={!isEditing} 
                   />
                 </Column>
                 <Column>
@@ -956,6 +980,7 @@ const ReservationModal = ({
                         onChange={(e) =>
                           updateGuestDetails(index, "age", parseInt(e.target.value, 10))
                         }
+                        disabled={!isEditing} 
                       >
                         <option value="">Idade</option>
                         {Array.from({ length: 18 }, (_, i) => (
@@ -975,20 +1000,28 @@ const ReservationModal = ({
                     onChange={(e) =>
                       updateGuestDetails(index, "is_child", e.target.checked)
                     }
+                    disabled={!isEditing} 
                   />
                   <StyledCheckbox
                     checked={guest.is_child}
                     onClick={() =>
                       updateGuestDetails(index, "is_child", !guest.isChild)
                     }
+                    disabled={!isEditing} 
                   />
                   <Label>É menor de idade?</Label>
                 </CheckboxContainer>
               </div>
             </div>
           ))}
-          <AddGuestButton onClick={addAdditionalGuest}>
-            Adicionar Hóspede
+          <AddGuestButton onClick={addAdditionalGuest} disabled={!isEditing}
+            style={{
+                backgroundColor: !isEditing ? 'grey' : '#28a745', // Grey if not today
+                cursor: !isEditing ? 'not-allowed' : 'pointer',   // Change cursor style
+            }}
+          >
+            <FaPlus style={{ marginRight: '7px' }} />
+            Hóspedes
           </AddGuestButton>
         </div>
         
@@ -998,18 +1031,33 @@ const ReservationModal = ({
           onPhotosChange={updatePhotos}
         />
         <div style={{ display: "flex", justifyContent: "start", gap: "10px" }}>
-          <GreenButton onClick={handleUpdateReservation} disabled={isSubmitting}>
-            {isSubmitting ? "Atualizando..." : "Atualizar Informações"}
-          </GreenButton>
+          {!isEditing ? (
+            <GreenButton onClick={toggleEditing} disabled={reservationData.checkin_at}
+              style={{
+                  backgroundColor: reservationData.checkin_at? 'grey' : '#28a745', // Grey if not today
+                  cursor: reservationData.checkin_at? 'not-allowed' : 'pointer',   // Change cursor style
+              }}
+            >
+              {"Editar"}
+              <FaEdit style={{ marginLeft: '7px' }} />
+            </GreenButton>
+          ) : (
+            <GreenButton onClick={handleUpdateReservation} disabled={isSubmitting}>
+              {isSubmitting ? "Salvando..." : "Salvar"}
+            </GreenButton>
+          )}
+          
           {reservationData.checkin_at ? (
             <>
               {reservationData.checkout_at ? (
                 <RedButton style={{ backgroundColor: 'grey' }} disabled={true}>
                   {isSubmitting ? "Processando..." : "Checkout"}
+                  <FaArrowAltCircleRight style={{ marginLeft: '7px' }} />
                 </RedButton>
               ) : (
                 <RedButton onClick={handleCheckout} disabled={isSubmitting}>
                   {isSubmitting ? "Processando..." : "Checkout"}
+                  <FaArrowAltCircleRight style={{ marginLeft: '7px' }} />
                 </RedButton>
               )}
             </>
@@ -1023,8 +1071,10 @@ const ReservationModal = ({
               }}
           >
               {isSubmitting ? "Enviando..." : "Checkin"}
+              <FaCheck  style={{ marginLeft: '7px' }} />
           </GreenButton>
           )}
+          <LogsButton onClick={fetchLogs}>Auditoria</LogsButton> 
           <RedButton onClick={closeModal1}>Cancelar</RedButton>
         </div>
       </ModalContainer>
