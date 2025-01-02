@@ -543,6 +543,7 @@ const Sidebar = ({ condominium }) => {
                     <NavItem>
                         <NavButton
                             onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
+                            // active={location.pathname.includes(`${selectedCondominium}/soon`)}
                         >
                             <FaCloudSun />
                             Espaço
@@ -551,6 +552,7 @@ const Sidebar = ({ condominium }) => {
                     <NavItem>
                         <NavButton
                             onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
+                            // active={location.pathname.includes(`${selectedCondominium}/soon`)}
                         >
                         <FaCog />
                         Serviços
@@ -559,6 +561,7 @@ const Sidebar = ({ condominium }) => {
                     <NavItem>
                         <NavButton
                             onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
+                            // active={location.pathname.includes(`${selectedCondominium}/soon`)}
                         >
                         <FaMoneyCheckAlt />
                         Financeiro
@@ -567,6 +570,7 @@ const Sidebar = ({ condominium }) => {
                     <NavItem>
                         <NavButton
                             onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
+                            // active={location.pathname.includes(`${selectedCondominium}/soon`)}
                         >
                         <FaCity />
                         Condomínio
@@ -575,6 +579,7 @@ const Sidebar = ({ condominium }) => {
                     <NavItem>
                         <NavButton
                             onClick={() => handleNavigation(`/${selectedCondominium}/users`)}
+                            active={location.pathname.includes(`${selectedCondominium}/users`)}
                         >
                         <FaUsers />
                         Usuários
