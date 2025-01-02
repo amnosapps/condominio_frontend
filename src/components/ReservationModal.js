@@ -4,11 +4,12 @@ import styled from "styled-components";
 
 import { format, isSameDay, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { printFormData } from "../utils/print";
 import PhotoCapture from "./PhotoCapture";
-import LogsVisualization from "./Logs/LogsVizualization";
 import LogsListComponent from "./Logs/LogsVizualization";
 import { FaArrowAltCircleRight, FaCheck, FaEdit, FaPlus } from "react-icons/fa";
+
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 // Styled Components
 const ModalOverlay = styled.div`
@@ -342,6 +343,8 @@ const ReservationModal = ({
   const [isLogsOpen, setIsLogsOpen] = useState(false);
 
   const [reservationData, setReservationData] = useState({
+    checkin: selectedReservation?.checkin ? new Date(selectedReservation.checkin) : null,
+    checkout: selectedReservation?.checkout ? new Date(selectedReservation.checkout) : null,
     guest_name: selectedReservation?.guest_name || "",
     guest_document: selectedReservation?.guest_document || "",
     document_type: selectedReservation?.document_type || "",
@@ -495,8 +498,6 @@ const ReservationModal = ({
       console.log(key, value);
     });
 
-    console.log(formData)
-  
     try {
       const response = await axios.patch(
         `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
@@ -521,7 +522,6 @@ const ReservationModal = ({
       setIsSubmitting(false);
     }
   };
-  
 
   const handleSaveCheckin = async () => {
     const confirmMessage = reservationData.checkin_at
@@ -690,6 +690,62 @@ const ReservationModal = ({
       });
   };
 
+  const handleDeleteReservation = async () => {
+    if (!window.confirm("Você tem certeza que deseja excluir esta reserva?")) return;
+
+    const token = localStorage.getItem("accessToken");
+
+    try {
+      await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      alert("Reserva excluída com sucesso!");
+      loadData();
+      closeModal();
+    } catch (error) {
+      console.error("Erro ao excluir a reserva:", error);
+      alert("Erro ao excluir a reserva. Tente novamente.");
+    }
+  };
+
+  const handleUpdateDates = async () => {
+    const token = localStorage.getItem("accessToken");
+
+    try {
+      const response = await axios.patch(
+        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
+        {
+          checkin: reservationData.checkin?.toISOString(),
+          checkout: reservationData.checkout?.toISOString(),
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.status === 200) {
+        alert("Datas atualizadas com sucesso!");
+        loadData();
+      } else {
+        alert("Falha ao atualizar as datas. Tente novamente.");
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar as datas:", error);
+      alert("Erro ao atualizar as datas. Verifique os dados e tente novamente.");
+    }
+  };
+
+  const handleDateChange = (field, date) => {
+    setReservationData((prev) => ({
+      ...prev,
+      [field]: date,
+    }));
+  };
+
   const updatePhotos = (photos) => {
     setReservationData((prev) => ({
       ...prev,
@@ -773,6 +829,36 @@ const ReservationModal = ({
             </strong>
           </div>
         </div>
+
+        <Row>
+          <Column>
+            <FieldLabel>Data de Check-in:</FieldLabel>
+            <FieldValue>
+              <DatePicker
+                selected={reservationData.checkin}
+                onChange={(date) => handleDateChange("checkin", date)}
+                dateFormat="dd/MM/yyyy"
+                disabled={!isEditing}
+              />
+            </FieldValue>
+          </Column>
+          <Column>
+            <FieldLabel>Data de Check-out:</FieldLabel>
+            <FieldValue>
+              <DatePicker
+                selected={reservationData.checkout}
+                onChange={(date) => handleDateChange("checkout", date)}
+                dateFormat="dd/MM/yyyy"
+                disabled={!isEditing}
+              />
+            </FieldValue>
+          </Column>
+        </Row>
+        
+        <GreenButton onClick={handleUpdateDates} disabled={isSubmitting}>
+          {isSubmitting ? "Salvando..." : "Salvar Datas"}
+        </GreenButton>
+        <RedButton onClick={handleDeleteReservation}>Excluir Reserva</RedButton>
 
         {/* Guest Information */}
         <Row>
