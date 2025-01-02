@@ -424,21 +424,30 @@ const ReservationModal = ({
     formData.append("guest_name", reservationData.guest_name);
     formData.append("guest_document", reservationData.guest_document);
     formData.append("guest_phone", reservationData.guest_phone || "");
-    formData.append("guests_qty", 1 + additionalGuests.length); // Main guest + additional guests
+    formData.append("guests_qty", 1 + additionalGuests.length);
     formData.append("has_children", additionalGuests.some((guest) => guest.is_child));
-    
-    // Address data
-    Object.entries(address).forEach(([key, value]) => {
-      formData.append(key, value || "");
-    });
+  
+    // Debugging Address Data
+    console.log("Address Data:", address);
+    formData.append("address", JSON.stringify(address));
   
     // Vehicle plate if applicable
     if (hasCar) {
+      console.log("Appending vehicle_plate:", vehiclePlate);
       formData.append("vehicle_plate", vehiclePlate);
     }
   
     // Append additional guests
+    console.log("Additional Guests:", additionalGuests);
     formData.append("additional_guests", JSON.stringify(additionalGuests));
+  
+    // Debugging FormData Content
+    console.log("FormData Content:");
+    formData.forEach((value, key) => {
+      console.log(key, value);
+    });
+
+    console.log(formData)
   
     try {
       const response = await axios.patch(
@@ -447,7 +456,6 @@ const ReservationModal = ({
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
           },
         }
       );
@@ -465,6 +473,7 @@ const ReservationModal = ({
       setIsSubmitting(false);
     }
   };
+  
 
   const handleSaveCheckin = async () => {
     const confirmMessage = reservationData.checkin_at
@@ -503,9 +512,7 @@ const ReservationModal = ({
     formData.append("checkin_at", formattedCheckinAt);
   
     // Append Address information
-    Object.entries(address).forEach(([key, value]) => {
-      formData.append(key, value || ""); // Append each address field
-    });
+    formData.append("address", JSON.stringify(address));
   
     // Append Vehicle Plate if the user has a car
     if (hasCar) {
@@ -530,6 +537,9 @@ const ReservationModal = ({
     photoFiles.forEach((file) => {
       formData.append("additional_photos", file);
     });
+
+    console.log(formData)
+
     try {
       const response = await axios.patch(
         `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
@@ -642,6 +652,8 @@ const ReservationModal = ({
   const closeModal1 = () => {
     closeModal();
   };
+
+  console.log(reservationData)
 
   const openBase64Pdf = (base64String, fileName = "reservation.pdf") => {
     try {

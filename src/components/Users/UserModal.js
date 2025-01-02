@@ -28,11 +28,25 @@ const ModalTitle = styled.h2`
 `;
 
 const Input = styled.input`
+    width: 94%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+`;
+
+const Select = styled.select`
     width: 100%;
     padding: 10px;
     margin-bottom: 15px;
     border: 1px solid #ddd;
     border-radius: 4px;
+`;
+
+const UserTypeDisplay = styled.div`
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #555;
 `;
 
 const ButtonGroup = styled.div`
@@ -55,7 +69,9 @@ const Button = styled.button`
 `;
 
 const UserModal = ({ isOpen, onClose, user, onSave }) => {
-    const [formData, setFormData] = useState(user || { name: '', email: '' });
+    const [formData, setFormData] = useState(
+        user || { name: '', email: '', user_type: 'Resident' } // Default to 'Resident' for new users
+    );
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -68,13 +84,42 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
 
     if (!isOpen) return null;
 
+    const translateUserType = (userType) => {
+        switch (userType) {
+            case 'Resident':
+                return 'Residente';
+            case 'Owner':
+                return 'Proprietário';
+            default:
+                return userType; // Default to the original type if no match
+        }
+    };
+
+
     return (
         <Overlay>
             <ModalContainer>
-                <ModalTitle>{user ? 'Edit User' : 'Add User'}</ModalTitle>
+                <ModalTitle>{user ? 'Editar' : `Adicionar`}</ModalTitle>
+                {/* Show dropdown for adding new users */}
+                {!user && (
+                    <Select
+                        name="user_type"
+                        value={formData.user_type}
+                        onChange={handleInputChange}
+                    >
+                        <option value="Resident">Residente</option>
+                        <option value="Owner">Proprietário</option>
+                    </Select>
+                )}
+                {/* Display user type when editing */}
+                {user && (
+                    <UserTypeDisplay>
+                        Tipo: {translateUserType(formData.user_type) || 'Unknown'}
+                    </UserTypeDisplay>
+                )}
                 <Input
                     name="name"
-                    placeholder="Name"
+                    placeholder="Nome"
                     value={formData.name}
                     onChange={handleInputChange}
                 />
@@ -86,9 +131,9 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
                 />
                 <ButtonGroup>
                     <Button cancel onClick={onClose}>
-                        Cancel
+                        Cancelar
                     </Button>
-                    <Button onClick={handleSave}>Save</Button>
+                    <Button onClick={handleSave}>Salvar</Button>
                 </ButtonGroup>
             </ModalContainer>
         </Overlay>
@@ -96,3 +141,4 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
 };
 
 export default UserModal;
+

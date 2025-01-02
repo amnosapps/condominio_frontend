@@ -60,7 +60,13 @@ const UserItem = styled.div`
 
 const UserDetails = styled.div`
     display: flex;
-    flex-direction: column;
+    align-items: center; /* Vertically center items */
+    gap: 30px; /* Add spacing between items */
+`;
+
+const UserDetail = styled.div`
+    flex: 1; /* Allow items to grow/shrink as needed */
+    text-align: left; /* Align text to the left */
 `;
 
 const UserActions = styled.div`
@@ -88,9 +94,22 @@ const IconButton = styled.button`
     }
 `;
 
+const FilterContainer = styled.div`
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+`;
+
+const FilterSelect = styled.select`
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+`;
+
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
-    const [userType, setUserType] = useState('residents'); // Default to residents
+    const [userType, setUserType] = useState('all'); // Default to all users
     const [isModalOpen, setModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
 
@@ -98,14 +117,21 @@ const UserManagement = () => {
         const token = localStorage.getItem('accessToken');
         try {
             const response = await axios.get(
-                `${process.env.REACT_APP_API_URL}/api/${userType}/`,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
+                `${process.env.REACT_APP_API_URL}/api/users/`,
+                { headers: { Authorization: `Bearer ${token}` } }
             );
-            setUsers(response.data);
+
+            console.log('API Response:', response.data);
+            const allUsers = response.data.results;
+
+            const filteredUsers =
+                userType === 'all'
+                    ? allUsers
+                    : allUsers.filter((user) => user.user_type === userType);
+
+            setUsers(filteredUsers);
         } catch (error) {
-            console.error('Error fetching users:', error);
+            console.error('Erro ao buscar usuários:', error);
         }
     };
 
@@ -122,24 +148,34 @@ const UserManagement = () => {
     const handleDeleteUser = async (userId) => {
         const token = localStorage.getItem('accessToken');
         try {
+            const userToDelete = users.find((user) => user.id === userId);
+            const endpoint =
+                userToDelete.user_type === 'Resident'
+                    ? 'residents'
+                    : 'owners'; // Use the specific type endpoint
+
             await axios.delete(
-                `${process.env.REACT_APP_API_URL}/api/${userType}/${userId}/`,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
+                `${process.env.REACT_APP_API_URL}/api/${endpoint}/${userId}/`,
+                { headers: { Authorization: `Bearer ${token}` } }
             );
             setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
         } catch (error) {
-            console.error('Error deleting user:', error);
+            console.error('Erro ao excluir usuário:', error);
         }
     };
 
     const handleSaveUser = async (userData) => {
         const token = localStorage.getItem('accessToken');
         try {
+            const endpoint =
+                userData.user_type === 'Resident'
+                    ? 'residents'
+                    : 'owners'; // Use the specific type endpoint
+
             if (userData.id) {
+                // Update existing user
                 const response = await axios.put(
-                    `${process.env.REACT_APP_API_URL}/api/${userType}/${userData.id}/`,
+                    `${process.env.REACT_APP_API_URL}/api/${endpoint}/${userData.id}/`,
                     userData,
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
@@ -149,8 +185,9 @@ const UserManagement = () => {
                     )
                 );
             } else {
+                // Add new user
                 const response = await axios.post(
-                    `${process.env.REACT_APP_API_URL}/api/${userType}/`,
+                    `${process.env.REACT_APP_API_URL}/api/${endpoint}/`,
                     userData,
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
@@ -158,7 +195,18 @@ const UserManagement = () => {
             }
             setModalOpen(false);
         } catch (error) {
-            console.error('Error saving user:', error);
+            console.error('Erro ao salvar usuário:', error);
+        }
+    };
+
+    const translateUserType = (userType) => {
+        switch (userType) {
+            case 'Resident':
+                return 'Residente';
+            case 'Owner':
+                return 'Proprietário';
+            default:
+                return userType; // Default to the original type if no match
         }
     };
 
@@ -169,20 +217,38 @@ const UserManagement = () => {
     return (
         <Container>
             <Header>
-                <Title>
-                    {userType === 'residents' ? 'Residents' : 'Owners'} Management
-                </Title>
-                <AddButton onClick={handleAddUser}>
-                    <FaPlus /> Add {userType === 'residents' ? 'Resident' : 'Owner'}
-                </AddButton>
+                <Title>Gerenciamento de Usuários</Title>
+                {/* <AddButton onClick={handleAddUser}>
+                    <FaPlus /> Adicionar Usuário
+                </AddButton> */}
             </Header>
+
+            <FilterContainer>
+                <FilterSelect
+                    value={userType}
+                    onChange={(e) => setUserType(e.target.value)}
+                >
+                    <option value="all">Todos</option>
+                    <option value="Resident">Residente</option>
+                    <option value="Owner">Proprietário</option>
+                </FilterSelect>
+            </FilterContainer>
 
             <UserList>
                 {users.map((user) => (
                     <UserItem key={user.id}>
                         <UserDetails>
-                            <strong>{user.name}</strong>
-                            <span>{user.email}</span>
+                            <UserDetail>
+                                <strong>{user.name}</strong>
+                            </UserDetail>
+                            <UserDetail>
+                                <span>{user.email}</span>
+                            </UserDetail>
+                            <UserDetail>
+                                <span style={{ fontStyle: 'italic', color: '#555' }}>
+                                    {translateUserType(user.user_type)}
+                                </span>
+                            </UserDetail>
                         </UserDetails>
                         <UserActions>
                             <IconButton onClick={() => handleEditUser(user)}>
@@ -207,11 +273,6 @@ const UserManagement = () => {
                     onSave={handleSaveUser}
                 />
             )}
-
-            <div>
-                <button onClick={() => setUserType('residents')}>Residents</button>
-                <button onClick={() => setUserType('owners')}>Owners</button>
-            </div>
         </Container>
     );
 };
