@@ -196,7 +196,8 @@ const ClearFiltersButton = styled.button`
     transition: background-color 0.3s;
 
     &:hover {
-        background-color: #c82333;
+        background-color: #F46600;
+        color: #fff;
     }
 
     @media (max-width: 480px) {

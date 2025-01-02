@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
 
-import { format } from 'date-fns';
+import { format, isSameDay, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { printFormData } from "../utils/print";
 import PhotoCapture from "./PhotoCapture";
@@ -694,8 +694,6 @@ const ReservationModal = ({
     closeModal();
   };
 
-  console.log(reservationData)
-
   const openBase64Pdf = (base64String, fileName = "reservation.pdf") => {
     try {
       // Decode the base64 string
@@ -726,6 +724,12 @@ const ReservationModal = ({
       alert("Erro ao abrir pdf. Procure o suporte");
     }
   };
+
+  const isCheckinToday = reservationData.checkin
+    ? isSameDay(new Date(), reservationData.checkin) // Use the Date object directly
+    : false;
+
+  console.log(isCheckinToday, reservationData.checkin)
 
   if (!selectedReservation) return null;
 
@@ -1010,9 +1014,16 @@ const ReservationModal = ({
               )}
             </>
           ) : (
-            <GreenButton onClick={handleSaveCheckin} disabled={isSubmitting}>
+            <GreenButton
+              onClick={handleSaveCheckin}
+              disabled={isSubmitting || !isCheckinToday}
+              style={{
+                  backgroundColor: !isCheckinToday ? 'grey' : '#28a745', // Grey if not today
+                  cursor: !isCheckinToday ? 'not-allowed' : 'pointer',   // Change cursor style
+              }}
+          >
               {isSubmitting ? "Enviando..." : "Checkin"}
-            </GreenButton>
+          </GreenButton>
           )}
           <RedButton onClick={closeModal1}>Cancelar</RedButton>
         </div>
