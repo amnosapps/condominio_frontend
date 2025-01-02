@@ -340,6 +340,7 @@ const ReservationModal = ({
   const [reservationData, setReservationData] = useState({
     guest_name: selectedReservation?.guest_name || "",
     guest_document: selectedReservation?.guest_document || "",
+    document_type: selectedReservation?.document_type || "",
     guest_phone: selectedReservation?.guest_phone || "", // Handle null values
     guests_qty: selectedReservation?.additional_guests.length + 1 || 0,
     apartment: selectedReservation?.apartment || "", // Optional apartment number
@@ -773,6 +774,20 @@ const ReservationModal = ({
             </FieldValue>
           </Column>
           <Column>
+          <FieldLabel>Tipo de Documento:</FieldLabel>
+          <FieldValue>
+            <StyledSelect
+              value={reservationData.document_type || ""}
+              onChange={(e) => handleChange("document_type", e.target.value)}
+            >
+              <option value="">Selecione</option>
+              <option value="cpf">CPF</option>
+              <option value="rg">RG</option>
+              <option value="passport">Passaporte</option>
+            </StyledSelect>
+          </FieldValue>
+        </Column>
+          <Column>
             <FieldLabel>Documento:</FieldLabel>
             <FieldValue>
               <EditableInput
@@ -907,9 +922,22 @@ const ReservationModal = ({
                   />
                 </Column>
                 <Column>
+                  <FieldValue>
+                    <StyledSelect
+                      value={reservationData.document_type || ""}
+                      onChange={(e) => handleChange("document_type", e.target.value)}
+                    >
+                      <option value="">Tipo Documento</option>
+                      <option value="cpf">CPF</option>
+                      <option value="rg">RG</option>
+                      <option value="passport">Passaporte</option>
+                    </StyledSelect>
+                  </FieldValue>
+                </Column>
+                <Column>
                   <EditableInput
                     type="text"
-                    placeholder="Documento"
+                    placeholder="Num Documento"
                     value={guest.document}
                     onChange={(e) =>
                       updateGuestDetails(index, "document", e.target.value)
@@ -926,9 +954,9 @@ const ReservationModal = ({
                         }
                       >
                         <option value="">Idade</option>
-                        {Array.from({ length: 8 }, (_, i) => (
-                          <option key={i + 5} value={i + 5}>
-                            {i + 5}
+                        {Array.from({ length: 18 }, (_, i) => (
+                          <option key={i} value={i}>
+                            {i}
                           </option>
                         ))}
                       </StyledSelect>

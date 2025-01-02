@@ -315,14 +315,6 @@ function ApartmentList({ condominium }) {
             ) : (
                 <>
                     <ControlsContainer>
-                        <CheckboxLabel>
-                            <input
-                                type="checkbox"
-                                checked={checkinTodayFilter}
-                                onChange={handleCheckinTodayChange}
-                            />
-                            Check-ins Hoje
-                        </CheckboxLabel>
                         <SearchInput
                             type="text"
                             placeholder="Buscar por número"

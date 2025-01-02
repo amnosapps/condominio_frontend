@@ -103,7 +103,7 @@ function ApartmentCard({ apartment, onClick }) {
                 {apartment.type_name === 'Moradia' && (
                     <div>
                         <FaUsers />
-                        Pessoas {apartment.residents?.length || 0}
+                        Pessoas: {apartment.residents?.length || 0}
                     </div>
                 )}
                 {apartment.type_name === 'Temporada' && (

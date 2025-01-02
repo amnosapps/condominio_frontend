@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Doughnut } from 'react-chartjs-2';
+import { startOfDay, endOfDay, parseISO, isWithinInterval } from 'date-fns';
 import Chart from 'chart.js/auto';
 
 const ChartContainer = styled.div`
@@ -13,9 +14,15 @@ const ChartContainer = styled.div`
 `;
 
 const ChartWrapper = styled.div`
-    width: 120px;
-    height: 120px;
+    width: 80px;
+    height: 80px;
     text-align: center;
+    cursor: pointer;
+`;
+
+const TittleDoughnut = styled.h3`
+    font-size: 15px;
+    color: #737373;
 `;
 
 function ChartSection({ apartments, onChartClick }) {
@@ -39,6 +46,39 @@ function ChartSection({ apartments, onChartClick }) {
         },
         { temporada: 0, moradia: 0 }
     );
+
+    const calculateCheckinCheckoutCounts = () => {
+        const today = new Date();
+        const todayStart = startOfDay(today);
+        const todayEnd = endOfDay(today);
+
+        let checkinsToday = [];
+        let checkoutsToday = [];
+
+        apartments.forEach((apartment) => {
+            apartment.last_reservations.forEach((reservation) => {
+                const checkinDate = reservation.checkin ? parseISO(reservation.checkin) : null;
+                const checkoutDate = reservation.checkout ? parseISO(reservation.checkout) : null;
+                
+                if (apartment.number == '101') {
+                    console.log(apartment)
+                    console.log(checkinDate, todayStart, todayEnd)
+                }
+
+                if (checkinDate && isWithinInterval(checkinDate, { start: todayStart, end: todayEnd })) {
+                    checkinsToday.push(apartment);
+                }
+
+                if (checkoutDate && isWithinInterval(checkoutDate, { start: todayStart, end: todayEnd })) {
+                    checkoutsToday.push(apartment);
+                }
+            });
+        });
+
+        return { checkinsToday, checkoutsToday };
+    };
+
+    const { checkinsToday, checkoutsToday } = calculateCheckinCheckoutCounts();
 
     const createDonutData = (count, label, color) => ({
         labels: [label, 'Outros'],
@@ -70,7 +110,43 @@ function ChartSection({ apartments, onChartClick }) {
         <ChartContainer>
             {/* Status Charts */}
             <ChartWrapper>
-                <h3>Ocupados</h3>
+                <TittleDoughnut>Checkins</TittleDoughnut>
+                <Doughnut
+                    data={createDonutData(checkinsToday.length, 'Check-ins Hoje', '#8e44ad')}
+                    plugins={[centerTextPlugin]}
+                    options={{
+                        plugins: {
+                            legend: { display: false },
+                        },
+                        maintainAspectRatio: false,
+                        onClick: (_, elements) => {
+                            if (elements.length > 0) onChartClick({ filterType: 'checkinsToday', value: checkinsToday });
+                        },
+                    }}
+                />
+            </ChartWrapper>
+            <ChartWrapper>
+                <TittleDoughnut>Checkouts</TittleDoughnut>
+                <Doughnut
+                    data={createDonutData(checkoutsToday.length, 'Check-outs Hoje', '#e67e22')}
+                    plugins={[centerTextPlugin]}
+                    options={{
+                        plugins: {
+                            legend: { display: false },
+                        },
+                        maintainAspectRatio: false,
+                        onClick: (_, elements) => {
+                            if (elements.length > 0) onChartClick({ filterType: 'checkoutsToday', value: checkoutsToday });
+                        },
+                    }}
+                />
+            </ChartWrapper>
+            <ChartWrapper
+                onClick={() => {
+                    onChartClick({ filterType: 'status', value: 1 });
+                }}
+            >
+                <TittleDoughnut>Ocupados</TittleDoughnut>
                 <Doughnut
                     data={createDonutData(statusCounts.occupied, 'Ocupados', '#ff6384')}
                     plugins={[centerTextPlugin]}
@@ -85,8 +161,12 @@ function ChartSection({ apartments, onChartClick }) {
                     }}
                 />
             </ChartWrapper>
-            <ChartWrapper>
-                <h3>Disponíveis</h3>
+            <ChartWrapper
+                onClick={() => {
+                    onChartClick({ filterType: 'status', value: 0 });
+                }}
+            >
+                <TittleDoughnut>Disponíveis</TittleDoughnut>
                 <Doughnut
                     data={createDonutData(statusCounts.available, 'Disponíveis', '#36a2eb')}
                     plugins={[centerTextPlugin]}
@@ -101,8 +181,12 @@ function ChartSection({ apartments, onChartClick }) {
                     }}
                 />
             </ChartWrapper>
-            <ChartWrapper>
-                <h3>Manutenção</h3>
+            <ChartWrapper
+                onClick={() => {
+                    onChartClick({ filterType: 'status', value: 2 });
+                }}
+            >
+                <TittleDoughnut>Manutenção</TittleDoughnut>
                 <Doughnut
                     data={createDonutData(statusCounts.maintenance, 'Manutenção', '#ffce56')}
                     plugins={[centerTextPlugin]}
@@ -119,8 +203,12 @@ function ChartSection({ apartments, onChartClick }) {
             </ChartWrapper>
 
             {/* Type Charts */}
-            <ChartWrapper>
-                <h3>Temporada</h3>
+            <ChartWrapper
+                onClick={() => {
+                    onChartClick({ filterType: 'type_name', value: 'Temporada' });
+                }}
+            >
+                <TittleDoughnut>Temporada</TittleDoughnut>
                 <Doughnut
                     data={createDonutData(typeCounts.temporada, 'Temporada', '#4caf50')}
                     plugins={[centerTextPlugin]}
@@ -135,8 +223,12 @@ function ChartSection({ apartments, onChartClick }) {
                     }}
                 />
             </ChartWrapper>
-            <ChartWrapper>
-                <h3>Moradia</h3>
+            <ChartWrapper
+                onClick={() => {
+                    onChartClick({ filterType: 'type_name', value: 'Moradia' });
+                }}
+            >
+                <TittleDoughnut>Moradia</TittleDoughnut>
                 <Doughnut
                     data={createDonutData(typeCounts.moradia, 'Moradia', '#ff9800')}
                     plugins={[centerTextPlugin]}
