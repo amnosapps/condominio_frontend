@@ -470,6 +470,7 @@ const ReservationModal = ({
     // Append updated reservation data
     formData.append("guest_name", reservationData.guest_name);
     formData.append("guest_document", reservationData.guest_document);
+    formData.append("document_type", reservationData.document_type);
     formData.append("guest_phone", reservationData.guest_phone || "");
     formData.append("guests_qty", 1 + additionalGuests.length);
     formData.append("has_children", additionalGuests.some((guest) => guest.is_child));
