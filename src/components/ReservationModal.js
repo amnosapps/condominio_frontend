@@ -30,8 +30,8 @@ const ModalContainer = styled.div`
   width: 90%;
   max-width: 700px;
   max-height: 80vh; /* Constrain height to 80% of the viewport */
-  padding: 40px;
-  border-radius: 10px;
+  padding: 30px;
+  border-radius: 5px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   position: relative;
   overflow-y: auto; /* Enable vertical scrolling */
