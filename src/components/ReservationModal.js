@@ -24,14 +24,14 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContainer = styled.div`
-  margin-top: 100px;
+  margin-top: 30px;
   margin-left: 100px;
   background-color: white;
-  width: 80%;
-  max-width: 400px;
+  width: 90%;
+  max-width: 700px;
   max-height: 80vh; /* Constrain height to 80% of the viewport */
-  padding: 20px;
-  border-radius: 8px;
+  padding: 40px;
+  border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   position: relative;
   overflow-y: auto; /* Enable vertical scrolling */
@@ -54,8 +54,8 @@ const ModalContainer = styled.div`
 
 const CloseButton = styled.button`
   position: absolute;
-  top: 10px;
-  right: 10px;
+  /* top: 10px; */
+  right: 50px;
   background: none;
   border: none;
   font-size: 20px;
@@ -124,13 +124,12 @@ const AddGuestButton = styled.button`
 const CheckboxContainer = styled.div`
   display: flex;
   align-items: center;
-  margin-top: 10px;
 `;
 
 const StyledSelect = styled.select`
-  margin-top: 5px;
+  margin-top: 8px;
   width: 100%;
-  padding: 10px;
+  padding:8px;
   font-size: 16px;
   color: #333;
   background: white;
@@ -244,6 +243,7 @@ const LogsModalContainer = styled.div`
 `;
 
 const LogsButton = styled.button`
+  margin-left: 10px;
   padding: 5px 10px;
   background-color: #007bff;
   color: white;
@@ -288,6 +288,46 @@ const CloseLogsButton = styled.button`
   cursor: pointer;
 `;
 
+const SectionTitle = styled.h4`
+  margin: 20px 0 10px;
+  font-size: 18px;
+  font-weight: bold;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+`;
+
+const Row = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+`;
+
+const Column = styled.div`
+  flex: 1;
+  margin-right: 10px;
+  min-width: 150px; /* Ensure columns are responsive */
+`;
+
+const FieldLabel = styled.strong`
+  display: block;
+  margin-bottom: 5px;
+`;
+
+const FieldValue = styled.span`
+  font-size: 14px;
+  color: #555;
+`;
+
+const EditableField = styled.div`
+  margin-bottom: 15px;
+`;
+
+const Divider = styled.div`
+  border-bottom: 1px solid #ddd;
+  margin: 15px 0;
+`;
 
 const ReservationModal = ({
   closeModal,
@@ -691,36 +731,22 @@ const ReservationModal = ({
   return (
     <ModalOverlay onClick={closeModal1}>
       <ModalContainer onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', alignContent: 'center' }}>
-          <LogsButton onClick={fetchLogs}>View Logs</LogsButton> 
+        <div style={{ display: 'flex', alignContent: 'center', alignItems: 'center' }}>
+          <div><strong>Apto {reservationData.apartment}</strong> {reservationData.apartment_owner != '' && (<>({reservationData.apartment_owner})</>)} </div>
+          <LogsButton onClick={fetchLogs}>Auditoria</LogsButton> 
           <CloseButton onClick={closeModal1}>X</CloseButton>
         </div>
         <div style={{ marginBottom: "10px" }}>
-            {isLogsOpen && (
-              <LogsModalOverlay onClick={() => setIsLogsOpen(false)}>
-                <LogsModalContainer onClick={(e) => e.stopPropagation()}>
-                  <CloseLogsButton onClick={() => setIsLogsOpen(false)}>X</CloseLogsButton>
-                  <h3>Logs da Reserva</h3>
-                  <LogsListComponent logs={logs} />
-                  {/* <LogsList>
-                    {logs.length > 0 ? (
-                      logs.map((log) => (
-                        <LogItem key={log.id}>
-                          <p><strong>Ação:</strong> {log.action}</p>
-                          <p><strong>Usuário:</strong> {log.user}</p>
-                          <p><strong>Horário:</strong> {new Date(log.timestamp).toLocaleString()}</p>
-                          <LogsVisualization log={log} />
-                        </LogItem>
-                      ))
-                    ) : (
-                      <p>Nao foram encontrados logs desta reserva.</p>
-                    )}
-                  </LogsList> */}
-                </LogsModalContainer>
-              </LogsModalOverlay>
-            )}
-          <p><strong>Apto {reservationData.apartment}</strong> ({reservationData.apartment_owner}) </p>
-          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          {isLogsOpen && (
+            <LogsModalOverlay onClick={() => setIsLogsOpen(false)}>
+              <LogsModalContainer onClick={(e) => e.stopPropagation()}>
+                <CloseLogsButton onClick={() => setIsLogsOpen(false)}>X</CloseLogsButton>
+                <h3>Logs da Reserva</h3>
+                <LogsListComponent logs={logs} />
+              </LogsModalContainer>
+            </LogsModalOverlay>
+          )}
+          <div style={{ display: "flex", gap: "10px", alignItems: "center", margin: '15px 0px' }}>
             <a onClick={() => openBase64Pdf(reservationData.reservation_file, `${selectedReservation.apartment}_${selectedReservation.id}reservation.pdf`)}>
               <img
                 src="/download-pdf.png"
@@ -728,115 +754,159 @@ const ReservationModal = ({
                 style={{ width: "30px", height: "auto", cursor: "pointer" }}
               />
             </a>
-            <p>
+            <strong>
               {format(new Date(reservationData.checkin), 'dd/MM/yyyy', { locale: ptBR })} - {format(new Date(reservationData.checkout), 'dd/MM/yyyy', { locale: ptBR })}
-            </p>
+            </strong>
           </div>
         </div>
 
         {/* Guest Information */}
-        <div>
-          <div>
-            <strong>Nome do Hóspede:</strong>
-            <EditableInput
-              type="text"
-              value={reservationData.guest_name}
-              onChange={(e) => handleChange("guest_name", e.target.value)}
-            />
-          </div>
-          <div>
-            <strong>Documento do Hóspede:</strong>
-            <EditableInput
-              type="text"
-              value={reservationData.guest_document}
-              onChange={(e) => handleChange("guest_document", e.target.value)}
-            />
-            <strong>Contato do Hóspede:</strong>
-            <EditableInput
-              type="text"
-              value={reservationData.guest_phone || ""}
-              onChange={handlePhoneChange}
-              placeholder="88 88888-8888"
-            />
-            
-            <div>
-              <strong>Endereço:</strong>
+        <Row>
+          <Column>
+            <FieldLabel>Nome:</FieldLabel>
+            <FieldValue>
               <EditableInput
                 type="text"
-                value={address.endereco || ""}
-                onChange={(e) => handleAddressChange("endereco", e.target.value)}
+                value={reservationData.guest_name}
+                onChange={(e) => handleChange("guest_name", e.target.value)}
               />
-              <strong>Bairro:</strong>
+            </FieldValue>
+          </Column>
+          <Column>
+            <FieldLabel>Documento:</FieldLabel>
+            <FieldValue>
+              <EditableInput
+                type="text"
+                value={reservationData.guest_document}
+                onChange={(e) => handleChange("guest_document", e.target.value)}
+              />
+            </FieldValue>
+          </Column>
+          <Column>
+            <FieldLabel>Contato:</FieldLabel>
+            <FieldValue>
+              <EditableInput
+                type="text"
+                value={reservationData.guest_phone || ""}
+                onChange={handlePhoneChange}
+                placeholder="88 88888-8888"
+              />
+            </FieldValue>
+          </Column>
+        </Row>
+
+        <Row>
+          {hasCar && (
+            <Column>
+              <FieldLabel>Placa do Veículo:</FieldLabel>
+              <FieldValue>
+                <EditableInput
+                  type="text"
+                  value={vehiclePlate}
+                  onChange={(e) => setVehiclePlate(e.target.value)}
+                />
+              </FieldValue>
+            </Column>
+          )}
+        </Row>
+        <div style={{ marginBottom: '20px', marginTop: '-14px' }}>
+          <CheckboxContainer>
+            <HiddenCheckbox
+              checked={hasCar}
+              onChange={handleHasCarChange}
+            />
+            <StyledCheckbox
+              checked={hasCar}
+              onClick={() => handleHasCarChange({ target: { checked: !hasCar } })}
+            />
+            <Label>Tem veículo?</Label>
+          </CheckboxContainer>
+        </div>  
+        <Row>
+          <Column>
+            <FieldLabel>Endereço:</FieldLabel>
+            <FieldValue>
+              <EditableInput
+              type="text"
+              value={address.endereco || ""}
+              onChange={(e) => handleAddressChange("endereco", e.target.value)}
+            />
+            </FieldValue>
+          </Column>
+          <Column>
+            <FieldLabel>Bairro:</FieldLabel>
+            <FieldValue>
               <EditableInput
                 type="text"
                 value={address.bairro || ""}
                 onChange={(e) => handleAddressChange("bairro", e.target.value)}
               />
-              <strong>CEP:</strong>
+            </FieldValue>
+          </Column>
+          <Column>
+            <FieldLabel>CEP:</FieldLabel>
+            <FieldValue>
               <EditableInput
                 type="text"
                 value={address.cep || ""}
                 onChange={(e) => handleAddressChange("cep", e.target.value)}
               />
-              <strong>Cidade:</strong>
+            </FieldValue>
+          </Column>
+        </Row>
+        <Row>
+          <Column>
+            <FieldLabel>Cidade:</FieldLabel>
+            <FieldValue>
               <EditableInput
                 type="text"
                 value={address.cidade || ""}
                 onChange={(e) => handleAddressChange("cidade", e.target.value)}
               />
-              <strong>Estado:</strong>
+            </FieldValue>
+          </Column>
+          <Column>
+            <FieldLabel>Estado:</FieldLabel>
+            <FieldValue>
               <EditableInput
                 type="text"
                 value={address.estado || ""}
                 onChange={(e) => handleAddressChange("estado", e.target.value)}
               />
-              <strong>País:</strong>
+            </FieldValue>
+          </Column>
+          <Column>
+            <FieldLabel>País:</FieldLabel>
+            <FieldValue>
               <EditableInput
                 type="text"
                 value={address.pais || ""}
                 onChange={(e) => handleAddressChange("pais", e.target.value)}
               />
-            </div>
-
-            <div>
-              <CheckboxContainer>
-                <HiddenCheckbox
-                  checked={hasCar}
-                  onChange={handleHasCarChange}
-                />
-                <StyledCheckbox
-                  checked={hasCar}
-                  onClick={() => handleHasCarChange({ target: { checked: !hasCar } })}
-                />
-                <Label>Tem veículo?</Label>
-              </CheckboxContainer>
-              {hasCar && (
-                <div style={{ margin: '15px 0' }}>
-                  <strong>Placa do Veículo:</strong>
-                  <EditableInput
-                    type="text"
-                    value={vehiclePlate}
-                    onChange={(e) => setVehiclePlate(e.target.value)}
-                  />
-                </div>
-              )}
-            </div>
-            <div>
-              {additionalGuests.map((guest, index) => (
-                <div key={index} style={{ margin: '15px 0' }}>
-                  <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <strong>Hóspede Adicional:</strong>
-                    <RemoveGuestButton onClick={() => removeAdditionalGuest(index)}>
-                      <img width={20} src="/trash.png" />
-                    </RemoveGuestButton>
-                  </div>
-                  
+            </FieldValue>
+          </Column>
+        </Row>
+            
+        <div>
+          {additionalGuests.map((guest, index) => (
+            <div key={index} style={{ margin: '15px 0' }}>
+              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <strong>Hóspede Adicional:</strong>
+                <RemoveGuestButton onClick={() => removeAdditionalGuest(index)}>
+                  <img width={20} src="/trash.png" />
+                </RemoveGuestButton>
+              </div>
+              
+              <Row>
+                <Column>
                   <EditableInput
                     type="text"
                     placeholder="Nome"
                     value={guest.name}
                     onChange={(e) => updateGuestDetails(index, "name", e.target.value)}
                   />
+                </Column>
+                <Column>
                   <EditableInput
                     type="text"
                     placeholder="Documento"
@@ -845,46 +915,51 @@ const ReservationModal = ({
                       updateGuestDetails(index, "document", e.target.value)
                     }
                   />
-                  <div>
-                    <CheckboxContainer>
-                      <HiddenCheckbox
-                        checked={guest.is_child}
-                        onChange={(e) =>
-                          updateGuestDetails(index, "is_child", e.target.checked)
-                        }
-                      />
-                      <StyledCheckbox
-                        checked={guest.is_child}
-                        onClick={() =>
-                          updateGuestDetails(index, "is_child", !guest.isChild)
-                        }
-                      />
-                      <Label>É criança?</Label>
-                    </CheckboxContainer>
-                    {guest.is_child && (
-                     <StyledSelect
+                </Column>
+                <Column>
+                  {guest.is_child && (
+                    <>
+                      <StyledSelect
                         value={guest.age}
                         onChange={(e) =>
                           updateGuestDetails(index, "age", parseInt(e.target.value, 10))
                         }
                       >
-                        <option value="">Selecione a idade</option>
+                        <option value="">Idade</option>
                         {Array.from({ length: 8 }, (_, i) => (
                           <option key={i + 5} value={i + 5}>
                             {i + 5}
                           </option>
                         ))}
                       </StyledSelect>
-                    )}
-                  </div>
-                </div>
-              ))}
-              <AddGuestButton onClick={addAdditionalGuest}>
-                Adicionar Hóspede
-              </AddGuestButton>
+                    </>
+                  )}
+                </Column>
+              </Row>
+              <div>
+                <CheckboxContainer>
+                  <HiddenCheckbox
+                    checked={guest.is_child}
+                    onChange={(e) =>
+                      updateGuestDetails(index, "is_child", e.target.checked)
+                    }
+                  />
+                  <StyledCheckbox
+                    checked={guest.is_child}
+                    onClick={() =>
+                      updateGuestDetails(index, "is_child", !guest.isChild)
+                    }
+                  />
+                  <Label>É menor de idade?</Label>
+                </CheckboxContainer>
+              </div>
             </div>
-          </div>
+          ))}
+          <AddGuestButton onClick={addAdditionalGuest}>
+            Adicionar Hóspede
+          </AddGuestButton>
         </div>
+        
 
         <PhotoCapture
           existingPhotos={reservationData.additional_photos}
