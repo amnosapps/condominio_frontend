@@ -360,7 +360,7 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments }) {
                   disabled={!formData.apartment}
                 >
                   {Array.from({ length: maxGuests }, (_, i) => (
-                    <option key={i + 1} value={i + 1}>{i + 1}</option>
+                    <option key={i} value={i}>{i}</option>
                   ))}
                 </StyledSelect>
               </FieldValue>

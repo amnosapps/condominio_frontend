@@ -357,6 +357,7 @@ const ReservationModal = ({
     checkin: selectedReservation?.checkin ? new Date(selectedReservation.checkin) : null,
     checkout: selectedReservation?.checkout ? new Date(selectedReservation.checkout) : null,
     guest_name: selectedReservation?.guest_name || "",
+    observations: selectedReservation?.observations || "",
     guest_document: selectedReservation?.guest_document || "",
     document_type: selectedReservation?.document_type || "",
     guest_phone: selectedReservation?.guest_phone || "", // Handle null values
@@ -486,6 +487,7 @@ const ReservationModal = ({
     // Append updated reservation data
     formData.append("checkin", new Date(reservationData.checkin).toISOString());
     formData.append("checkout", new Date(reservationData.checkout).toISOString());
+    formData.append("observations", reservationData.observations);
     formData.append("guest_name", reservationData.guest_name);
     formData.append("guest_document", reservationData.guest_document);
     formData.append("document_type", reservationData.document_type);
@@ -563,6 +565,7 @@ const ReservationModal = ({
     }
   
     // Append reservation data to formData
+    formData.append("observations", reservationData.observations);
     formData.append("guest_name", reservationData.guest_name);
     formData.append("guest_document", reservationData.guest_document);
     formData.append("guest_phone", reservationData.guest_phone || "");

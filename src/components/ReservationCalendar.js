@@ -15,6 +15,7 @@ import {
   isBefore,
   startOfWeek,
   isAfter,
+  subDays,
   parse,
   isValid,
 } from "date-fns";
@@ -523,7 +524,7 @@ const ReservationCalendar = ({ condominium }) => {
   const [loadingNavigation, setLoadingNavigation] = useState(false);
 
   const [viewType, setViewType] = useState("15");
-  const [currentStartDate, setCurrentStartDate] = useState(new Date());
+  const [currentStartDate, setCurrentStartDate] = useState(subDays(new Date(), 1));
   const [apartments, setApartments] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -647,6 +648,8 @@ const ReservationCalendar = ({ condominium }) => {
         additional_guests: reservation.additional_guests,
         reservation_file: reservation.reservation_file,
       }));
+
+      console.log(newReservations)
   
       // Update cache if enabled
       if (useCache) {
@@ -661,13 +664,14 @@ const ReservationCalendar = ({ condominium }) => {
         ...newReservations,
       ]);
     } catch (error) {
-      setLoadingNavigation(false)
+      // setLoadingNavigation(false)
       console.error("Error fetching reservations:", error);
     } finally {
       setLoadingNavigation(false)
     }
   };
   
+  console.log(reservations)
 
   const loadData = async () => {
     await Promise.all([fetchApartments(), fetchReservations(currentPage), fetchUserProfile()]);
@@ -707,7 +711,6 @@ const ReservationCalendar = ({ condominium }) => {
       normalizeDate(day) <= normalizeDate(reservation.checkout))
     .reduce((totalGuests, reservation) => totalGuests + (reservation.guests_qty + 1),0);
 
-    console.log(total_guests)
     return total_guests
   };
 
