@@ -612,13 +612,15 @@ const ReservationCalendar = ({ condominium }) => {
     if (useCache && reservationCache.current[rangeKey]) {
       setReservations((prevReservations) => [
         ...prevReservations,
-        ...reservationCache.current[rangeKey],
+        ...reservationCache.current[rangeKey].filter(
+          (newRes) => !prevReservations.find((res) => res.id === newRes.id)
+        ),
       ]);
       return;
     }
-    
+  
     try {
-      setLoadingNavigation(true)
+      setLoadingNavigation(true);
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reservations/`, {
         headers: { Authorization: `Bearer ${token}` },
         params: {
@@ -649,8 +651,6 @@ const ReservationCalendar = ({ condominium }) => {
         additional_guests: reservation.additional_guests,
         reservation_file: reservation.reservation_file,
       }));
-
-      console.log(newReservations)
   
       // Update cache if enabled
       if (useCache) {
@@ -665,10 +665,9 @@ const ReservationCalendar = ({ condominium }) => {
         ...newReservations,
       ]);
     } catch (error) {
-      // setLoadingNavigation(false)
       console.error("Error fetching reservations:", error);
     } finally {
-      setLoadingNavigation(false)
+      setLoadingNavigation(false);
     }
   };
   
@@ -736,23 +735,19 @@ const ReservationCalendar = ({ condominium }) => {
     if (scrollableRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollableRef.current;
   
-      // Scroll right: Fetch more reservations when nearing the end
       if (scrollLeft + clientWidth >= scrollWidth - 50) {
         setCurrentPage((prevPage) => {
-          setReservations([])
-          fetchReservations(prevPage + 1, "right"); // Only fetch when scrolling right
+          fetchReservations(prevPage + 1, "right");
           return prevPage + 1;
         });
       }
   
-      // Scroll left: Fetch reservations for previous dates only when nearing the start
       if (scrollLeft <= 50) {
         setCurrentPage((prevPage) => {
-          if (prevPage > 1) { // Avoid fetching if already at the beginning
-            setReservations([])
+          if (prevPage > 1) {
             fetchReservations(prevPage - 1, "left");
           }
-          return Math.max(prevPage - 1, 1); // Prevent page from going below 1
+          return Math.max(prevPage - 1, 1);
         });
       }
     }
@@ -942,6 +937,8 @@ const ReservationCalendar = ({ condominium }) => {
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
+  console.log(reservations.length)
+
   return (
     <CalendarWrapper>
       <FilterContainer>
@@ -966,7 +963,7 @@ const ReservationCalendar = ({ condominium }) => {
         <div>
           <div>
           <select onChange={(e) => setViewType(e.target.value)} value={viewType}>
-            <option value="7">Semana</option>
+            {/* <option value="7">Semana</option> */}
             <option value="15">Quinzena</option>
             <option value="30">Mês</option>
           </select>
