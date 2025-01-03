@@ -791,7 +791,7 @@ const ReservationModal = ({
         <div style={{ display: 'flex', alignContent: 'center', alignItems: 'center' }}>
           <div><strong style={{ fontSize: '20px' }}>Apto {reservationData.apartment}</strong> {reservationData.apartment_owner != '' && (<>({reservationData.apartment_owner})</>)} </div>
           
-          <CloseButton onClick={closeModal1}>X</CloseButton>
+          <CloseButton onClick={closeModal1}>&times;</CloseButton>
         </div>
         <div style={{ marginBottom: "10px" }}>
           {isLogsOpen && (

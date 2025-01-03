@@ -1075,7 +1075,7 @@ const ReservationCalendar = ({ condominium }) => {
       {isModalOpen && (
         <ReservationCreationModal
           onClose={toggleModal}
-          loadReservations={fetchReservations}
+          fetchReservations={fetchReservations}
           apartments={apartments}
           profile={profile}
         />

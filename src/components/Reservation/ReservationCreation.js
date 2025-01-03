@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { registerLocale } from "react-datepicker";
 import ptBR from "date-fns/locale/pt-BR";
+import axios from "axios";
 
 registerLocale("pt-BR", ptBR);
 
+// Styled Components
 const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -21,26 +22,23 @@ const ModalOverlay = styled.div`
   z-index: 1000;
 `;
 
-const ModalContent = styled.div`
+const ModalContainer = styled.div`
   background: white;
   padding: 2rem;
-  border-radius: 10px;
-  width: 400px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  max-height: 80vh;
+  border-radius: 3px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 
   &::-webkit-scrollbar {
     width: 8px;
   }
-
   &::-webkit-scrollbar-thumb {
     background-color: #ccc;
     border-radius: 4px;
   }
-
   &::-webkit-scrollbar-track {
     background-color: #f5f5f5;
   }
@@ -49,88 +47,66 @@ const ModalContent = styled.div`
 const CloseButton = styled.button`
   background: none;
   border: none;
-  font-size: 1.5rem;
-  align-self: flex-end;
+  font-size: 2.5rem;
+  /* position: absolute; */
+  /* top: 10px; */
+  right: 250px;
+  top: 200px;
   cursor: pointer;
-  margin-top: -20px;
-`;
-
-const ToggleButton = styled.button`
-  background-color: ${(props) => (props.active ? "#F46600" : "#ccc")};
-  color: white;
-  border: none;
-  padding: 10px;
-  font-size: 1rem;
-  border-radius: 4px;
-  cursor: pointer;
+  color: #333;
 
   &:hover {
-    background-color: ${(props) => (props.active ? "#d95c00" : "#aaa")};
+    color: red;
   }
 `;
 
-const SubmitButton = styled.button`
-  margin-top: 20px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  padding: 10px;
-  font-size: 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #218838;
-  }
-`;
-
-const AddGuestButton = styled.button`
-  margin: 15px 15px;
-  padding: 5px 8px;
-  background-color: #F46600;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 13px;
-
-  &:hover {
-    background-color: #d89591;
-  }
-`;
-
-const RemoveGuestButton = styled.button`
-  background-color: red;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  margin: 10px 0;
-  border-radius: 5px;
-
-  &:hover {
-    opacity: 0.8;
-  }
-`;
-
-const InputGroup = styled.div`
-  display: flex;
-  flex-direction: column;
+const Title = styled.h2`
   margin-bottom: 1rem;
+  text-align: center;
+  color: #333;
+`;
+
+const Row = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+`;
+
+const Column = styled.div`
+  flex: 1;
+  margin-right: 30px;
+  min-width: 150px; /* Ensure columns are responsive */
 `;
 
 const Label = styled.label`
-  font-size: 1rem;
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
   font-weight: bold;
-  color: #333;
+`;
+
+const FieldValue = styled.span`
+  font-size: 14px;
+  color: #555;
+
+  .custom-date-picker {
+    width: 180px; /* Larger width for the input */
+    padding: 8px 10px; /* Add padding for larger clickable area */
+    font-size: 16px; /* Bigger font for readability */
+    border-radius: 6px; /* Rounded corners for better appearance */
+    border: 1px solid #ccc; /* Subtle border for distinction */
+    outline: none;
+  }
 `;
 
 const Input = styled.input`
   width: 100%;
   padding: 0.5rem;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 4px;
+  font-size: 1rem;
 
   &:focus {
     border-color: #007bff;
@@ -152,6 +128,7 @@ const StyledDatePickerWrapper = styled.div`
     padding: 0.5rem;
     border: 1px solid #ddd;
     border-radius: 4px;
+    font-size: 1rem;
 
     &:focus {
       border-color: #007bff;
@@ -160,11 +137,12 @@ const StyledDatePickerWrapper = styled.div`
   }
 `;
 
-const Select = styled.select`
+const StyledSelect = styled.select`
   width: 100%;
   padding: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 4px;
+  font-size: 1rem;
 
   &:focus {
     border-color: #007bff;
@@ -172,43 +150,82 @@ const Select = styled.select`
   }
 `;
 
-function ReservationCreationModal({ onClose, loadReservations, apartments, profile }) {
+const AddGuestButton = styled.button`
+  margin-top: 10px;
+  background-color: #f46600;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #d95400;
+  }
+`;
+
+const RemoveGuestButton = styled.button`
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 5px 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-top: 5px;
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+const SubmitButton = styled.button`
+  margin-top: 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #218838;
+  }
+`;
+
+function ReservationCreationModal({ onClose, fetchReservations, apartments }) {
   const [formData, setFormData] = useState({
     guest_name: "",
     guest_document: "",
     guest_phone: "",
-    guests: "",
-    has_children: false,
     apartment: "",
     checkin: null,
     checkout: null,
-    endereco: "",
-    bairro: "",
-    cep: "",
-    cidade: "",
-    estado: "",
-    pais: "",
-    vehicle_plate: "",
   });
 
   const [additionalGuests, setAdditionalGuests] = useState([]);
-  const [isCompleteReservation, setIsCompleteReservation] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleDateChange = (date, field) => {
-    setFormData({ ...formData, [field]: date });
-  };
-
-  const addAdditionalGuest = (e) => {
-    e.preventDefault();
-    setAdditionalGuests((prev) => [
+    setFormData((prev) => ({
       ...prev,
-      { name: "", document: "", is_child: false, age: "" },
-    ]);
+      [name]: value,
+    }));
+  };
+
+  const handleDateChange = (dates) => {
+    const [checkin, checkout] = dates;
+    setFormData((prev) => ({
+      ...prev,
+      checkin,
+      checkout,
+    }));
+  };
+
+  const addAdditionalGuest = () => {
+    setAdditionalGuests((prev) => [...prev, { name: "", document: "" }]);
   };
 
   const updateGuestDetails = (index, field, value) => {
@@ -231,8 +248,10 @@ function ReservationCreationModal({ onClose, loadReservations, apartments, profi
     try {
       const token = localStorage.getItem("accessToken");
 
-      const checkinDate = formData.checkin instanceof Date ? formData.checkin : new Date(formData.checkin);
-      const checkoutDate = formData.checkout instanceof Date ? formData.checkout : new Date(formData.checkout);
+      const checkinDate =
+        formData.checkin instanceof Date ? formData.checkin : new Date(formData.checkin);
+      const checkoutDate =
+        formData.checkout instanceof Date ? formData.checkout : new Date(formData.checkout);
 
       if (isNaN(checkinDate) || isNaN(checkoutDate)) {
         alert("As datas de check-in e check-out são inválidas.");
@@ -246,22 +265,11 @@ function ReservationCreationModal({ onClose, loadReservations, apartments, profi
       multipartData.append("guest_name", formData.guest_name);
       multipartData.append("guest_document", formData.guest_document);
       multipartData.append("guest_phone", formData.guest_phone);
-      multipartData.append("guests", formData.guests);
-      multipartData.append("has_children", formData.has_children);
       multipartData.append("apartment", formData.apartment);
       multipartData.append("checkin", checkinDate.toISOString());
       multipartData.append("checkout", checkoutDate.toISOString());
 
-      if (isCompleteReservation) {
-        multipartData.append("endereco", formData.endereco);
-        multipartData.append("bairro", formData.bairro);
-        multipartData.append("cep", formData.cep);
-        multipartData.append("cidade", formData.cidade);
-        multipartData.append("estado", formData.estado);
-        multipartData.append("pais", formData.pais);
-        multipartData.append("vehicle_plate", formData.vehicle_plate);
-        multipartData.append("additional_guests", JSON.stringify(additionalGuests));
-      }
+      multipartData.append("additional_guests", JSON.stringify(additionalGuests));
 
       await axios.post(`${process.env.REACT_APP_API_URL}/api/reservations/`, multipartData, {
         headers: {
@@ -272,223 +280,92 @@ function ReservationCreationModal({ onClose, loadReservations, apartments, profi
 
       alert("Reserva criada com sucesso!");
       onClose();
-      loadReservations();
+      fetchReservations(1, "right", false);
     } catch (error) {
       console.error("Erro ao criar reserva:", error);
-      alert("Falha ao criar reserva. Por favor, verifique os dados e tente novamente.");
+      alert(
+        "Falha ao criar reserva. Por favor, verifique os dados e tente novamente."
+      );
     }
   };
 
   return (
-    <ModalOverlay>
-      <ModalContent>
-        <CloseButton onClick={onClose}>&times;</CloseButton>
-        <h2>Criar Reserva</h2>
-
-        <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-          <ToggleButton
-            active={!isCompleteReservation}
-            onClick={() => setIsCompleteReservation(false)}
-          >
-            Reserva Simplificada
-          </ToggleButton>
-          <ToggleButton
-            active={isCompleteReservation}
-            onClick={() => setIsCompleteReservation(true)}
-          >
-            Reserva Completa
-          </ToggleButton>
+    <ModalOverlay onClick={onClose}>
+      <ModalContainer onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', alignContent: 'center', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+          <Title>Criar Reserva</Title>
+          <CloseButton onClick={onClose}>&times;</CloseButton>
         </div>
-
         <form onSubmit={handleSubmit}>
-          <InputGroup>
-            <Label>Data de Check-in:</Label>
-            <StyledDatePickerWrapper>
-              <DatePicker
-                selected={formData.checkin}
-                onChange={(date) => handleDateChange(date, "checkin")}
-                dateFormat="dd/MM/yyyy"
-                locale="pt-BR"
-                placeholderText="Selecione a data de entrada"
+          <Row>
+            <Column>
+              <Label>Datas:</Label>
+              <StyledDatePickerWrapper>
+                <DatePicker
+                  selected={formData.checkin}
+                  onChange={handleDateChange}
+                  startDate={formData.checkin}
+                  endDate={formData.checkout}
+                  selectsRange
+                  dateFormat="dd/MM/yyyy"
+                  locale="pt-BR"
+                  placeholderText="Selecione as datas"
+                />
+              </StyledDatePickerWrapper>
+            </Column>
+            <Column>
+              <Label>Apartamento:</Label>
+              <FieldValue>
+                <StyledSelect
+                  name="apartment"
+                  value={formData.apartment}
+                  onChange={handleChange}
+                >
+                  <option value="">Selecione um Apartamento</option>
+                  {apartments.map((apartment) => (
+                    <option key={apartment.id} value={apartment.id}>
+                      {apartment.number}
+                    </option>
+                  ))}
+                </StyledSelect>
+              </FieldValue>
+            </Column>
+          </Row>
+          <Row>
+            <Column>
+              <Label>Nome do Hóspede:</Label>
+              <Input
+                type="text"
+                name="guest_name"
+                value={formData.guest_name}
+                onChange={handleChange}
               />
-            </StyledDatePickerWrapper>
-          </InputGroup>
-          <InputGroup>
-            <Label>Data de Check-out:</Label>
-            <StyledDatePickerWrapper>
-              <DatePicker
-                selected={formData.checkout}
-                onChange={(date) => handleDateChange(date, "checkout")}
-                dateFormat="dd/MM/yyyy"
-                locale="pt-BR"
-                placeholderText="Selecione a data de saída"
+            </Column>
+            <Column>
+              <Label>Documento do Hóspede:</Label>
+              <Input
+                type="text"
+                name="guest_document"
+                value={formData.guest_document}
+                onChange={handleChange}
               />
-            </StyledDatePickerWrapper>
-          </InputGroup>
-          <InputGroup>
-            <Label>Apartamento:</Label>
-            <Select
-              name="apartment"
-              value={formData.apartment}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Selecione um Apartamento</option>
-              {apartments.map((apartment) => (
-                <option key={apartment.id} value={apartment.id}>
-                  {apartment.number}
-                </option>
-              ))}
-            </Select>
-          </InputGroup>
-          <InputGroup>
-            <Label>Nome do Hóspede:</Label>
-            <Input
-              type="text"
-              name="guest_name"
-              value={formData.guest_name}
-              onChange={handleChange}
-              required
-            />
-          </InputGroup>
-          <InputGroup>
-            <Label>Documento do Hóspede:</Label>
-            <Input
-              type="text"
-              name="guest_document"
-              value={formData.guest_document}
-              onChange={handleChange}
-            />
-          </InputGroup>
-          <InputGroup>
-            <Label>Contato do Hóspede:</Label>
-            <Input
-              type="text"
-              name="guest_phone"
-              value={formData.guest_phone}
-              onChange={handleChange}
-            />
-          </InputGroup>
-          {isCompleteReservation && (
-            <>
-              <InputGroup>
-                <Label>Endereço:</Label>
-                <Input
-                  type="text"
-                  name="endereco"
-                  value={formData.endereco}
-                  onChange={handleChange}
-                  placeholder="Endereço"
-                />
-                <Input
-                  type="text"
-                  name="bairro"
-                  value={formData.bairro}
-                  onChange={handleChange}
-                  placeholder="Bairro"
-                />
-                <Input
-                  type="text"
-                  name="cep"
-                  value={formData.cep}
-                  onChange={handleChange}
-                  placeholder="CEP"
-                />
-                <Input
-                  type="text"
-                  name="cidade"
-                  value={formData.cidade}
-                  onChange={handleChange}
-                  placeholder="Cidade"
-                />
-                <Input
-                  type="text"
-                  name="estado"
-                  value={formData.estado}
-                  onChange={handleChange}
-                  placeholder="Estado"
-                />
-                <Input
-                  type="text"
-                  name="pais"
-                  value={formData.pais}
-                  onChange={handleChange}
-                  placeholder="País"
-                />
-              </InputGroup>
-              <InputGroup>
-                <Label>Placa do Veículo:</Label>
-                <Input
-                  type="text"
-                  name="vehicle_plate"
-                  value={formData.vehicle_plate}
-                  onChange={handleChange}
-                />
-              </InputGroup>
-              <div>
-                <Label>Hóspedes Adicionais: 
-                  <AddGuestButton onClick={addAdditionalGuest}>
-                    + Hóspede
-                  </AddGuestButton>
-                </Label>
-                {additionalGuests.map((guest, index) => (
-                  <div key={index} style={{ marginBottom: "10px" }}>
-                    <Input
-                      type="text"
-                      placeholder="Nome"
-                      value={guest.name}
-                      onChange={(e) =>
-                        updateGuestDetails(index, "name", e.target.value)
-                      }
-                    />
-                    <Input
-                      type="text"
-                      placeholder="Documento"
-                      value={guest.document}
-                      onChange={(e) =>
-                        updateGuestDetails(index, "document", e.target.value)
-                      }
-                    />
-                    <Select
-                      value={guest.is_child ? "Sim" : "Não"}
-                      onChange={(e) =>
-                        updateGuestDetails(
-                          index,
-                          "is_child",
-                          e.target.value === "Sim"
-                        )
-                      }
-                    >
-                      <option value="Sim">Criança</option>
-                      <option value="Não">Adulto</option>
-                    </Select>
-                    {guest.is_child && (
-                      <Select
-                        value={guest.age}
-                        onChange={(e) =>
-                          updateGuestDetails(index, "age", parseInt(e.target.value, 10))
-                        }
-                      >
-                        <option value="">Selecione a idade</option>
-                        {Array.from({ length: 8 }, (_, i) => (
-                          <option key={i + 5} value={i + 5}>
-                            {i + 5}
-                          </option>
-                        ))}
-                      </Select>
-                    )}
-                    <RemoveGuestButton onClick={() => removeAdditionalGuest(index)}>
-                      Remover
-                    </RemoveGuestButton>
-                  </div>
-                ))}
-                
-              </div>
-            </>
-          )}
+            </Column>
+          </Row>
+          <Row>
+            <Column>
+              <Label>Contato do Hóspede:</Label>
+              <Input
+                type="text"
+                name="guest_phone"
+                value={formData.guest_phone}
+                onChange={handleChange}
+              />
+            </Column>
+          </Row>
+
           <SubmitButton type="submit">Criar Reserva</SubmitButton>
         </form>
-      </ModalContent>
+      </ModalContainer>
     </ModalOverlay>
   );
 }
