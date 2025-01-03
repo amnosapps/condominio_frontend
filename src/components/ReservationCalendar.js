@@ -537,6 +537,8 @@ const ReservationCalendar = ({ condominium }) => {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [profile, setProfile] = useState(null);
+
   const [guestNameFilter, setGuestNameFilter] = useState("");
   const [startDateFilter, setStartDateFilter] = useState("");
   const [endDateFilter, setEndDateFilter] = useState("");
@@ -555,6 +557,18 @@ const ReservationCalendar = ({ condominium }) => {
   const scrollableRef = useRef(null);
 
   const [currentPage, setCurrentPage] = useState(1); // For horizontal pagination
+
+  const fetchUserProfile = async () => {
+    const token = localStorage.getItem('accessToken');
+    try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/profile/`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        setProfile(response.data);
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+    }
+};
 
   const fetchApartments = async () => {
     const token = localStorage.getItem("accessToken");
@@ -576,30 +590,29 @@ const ReservationCalendar = ({ condominium }) => {
 
   const reservationCache = useRef({});
 
-  const fetchReservations = async (page = 1, direction = "right") => {
+  const fetchReservations = async (page = 1, direction = "right", useCache = true) => {
     const token = localStorage.getItem("accessToken");
-    
+  
+    // Calculate start and end dates based on the current view
     const startDate = addDays(
       currentStartDate,
       direction === "right" ? (page - 1) * parseInt(viewType, 10) : -(page * parseInt(viewType, 10))
     );
-    
-    const endDate = addDays(
-      startDate,
-      parseInt(viewType, 10)
-    );
-
+  
+    const endDate = addDays(startDate, parseInt(viewType, 10));
     const rangeKey = `${startDate.toISOString()}_${endDate.toISOString()}`;
-
-    if (reservationCache.current[rangeKey]) {
+  
+    // Use cached data if available
+    if (useCache && reservationCache.current[rangeKey]) {
       setReservations((prevReservations) => [
         ...prevReservations,
         ...reservationCache.current[rangeKey],
       ]);
       return;
     }
-
+    
     try {
+      setLoadingNavigation(true)
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reservations/`, {
         headers: { Authorization: `Bearer ${token}` },
         params: {
@@ -608,44 +621,51 @@ const ReservationCalendar = ({ condominium }) => {
           end_date: endDate.toISOString(),
         },
       });
-      
-      const newReservations = response.data.map(reservation => ({
+  
+      const newReservations = response.data.map((reservation) => ({
         id: reservation.id,
         guest_name: reservation.guest_name,
         guest_document: reservation.guest_document,
-        guest_phone: reservation.guest_phone || "", // Handle null values
-        guests_qty: reservation.additional_guests.length + 1 || 0, // Ensure it's a string
+        guest_phone: reservation.guest_phone || "",
+        guests_qty: reservation.additional_guests.length + 1 || 0,
         apartment: reservation.apt_number,
         apartment_owner: reservation.apt_owner_name,
-        photos: reservation.photo, // Main photo URL
-        additional_photos: reservation.additional_photos_urls || [], // Extract additional photo URLs
-        checkin: reservation.checkin ? parseISO(reservation.checkin) : null, // Parse checkin if exists
-        checkout: reservation.checkout ? parseISO(reservation.checkout) : null, // Parse checkout if exists
-        checkin_at: reservation.checkin_at ? parseISO(reservation.checkin_at) : null, // Parse checkin_at
-        checkout_at: reservation.checkout_at ? parseISO(reservation.checkout_at) : null, // Parse checkout_at
+        photos: reservation.photo,
+        additional_photos: reservation.additional_photos_urls || [],
+        checkin: reservation.checkin ? parseISO(reservation.checkin) : null,
+        checkout: reservation.checkout ? parseISO(reservation.checkout) : null,
+        checkin_at: reservation.checkin_at ? parseISO(reservation.checkin_at) : null,
+        checkout_at: reservation.checkout_at ? parseISO(reservation.checkout_at) : null,
         has_children: reservation.has_children,
         address: reservation.address,
         vehicle_plate: reservation.vehicle_plate,
         additional_guests: reservation.additional_guests,
-        reservation_file: reservation.reservation_file
+        reservation_file: reservation.reservation_file,
       }));
-
-      reservationCache.current[rangeKey] = newReservations;
-
+  
+      // Update cache if enabled
+      if (useCache) {
+        reservationCache.current[rangeKey] = newReservations;
+      }
+  
+      // Update state with new reservations (avoid duplicates)
       setReservations((prevReservations) => [
         ...prevReservations.filter(
           (res) => !newReservations.find((newRes) => newRes.id === res.id)
         ),
         ...newReservations,
       ]);
-
     } catch (error) {
+      setLoadingNavigation(false)
       console.error("Error fetching reservations:", error);
+    } finally {
+      setLoadingNavigation(false)
     }
   };
+  
 
   const loadData = async () => {
-    await Promise.all([fetchApartments(), fetchReservations(currentPage)]);
+    await Promise.all([fetchApartments(), fetchReservations(currentPage), fetchUserProfile()]);
     setLoading(false);
   };
 
@@ -705,11 +725,13 @@ const ReservationCalendar = ({ condominium }) => {
   
       if (scrollLeft + clientWidth >= scrollWidth - 50) {
         setCurrentPage((prevPage) => {
+          setReservations([]);
           fetchReservations(prevPage + 1, "right");
           return prevPage + 1;
         });
       } else if (scrollLeft <= 50) {
         setCurrentPage((prevPage) => {
+          setReservations([]);
           fetchReservations(prevPage, "left");
           return prevPage; // Don't change the page count, as we're going backward
         });
@@ -723,20 +745,26 @@ const ReservationCalendar = ({ condominium }) => {
   );
 
 
-  const handlePrev = () => {
-    setCurrentStartDate(addDays(currentStartDate, -parseInt(viewType, 10)));
-    // Reset the scroll position after updating the date
-    if (scrollableRef.current) {
-      scrollableRef.current.scrollTo({ left: 0, behavior: "smooth" });
-    }
+  const handlePrev = async () => {
+    const newStartDate = addDays(currentStartDate, -parseInt(viewType, 10));
+    setCurrentStartDate(newStartDate);
+  
+    // Clear current reservations to avoid duplicates
+    setReservations([]);
+  
+    // Fetch reservations for the new date range
+    await fetchReservations(currentPage, "left", false);
   };
     
-  const handleNext = () => {
-    setCurrentStartDate(addDays(currentStartDate, parseInt(viewType, 10)));
-    // Reset the scroll position after updating the date
-    if (scrollableRef.current) {
-      scrollableRef.current.scrollTo({ left: 0, behavior: "smooth" });
-    }
+  const handleNext = async () => {
+    const newStartDate = addDays(currentStartDate, parseInt(viewType, 10));
+    setCurrentStartDate(newStartDate);
+  
+    // Clear current reservations to avoid duplicates
+    setReservations([]);
+  
+    // Fetch reservations for the new date range
+    await fetchReservations(currentPage, "right", false);
   };
 
   const handleMonthChange = (event) => {
@@ -1049,14 +1077,15 @@ const ReservationCalendar = ({ condominium }) => {
           onClose={toggleModal}
           loadReservations={fetchReservations}
           apartments={apartments}
+          profile={profile}
         />
       )}
       {selectedReservation && (
           <ReservationModal
             closeModal={closeModal}
             selectedReservation={selectedReservation}
-            updateReservationTime={updateReservationTime}
-            loadData={loadData}
+            fetchReservations={fetchReservations}
+            profile={profile}
           />
         )}
       <RodapeCalendar />

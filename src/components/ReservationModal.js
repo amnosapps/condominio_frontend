@@ -323,6 +323,15 @@ const FieldLabel = styled.strong`
 const FieldValue = styled.span`
   font-size: 14px;
   color: #555;
+
+  .custom-date-picker {
+    width: 180px; /* Larger width for the input */
+    padding: 8px 10px; /* Add padding for larger clickable area */
+    font-size: 16px; /* Bigger font for readability */
+    border-radius: 6px; /* Rounded corners for better appearance */
+    border: 1px solid #ccc; /* Subtle border for distinction */
+    outline: none;
+  }
 `;
 
 const EditableField = styled.div`
@@ -337,7 +346,8 @@ const Divider = styled.div`
 const ReservationModal = ({
   closeModal,
   selectedReservation,
-  loadData
+  fetchReservations,
+  profile
 }) => {
   const [logs, setLogs] = useState([]);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
@@ -471,6 +481,8 @@ const ReservationModal = ({
     const formData = new FormData();
   
     // Append updated reservation data
+    formData.append("checkin", new Date(reservationData.checkin).toISOString());
+    formData.append("checkout", new Date(reservationData.checkout).toISOString());
     formData.append("guest_name", reservationData.guest_name);
     formData.append("guest_document", reservationData.guest_document);
     formData.append("document_type", reservationData.document_type);
@@ -511,7 +523,6 @@ const ReservationModal = ({
   
       if (response.status === 200) {
         alert("Informações atualizadas com sucesso!");
-        loadData();
       } else {
         alert("Falha ao atualizar as informações. Tente novamente.");
       }
@@ -520,6 +531,8 @@ const ReservationModal = ({
       alert("Erro ao atualizar as informações. Verifique os dados e tente novamente.");
     } finally {
       setIsSubmitting(false);
+      setIsEditing(false)
+      fetchReservations(1, "right", false)
     }
   };
 
@@ -586,8 +599,6 @@ const ReservationModal = ({
       formData.append("additional_photos", file);
     });
 
-    console.log(formData)
-
     try {
       const response = await axios.patch(
         `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
@@ -602,7 +613,7 @@ const ReservationModal = ({
   
       if (response.status === 200) {
         alert("Informações salvas com sucesso!");
-        loadData();
+        fetchReservations(1, "right", false);
         closeModal();
         sessionStorage.setItem("reopenModalId", selectedReservation.id);
       } else {
@@ -628,6 +639,7 @@ const ReservationModal = ({
       }
     } finally {
       setIsSubmitting(false);
+      setIsEditing(false)
     }
   };
   
@@ -657,7 +669,7 @@ const ReservationModal = ({
         console.log("Response received:", response);
         if (response.status === 200) {
           alert("Checkout realizado com sucesso!");
-          loadData()
+          fetchReservations(1, "right", false)
           closeModal();
           sessionStorage.setItem("reopenModalId", selectedReservation.id);
         } else {
@@ -704,38 +716,13 @@ const ReservationModal = ({
       );
 
       alert("Reserva excluída com sucesso!");
-      loadData();
+      fetchReservations(1, "right", false);
       closeModal();
     } catch (error) {
       console.error("Erro ao excluir a reserva:", error);
       alert("Erro ao excluir a reserva. Tente novamente.");
-    }
-  };
-
-  const handleUpdateDates = async () => {
-    const token = localStorage.getItem("accessToken");
-
-    try {
-      const response = await axios.patch(
-        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
-        {
-          checkin: reservationData.checkin?.toISOString(),
-          checkout: reservationData.checkout?.toISOString(),
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (response.status === 200) {
-        alert("Datas atualizadas com sucesso!");
-        loadData();
-      } else {
-        alert("Falha ao atualizar as datas. Tente novamente.");
-      }
-    } catch (error) {
-      console.error("Erro ao atualizar as datas:", error);
-      alert("Erro ao atualizar as datas. Verifique os dados e tente novamente.");
+    } finally {
+      fetchReservations(1, "right", false)
     }
   };
 
@@ -802,7 +789,7 @@ const ReservationModal = ({
     <ModalOverlay onClick={closeModal1}>
       <ModalContainer onClick={(e) => e.stopPropagation()}>
         <div style={{ display: 'flex', alignContent: 'center', alignItems: 'center' }}>
-          <div><strong>Apto {reservationData.apartment}</strong> {reservationData.apartment_owner != '' && (<>({reservationData.apartment_owner})</>)} </div>
+          <div><strong style={{ fontSize: '20px' }}>Apto {reservationData.apartment}</strong> {reservationData.apartment_owner != '' && (<>({reservationData.apartment_owner})</>)} </div>
           
           <CloseButton onClick={closeModal1}>X</CloseButton>
         </div>
@@ -817,48 +804,58 @@ const ReservationModal = ({
             </LogsModalOverlay>
           )}
           <div style={{ display: "flex", gap: "10px", alignItems: "center", margin: '15px 0px' }}>
-            <a onClick={() => openBase64Pdf(reservationData.reservation_file, `${selectedReservation.apartment}_${selectedReservation.id}reservation.pdf`)}>
+            {/* <a onClick={() => openBase64Pdf(reservationData.reservation_file, `${selectedReservation.apartment}_${selectedReservation.id}reservation.pdf`)}>
               <img
                 src="/download-pdf.png"
                 alt="PDF Reserva"
                 style={{ width: "30px", height: "auto", cursor: "pointer" }}
               />
-            </a>
-            <strong>
+            </a> */}
+            <strong style={{ fontSize: '18px' }}>
               {format(new Date(reservationData.checkin), 'dd/MM/yyyy', { locale: ptBR })} - {format(new Date(reservationData.checkout), 'dd/MM/yyyy', { locale: ptBR })}
             </strong>
           </div>
         </div>
-
-        <Row>
-          <Column>
-            <FieldLabel>Data de Check-in:</FieldLabel>
-            <FieldValue>
-              <DatePicker
-                selected={reservationData.checkin}
-                onChange={(date) => handleDateChange("checkin", date)}
-                dateFormat="dd/MM/yyyy"
-                disabled={!isEditing}
-              />
-            </FieldValue>
-          </Column>
-          <Column>
-            <FieldLabel>Data de Check-out:</FieldLabel>
-            <FieldValue>
-              <DatePicker
-                selected={reservationData.checkout}
-                onChange={(date) => handleDateChange("checkout", date)}
-                dateFormat="dd/MM/yyyy"
-                disabled={!isEditing}
-              />
-            </FieldValue>
-          </Column>
-        </Row>
         
-        <GreenButton onClick={handleUpdateDates} disabled={isSubmitting}>
-          {isSubmitting ? "Salvando..." : "Salvar Datas"}
-        </GreenButton>
-        <RedButton onClick={handleDeleteReservation}>Excluir Reserva</RedButton>
+        {profile?.user_type === 'admin' && (
+          <>
+            <Row style={{ alignItems: "center", gap: "20px" }}>
+              <Column>
+                <FieldLabel>Data de Entrada:</FieldLabel>
+                <FieldValue>
+                  <DatePicker
+                    selected={reservationData.checkin}
+                    onChange={(date) => handleDateChange("checkin", date)}
+                    dateFormat="dd/MM/yyyy"
+                    disabled={!isEditing}
+                     className="custom-date-picker"
+                  />
+                </FieldValue>
+              </Column>
+              <Column>
+                <FieldLabel>Data de Saída:</FieldLabel>
+                <FieldValue>
+                  <DatePicker
+                    selected={reservationData.checkout}
+                    onChange={(date) => handleDateChange("checkout", date)}
+                    dateFormat="dd/MM/yyyy"
+                    disabled={!isEditing}
+                     className="custom-date-picker"
+                  />
+                </FieldValue>
+              </Column>
+              <Column style={{ display: 'flex', flexDirection: 'row', justifyContent: 'end'}}>
+                <RedButton 
+                  onClick={handleDeleteReservation}
+                  style={{ marginTop: '30px', backgroundColor: !isEditing ? 'grey' : '#dc3545'}}
+                  disabled={!isEditing}
+                >
+                  Excluir Reserva
+                </RedButton>
+              </Column>
+            </Row>
+          </>
+        )}
 
         {/* Guest Information */}
         <Row>
@@ -1037,8 +1034,8 @@ const ReservationModal = ({
                 <Column>
                   <FieldValue>
                     <StyledSelect
-                      value={reservationData.document_type || ""}
-                      onChange={(e) => handleChange("document_type", e.target.value)}
+                      value={guest.document_type}
+                      onChange={(e) => updateGuestDetails(index, "document_type", e.target.value)}
                       disabled={!isEditing} 
                     >
                       <option value="">Tipo Documento</option>
@@ -1121,7 +1118,7 @@ const ReservationModal = ({
           {!isEditing ? (
             <GreenButton onClick={toggleEditing} disabled={reservationData.checkin_at}
               style={{
-                  backgroundColor: reservationData.checkin_at? 'grey' : '#28a745', // Grey if not today
+                  backgroundColor: reservationData.checkin_at? 'grey' : '#0056B3', // Grey if not today
                   cursor: reservationData.checkin_at? 'not-allowed' : 'pointer',   // Change cursor style
               }}
             >

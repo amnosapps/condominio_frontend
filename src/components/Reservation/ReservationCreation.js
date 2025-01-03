@@ -172,7 +172,7 @@ const Select = styled.select`
   }
 `;
 
-function ReservationCreationModal({ onClose, loadReservations, apartments }) {
+function ReservationCreationModal({ onClose, loadReservations, apartments, profile }) {
   const [formData, setFormData] = useState({
     guest_name: "",
     guest_document: "",

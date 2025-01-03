@@ -165,7 +165,7 @@ const PhotoCapture = ({ existingPhotos, onPhotosChange }) => {
   };
 
   return (
-    <div style={{ marginTop: '20px' }}>
+    <div style={{ marginTop: '1px' }}>
       <div style={{ display: "flex", alignItems: "center" }}>
         <p>Capturar Imagens:</p>
         <div style={{ marginLeft: "10px" }}>
