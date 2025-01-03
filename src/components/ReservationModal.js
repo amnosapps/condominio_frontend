@@ -131,9 +131,9 @@ const CheckboxContainer = styled.div`
 `;
 
 const StyledSelect = styled.select`
-  margin-top: 8px;
+  margin-top: 9px;
   width: 100%;
-  padding:8px;
+  padding: 7px;
   font-size: 16px;
   color: #333;
   background: white;
@@ -347,6 +347,7 @@ const ReservationModal = ({
   closeModal,
   selectedReservation,
   fetchReservations,
+  selectedApartment,
   profile
 }) => {
   const [logs, setLogs] = useState([]);
@@ -359,7 +360,7 @@ const ReservationModal = ({
     guest_document: selectedReservation?.guest_document || "",
     document_type: selectedReservation?.document_type || "",
     guest_phone: selectedReservation?.guest_phone || "", // Handle null values
-    guests_qty: selectedReservation?.additional_guests.length + 1 || 0,
+    guests_qty: selectedReservation?.guests_qty || 0,
     apartment: selectedReservation?.apartment || "", // Optional apartment number
     apartment_owner: selectedReservation?.apartment_owner || "", // Optional apartment owner name
     hasChildren: selectedReservation?.hasChildren || "no",
@@ -395,6 +396,8 @@ const ReservationModal = ({
       is_child: guest.is_child || false,
     })) || []
   );
+
+  const [maxGuests, setMaxGuests] = useState(selectedApartment ? selectedApartment.max_occupation : 1);
   
   const [address, setAddress] = useState(reservationData.address);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -487,7 +490,7 @@ const ReservationModal = ({
     formData.append("guest_document", reservationData.guest_document);
     formData.append("document_type", reservationData.document_type);
     formData.append("guest_phone", reservationData.guest_phone || "");
-    formData.append("guests_qty", 1 + additionalGuests.length);
+    formData.append("guests_qty", reservationData.guests_qty);
     formData.append("has_children", additionalGuests.some((guest) => guest.is_child));
   
     // Debugging Address Data
@@ -547,15 +550,10 @@ const ReservationModal = ({
     const token = localStorage.getItem("accessToken");
     const formData = new FormData();
   
-    // Format `checkin_at` to ISO 8601
     const formattedCheckinAt = reservationData.checkin_at
       ? new Date(reservationData.checkin_at).toISOString()
       : new Date().toISOString();
   
-    // Calculate total guests (main guest + additional guests)
-    const totalGuests = 1 + additionalGuests.length;
-  
-    // Determine if there are children
     const hasChildren = additionalGuests.some((guest) => guest.is_child);
 
     if (hasChildren && reservationData.additional_photos.length === 0) {
@@ -568,7 +566,7 @@ const ReservationModal = ({
     formData.append("guest_name", reservationData.guest_name);
     formData.append("guest_document", reservationData.guest_document);
     formData.append("guest_phone", reservationData.guest_phone || "");
-    formData.append("guests_qty", totalGuests); // Updated to use calculated total
+    formData.append("guests_qty", reservationData.guests_qty); // Updated to use calculated total
     formData.append("has_children", hasChildren); // Dynamically set
     formData.append("checkin_at", formattedCheckinAt);
   
@@ -789,7 +787,7 @@ const ReservationModal = ({
     <ModalOverlay onClick={closeModal1}>
       <ModalContainer onClick={(e) => e.stopPropagation()}>
         <div style={{ display: 'flex', alignContent: 'center', alignItems: 'center' }}>
-          <div><strong style={{ fontSize: '20px' }}>Apto {reservationData.apartment}</strong> {reservationData.apartment_owner != '' && (<>({reservationData.apartment_owner})</>)} </div>
+          <div><strong style={{ fontSize: '20px' }}>#{selectedReservation.id} - Apto {reservationData.apartment}</strong> {reservationData.apartment_owner != '' && (<>({reservationData.apartment_owner})</>)} </div>
           
           <CloseButton onClick={closeModal1}>&times;</CloseButton>
         </div>
@@ -817,7 +815,7 @@ const ReservationModal = ({
           </div>
         </div>
         
-        {profile?.user_type === 'admin' && (
+        {profile?.user_type === 'owner' && (
           <>
             <Row style={{ alignItems: "center", gap: "20px" }}>
               <Column>
@@ -870,32 +868,7 @@ const ReservationModal = ({
               />
             </FieldValue>
           </Column>
-          <Column>
-          <FieldLabel>Tipo de Documento:</FieldLabel>
-          <FieldValue>
-            <StyledSelect
-              value={reservationData.document_type || ""}
-              onChange={(e) => handleChange("document_type", e.target.value)}
-              disabled={!isEditing} 
-            >
-              <option value="">Selecione</option>
-              <option value="cpf">CPF</option>
-              <option value="rg">RG</option>
-              <option value="passport">Passaporte</option>
-            </StyledSelect>
-          </FieldValue>
-        </Column>
-          <Column>
-            <FieldLabel>Documento:</FieldLabel>
-            <FieldValue>
-              <EditableInput
-                type="text"
-                value={reservationData.guest_document}
-                onChange={(e) => handleChange("guest_document", e.target.value)}
-                disabled={!isEditing} 
-              />
-            </FieldValue>
-          </Column>
+
           <Column>
             <FieldLabel>Contato:</FieldLabel>
             <FieldValue>
@@ -908,9 +881,59 @@ const ReservationModal = ({
               />
             </FieldValue>
           </Column>
+
+          <Column>
+            <FieldLabel>Acompanhantes (Previsão):</FieldLabel>
+            <FieldValue>
+              <EditableInput
+                type="text"
+                value={reservationData.guests_qty}
+                onChange={(e) => handleChange("guests_qty", e.target.value)}
+                disabled={true}
+                
+              />
+              {/* <StyledSelect
+                name="guests_qty"
+                value={reservationData.guests_qty}
+                onChange={handleChange}
+                disabled={true} // Disable if no apartment is selected
+                style={{ backgroundColor: '#f1f1f1' }}
+              >
+                {Array.from({ length: maxGuests }, (_, i) => (
+                  <option key={i} value={i}>{i}</option>
+                ))}
+              </StyledSelect> */}
+            </FieldValue>
+          </Column>
         </Row>
 
         <Row>
+          <Column>
+            <FieldLabel>Tipo de Documento:</FieldLabel>
+            <FieldValue>
+              <StyledSelect
+                value={reservationData.document_type || ""}
+                onChange={(e) => handleChange("document_type", e.target.value)}
+                disabled={!isEditing} 
+              >
+                <option value="">Selecione</option>
+                <option value="cpf">CPF</option>
+                <option value="rg">RG</option>
+                <option value="passport">Passaporte</option>
+              </StyledSelect>
+            </FieldValue>
+          </Column>
+          <Column>
+            <FieldLabel>Documento:</FieldLabel>
+            <FieldValue>
+              <EditableInput
+                type="text"
+                value={reservationData.guest_document}
+                onChange={(e) => handleChange("guest_document", e.target.value)}
+                disabled={!isEditing} 
+              />
+            </FieldValue>
+          </Column>
           {hasCar && (
             <Column>
               <FieldLabel>Placa do Veículo:</FieldLabel>

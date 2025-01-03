@@ -544,6 +544,7 @@ const ReservationCalendar = ({ condominium }) => {
   const [endDateFilter, setEndDateFilter] = useState("");
 
   const [selectedReservation, setSelectedReservation] = useState(null);
+  const [selectedApartment, setSelectedApartment] = useState(null);
 
   const [selectedDateRange, setSelectedDateRange] = useState({
     startDate: null,
@@ -627,7 +628,7 @@ const ReservationCalendar = ({ condominium }) => {
         guest_name: reservation.guest_name,
         guest_document: reservation.guest_document,
         guest_phone: reservation.guest_phone || "",
-        guests_qty: reservation.additional_guests.length + 1 || 0,
+        guests_qty: reservation.guests_qty,
         apartment: reservation.apt_number,
         apartment_owner: reservation.apt_owner_name,
         photos: reservation.photo,
@@ -697,10 +698,13 @@ const ReservationCalendar = ({ condominium }) => {
         return normalized;
     }
 
-    return reservations.filter((reservation) => 
+    var total_guests = reservations.filter((reservation) => 
       normalizeDate(day) >= normalizeDate(reservation.checkin) && 
       normalizeDate(day) <= normalizeDate(reservation.checkout))
-    .reduce((totalGuests, reservation) => totalGuests + (reservation.additional_guests.length + 1),0);
+    .reduce((totalGuests, reservation) => totalGuests + (reservation.guests_qty + 1),0);
+
+    console.log(total_guests)
+    return total_guests
   };
 
   const getTotalResidentsForDay = (day) => {
@@ -715,8 +719,9 @@ const ReservationCalendar = ({ condominium }) => {
     return totalGuests + totalResidents;
   };
 
-  const handleReservationClick = (reservation) => {
+  const handleReservationClick = (reservation, apartment) => {
     setSelectedReservation(reservation);
+    setSelectedApartment(apartment);
   };
 
   const handleScroll = () => {
@@ -1025,7 +1030,7 @@ const ReservationCalendar = ({ condominium }) => {
                         checkout={bar.checkout}
                         checkinAt={bar.checkinAt}
                         checkoutAt={bar.checkoutAt}
-                        onClick={() => handleReservationClick(bar)}
+                        onClick={() => handleReservationClick(bar, apartment)}
                       >
                         <strong>{bar.guest_name}</strong>
                       </ReservationBar>
@@ -1084,6 +1089,7 @@ const ReservationCalendar = ({ condominium }) => {
           <ReservationModal
             closeModal={closeModal}
             selectedReservation={selectedReservation}
+            selectedApartment={selectedApartment}
             fetchReservations={fetchReservations}
             profile={profile}
           />

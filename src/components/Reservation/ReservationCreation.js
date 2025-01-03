@@ -201,11 +201,13 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments }) {
     guest_document: "",
     guest_phone: "",
     apartment: "",
+    guests_qty: 1,
     checkin: null,
     checkout: null,
   });
 
   const [additionalGuests, setAdditionalGuests] = useState([]);
+  const [maxGuests, setMaxGuests] = useState(1);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -213,6 +215,12 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments }) {
       ...prev,
       [name]: value,
     }));
+
+    if (name === "apartment") {
+      const selectedApartment = apartments.find((apartment) => apartment.id == value);
+      setMaxGuests(selectedApartment ? selectedApartment.max_occupation : 1);
+      setFormData((prev) => ({ ...prev, guests_qty: 1 })); // Reset guests_qty to 1
+    }
   };
 
   const handleDateChange = (dates) => {
@@ -266,6 +274,7 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments }) {
       multipartData.append("guest_document", formData.guest_document);
       multipartData.append("guest_phone", formData.guest_phone);
       multipartData.append("apartment", formData.apartment);
+      multipartData.append("guests_qty", formData.guests_qty);
       multipartData.append("checkin", checkinDate.toISOString());
       multipartData.append("checkout", checkoutDate.toISOString());
 
@@ -342,6 +351,21 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments }) {
               />
             </Column>
             <Column>
+              <Label>Acompanhantes:</Label>
+              <FieldValue>
+                <StyledSelect
+                  name="guests_qty"
+                  value={formData.guests_qty}
+                  onChange={handleChange}
+                  disabled={!formData.apartment}
+                >
+                  {Array.from({ length: maxGuests }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>{i + 1}</option>
+                  ))}
+                </StyledSelect>
+              </FieldValue>
+            </Column>
+            {/* <Column>
               <Label>Documento do Hóspede:</Label>
               <Input
                 type="text"
@@ -350,8 +374,6 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments }) {
                 onChange={handleChange}
               />
             </Column>
-          </Row>
-          <Row>
             <Column>
               <Label>Contato do Hóspede:</Label>
               <Input
@@ -360,9 +382,8 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments }) {
                 value={formData.guest_phone}
                 onChange={handleChange}
               />
-            </Column>
+            </Column> */}
           </Row>
-
           <SubmitButton type="submit">Criar Reserva</SubmitButton>
         </form>
       </ModalContainer>
