@@ -337,29 +337,20 @@ const ReservationBar = styled.div`
 `;
 
 const Tooltip = styled.div`
-  visibility: hidden;
-  opacity: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 10px;
-  font-size: 0.8rem;
-  border-radius: 4px;
   position: absolute;
-  z-index: 10;
-  transform: translateX(-50%);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  transition: opacity 0.3s;
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-width: 5px;
-    border-style: solid;
-    border-color: rgba(0, 0, 0, 0.7) transparent transparent transparent;
-  }
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  visibility: ${(props) => (props.visible ? 'visible' : 'hidden')};
+  opacity: ${(props) => (props.visible ? 1 : 0)};
+  transform: translate(-50%, -10px);
+  transition: opacity 0.2s ease-in-out;
+  pointer-events: none;
+  z-index: 1000;
+  white-space: nowrap;
 `;
 
 const FilterContainer = styled.div`
@@ -536,6 +527,19 @@ const ReservationCalendar = ({ condominium }) => {
   const [apartments, setApartments] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [hoveredReservation, setHoveredReservation] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseEnter = (reservationId, event) => {
+    setHoveredReservation(reservationId);
+    const { clientX, clientY } = event;
+    setTooltipPosition({ x: clientX, y: clientY });
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredReservation(null);
+  };
 
   const [profile, setProfile] = useState(null);
 
@@ -1018,22 +1022,24 @@ const ReservationCalendar = ({ condominium }) => {
                 {daysInView.map((day, dayIndex) => (
                   <DayCell key={dayIndex}>
                     {getReservationBars(apartment.number, day).map((bar) => (
-                      <ReservationBar
-                        key={bar.id}
-                        style={{
-                          left: `${bar.startOffset}%`, // Relative to DayCell
-                          width: `${bar.width}%`,      // Fit within DayCell
-                          top: `${bar.stackIndex * 40}px`,
-                        }}
-                        ischeckedout={bar.ischeckedout}
-                        checkin={bar.checkin}
-                        checkout={bar.checkout}
-                        checkinAt={bar.checkinAt}
-                        checkoutAt={bar.checkoutAt}
-                        onClick={() => handleReservationClick(bar, apartment)}
-                      >
-                        <strong>{bar.guest_name}</strong>
-                      </ReservationBar>
+                        <ReservationBar
+                          key={bar.id}
+                          style={{
+                            left: `${bar.startOffset}%`, // Relative to DayCell
+                            width: `${bar.width}%`,      // Fit within DayCell
+                            top: `${bar.stackIndex * 40}px`,
+                          }}
+                          ischeckedout={bar.ischeckedout}
+                          checkin={bar.checkin}
+                          checkout={bar.checkout}
+                          checkinAt={bar.checkinAt}
+                          checkoutAt={bar.checkoutAt}
+                          onMouseEnter={(e) => handleMouseEnter(bar, e)}
+                          onMouseLeave={handleMouseLeave}
+                          onClick={() => handleReservationClick(bar, apartment)}
+                        >
+                          <strong>{bar.guest_name}</strong>
+                        </ReservationBar>
                     ))}
 
                   </DayCell>
@@ -1075,6 +1081,21 @@ const ReservationCalendar = ({ condominium }) => {
             
           </ScrollableContainer>
         </CalendarContainer>
+      )}
+
+      {hoveredReservation && (
+        <Tooltip
+          style={{
+            top: tooltipPosition.y + 10,
+            left: tooltipPosition.x + 10,
+          }}
+          visible={!!hoveredReservation}
+        >
+          <div><strong>Entrada:</strong> {format(hoveredReservation.checkin, 'dd/MM/yyyy')}</div>
+          <div><strong>Saída:</strong> {format(hoveredReservation.checkout, 'dd/MM/yyyy')}</div>
+          <div><strong>Acompanhantes:</strong> {hoveredReservation.guests_qty || 0}</div>
+          <div><strong>Contato:</strong> {hoveredReservation.guest_phone}</div>
+        </Tooltip>
       )}
       
       {isModalOpen && (
