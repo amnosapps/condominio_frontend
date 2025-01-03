@@ -631,6 +631,7 @@ const ReservationCalendar = ({ condominium }) => {
       const newReservations = response.data.map((reservation) => ({
         id: reservation.id,
         guest_name: reservation.guest_name,
+        observations: reservation.observations,
         guest_document: reservation.guest_document,
         guest_phone: reservation.guest_phone || "",
         guests_qty: reservation.guests_qty,
@@ -735,17 +736,23 @@ const ReservationCalendar = ({ condominium }) => {
     if (scrollableRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollableRef.current;
   
+      // Scroll right: Fetch more reservations when nearing the end
       if (scrollLeft + clientWidth >= scrollWidth - 50) {
         setCurrentPage((prevPage) => {
-          setReservations([]);
-          fetchReservations(prevPage + 1, "right");
+          setReservations([])
+          fetchReservations(prevPage + 1, "right"); // Only fetch when scrolling right
           return prevPage + 1;
         });
-      } else if (scrollLeft <= 50) {
+      }
+  
+      // Scroll left: Fetch reservations for previous dates only when nearing the start
+      if (scrollLeft <= 50) {
         setCurrentPage((prevPage) => {
-          setReservations([]);
-          fetchReservations(prevPage, "left");
-          return prevPage; // Don't change the page count, as we're going backward
+          if (prevPage > 1) { // Avoid fetching if already at the beginning
+            setReservations([])
+            fetchReservations(prevPage - 1, "left");
+          }
+          return Math.max(prevPage - 1, 1); // Prevent page from going below 1
         });
       }
     }
@@ -912,8 +919,9 @@ const ReservationCalendar = ({ condominium }) => {
     setStartDateFilter("");
     setEndDateFilter("");
     setSelectedDateRange({ startDate: null, endDate: null });
-    setCurrentStartDate(new Date()); // Reset to today's date
+    setCurrentStartDate(subDays(new Date(), 1)); // Reset to today's date
     setCurrentPage(1)
+    fetchReservations(1, "right", false)
   };
 
   const closeModal = () => {

@@ -304,7 +304,7 @@ const Row = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 15px;
+  margin-bottom: 1px;
   flex-wrap: wrap;
 `;
 
@@ -951,7 +951,7 @@ const ReservationModal = ({
             </Column>
           )}
         </Row>
-        <div style={{ marginBottom: '20px', marginTop: '-14px' }}>
+        <div style={{ marginBottom: '10px', marginTop: '5px' }}>
           <CheckboxContainer>
             <HiddenCheckbox
               checked={hasCar}
@@ -1032,6 +1032,29 @@ const ReservationModal = ({
                 value={address.pais || ""}
                 onChange={(e) => handleAddressChange("pais", e.target.value)}
                 disabled={!isEditing} 
+              />
+            </FieldValue>
+          </Column>
+        </Row>
+
+        <Row>
+          <Column>
+            <FieldLabel>Observações:</FieldLabel>
+            <FieldValue>
+              <textarea
+                value={reservationData.observations}
+                onChange={(e) => handleChange("observations", e.target.value)}
+                disabled={!isEditing}
+                style={{
+                  width: "100%",
+                  height: "100px",
+                  padding: "10px",
+                  fontSize: "14px",
+                  border: "1px solid #ccc",
+                  borderRadius: "5px",
+                  resize: "vertical", // Allow resizing only vertically
+                }}
+                placeholder="Adicione observações sobre a reserva"
               />
             </FieldValue>
           </Column>
@@ -1134,7 +1157,6 @@ const ReservationModal = ({
             Hóspedes
           </AddGuestButton>
         </div>
-        
 
         <PhotoCapture
           existingPhotos={reservationData.additional_photos}
