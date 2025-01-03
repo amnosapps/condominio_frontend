@@ -654,7 +654,7 @@ function Modal({ selectedApartment, profile, onClose }) {
                                         checkin={reservation.checkin}
                                         checkout={reservation.checkout}
                                     >
-                                        <h4>{reservation.guest_name}</h4>
+                                        <h4>#{reservation.id} {reservation.guest_name}</h4>
                                         <span>Check-in: {new Date(reservation.checkin).toLocaleString()}</span>
                                         <span>Check-out: {new Date(reservation.checkout).toLocaleString()}</span>
                                         <span>Quantidade Hóspedes: {reservation.additional_guests.length + 1}</span>

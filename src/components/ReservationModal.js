@@ -960,7 +960,10 @@ const ReservationModal = ({
             />
             <StyledCheckbox
               checked={hasCar}
-              onClick={() => handleHasCarChange({ target: { checked: !hasCar } })}
+              onClick={() => {
+                if (!isEditing) return; // Ignore clicks if disabled
+                handleHasCarChange({ target: { checked: !hasCar } });
+              }}
               disabled={!isEditing} 
             />
             <Label>Tem veículo?</Label>
