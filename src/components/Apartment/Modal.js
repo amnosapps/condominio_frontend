@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import axios from 'axios';
 import LoadingSpinner from '../utils/loader';
 import MessageDropdown from './MessageDropdown';
+import { format, subMonths, addMonths } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const Backdrop = styled.div`
     position: fixed;
@@ -447,6 +449,10 @@ function Modal({ selectedApartment, profile, onClose }) {
         return <LoadingSpinner />
     }
 
+    const currentMonth = new Date();
+    const previousMonth = format(subMonths(currentMonth, 1), "MMMM", { locale: ptBR });
+    const nextMonth = format(addMonths(currentMonth, 1), "MMMM", { locale: ptBR });
+
     return (
         <>
             <Backdrop onClick={onClose} />
@@ -643,7 +649,7 @@ function Modal({ selectedApartment, profile, onClose }) {
                         </>
                     ) : (
                         <>
-                            <h3>Últimas Reservas</h3>
+                            <h3>Últimas Reservas - {previousMonth} até {nextMonth}</h3>
                             {/* <ReservationButton onClick={handleRegisterReservation}>
                                 Registrar Reserva
                             </ReservationButton> */}
@@ -655,9 +661,9 @@ function Modal({ selectedApartment, profile, onClose }) {
                                         checkout={reservation.checkout}
                                     >
                                         <h4>#{reservation.id} {reservation.guest_name}</h4>
-                                        <span>Check-in: {new Date(reservation.checkin).toLocaleString()}</span>
-                                        <span>Check-out: {new Date(reservation.checkout).toLocaleString()}</span>
-                                        <span>Quantidade Hóspedes: {reservation.additional_guests.length + 1}</span>
+                                        <span>Check-in: {format(new Date(reservation.checkin), "dd/MM/yyyy HH:mm", { locale: ptBR })}</span>
+                                        <span>Check-out: {format(new Date(reservation.checkout), "dd/MM/yyyy HH:mm", { locale: ptBR })}</span>
+                                        <span>Quantidade Hóspedes: {reservation.guest_qty + 1 || 1}</span>
                                     </ReservationCard>
                                 ))
                             ) : (

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
 
-import { format, isSameDay, parseISO } from 'date-fns';
+import { format, isSameDay, isBefore, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import PhotoCapture from "./PhotoCapture";
 import LogsListComponent from "./Logs/LogsVizualization";
@@ -784,6 +784,16 @@ const ReservationModal = ({
     ? isSameDay(new Date(), reservationData.checkin) // Use the Date object directly
     : false;
 
+  const isCheckinPassed = reservationData.checkin
+    ? isBefore(new Date(), reservationData.checkin) // Check if it's a past date
+    : false;
+
+  const canCheckin = reservationData.checkin && reservationData.checkout
+    ? isBefore(new Date(), reservationData.checkout) && isAfter(new Date(), reservationData.checkin)// Check if check-in is before checkout
+    : false;
+
+  console.log(isCheckinToday, isCheckinPassed, canCheckin, reservationData.checkin)
+
   if (!selectedReservation) return null;
 
   return (
@@ -1198,15 +1208,29 @@ const ReservationModal = ({
             </>
           ) : (
             <GreenButton
-              onClick={handleSaveCheckin}
-              disabled={isSubmitting || !isCheckinToday}
+              onClick={() => {
+                  if (!isCheckinToday && canCheckin) {
+                      const confirmCheckin = window.confirm(
+                          "O check-in não é para hoje. Tem certeza que deseja realizar o check-in fora da data?"
+                      );
+                      if (!confirmCheckin) return;
+                  }
+                  handleSaveCheckin();
+              }}
+              disabled={isSubmitting || (!isCheckinToday && !canCheckin && !isCheckinPassed)}
               style={{
-                  backgroundColor: !isCheckinToday ? 'grey' : '#28a745', // Grey if not today
-                  cursor: !isCheckinToday ? 'not-allowed' : 'pointer',   // Change cursor style
+                  backgroundColor: 
+                      isCheckinToday ? '#28a745' // Green for today
+                      : canCheckin ? '#dc3545' // Red for past check-ins
+                      : 'grey',   // Grey if not allowed
+                  cursor: isSubmitting || (!isCheckinToday && !canCheckin && !isCheckinPassed) ? 'not-allowed' : 'pointer',
               }}
           >
-              {isSubmitting ? "Enviando..." : "Checkin"}
-              <FaCheck  style={{ marginLeft: '7px' }} />
+              {isSubmitting  ? "Enviando..."
+                : isCheckinToday ? "Checkin"
+                : canCheckin ? "Checkin"
+                : "Checkin"}
+              <FaCheck style={{ marginLeft: '7px' }} />
           </GreenButton>
           )}
           <LogsButton onClick={fetchLogs}>Auditoria</LogsButton> 

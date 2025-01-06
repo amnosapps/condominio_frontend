@@ -7,7 +7,6 @@ import Modal from './Apartment/Modal';
 import styled from 'styled-components';
 import CreateApartmentModal from './Apartment/CreateApartmentModal';
 import LoadingSpinner from './utils/loader';
-import { startOfDay, endOfDay, parseISO, isWithinInterval } from 'date-fns';
 
 const ApartmentListContainer = styled.div`
     margin-top: 100px;
@@ -233,24 +232,25 @@ function ApartmentList({ condominium }) {
         }
     };
 
+    const fetchApartments = async () => {
+        const token = localStorage.getItem('accessToken');
+        try {
+            await fetchUserProfile();
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/`, {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { condominium: selectedCondominium },
+            });
+            setApartments(response.data);
+        } catch (error) {
+            console.error('Error fetching apartments:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchData = async () => {
-            const token = localStorage.getItem('accessToken');
-            try {
-                await fetchUserProfile();
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                    params: { condominium: selectedCondominium },
-                });
-                setApartments(response.data);
-            } catch (error) {
-                console.error('Error fetching apartments:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
         if (selectedCondominium) {
-            fetchData();
+            fetchApartments();
         }
     }, [selectedCondominium]);
 
@@ -272,37 +272,37 @@ function ApartmentList({ condominium }) {
         setCheckinTodayFilter(e.target.checked);
     };
 
-    const isCheckinToday = (apartment) => {
-        const today = new Date();
-        const todayStart = startOfDay(today);
-        const todayEnd = endOfDay(today);
-
-        return apartment.last_reservations.some((reservation) => {
-            const checkinDate = reservation.checkin ? parseISO(reservation.checkin) : null;
-            return checkinDate && isWithinInterval(checkinDate, { start: todayStart, end: todayEnd });
-        });
-    };
-
     const handleChartClick = ({ filterType, value }) => {
         if (filterType === 'status') setStatusFilter(value);
         if (filterType === 'type_name') setTypeFilter(value);
+        if (filterType === 'checkinsToday') {
+            setFilter(() => (apartment) => {
+                return value.some((filteredApartment) => filteredApartment.id === apartment.id);
+            });
+        }
+        if (filterType === 'checkoutsToday') {
+            setFilter(() => (apartment) => {
+                return value.some((filteredApartment) => filteredApartment.id === apartment.id);
+            });
+        }
     };
-
+    
     // Apply filters and search
-    const filteredApartments = apartments.filter((apartment) => {
+    var filteredApartments = apartments.filter((apartment) => {
         const matchesSearch = search === '' || apartment.number.includes(search);
         const matchesType = typeFilter === '' || apartment.type_name === typeFilter;
         const matchesStatus = statusFilter === '' || apartment.status === parseInt(statusFilter, 10);
-        const matchesCheckinToday = !checkinTodayFilter || isCheckinToday(apartment);
-
-        return matchesSearch && matchesType && matchesStatus && matchesCheckinToday;
+        const matchesCustomFilter = filter ? filter(apartment) : true;
+    
+        return matchesSearch && matchesType && matchesStatus && matchesCustomFilter;
     });
 
     const clearFilters = () => {
-        setSearch('');
-        setTypeFilter('');
-        setStatusFilter('');
-        setCheckinTodayFilter(false);
+        setSearch(''); // Reset search filter
+        setTypeFilter(''); // Reset type filter
+        setStatusFilter(''); // Reset status filter
+        setCheckinTodayFilter(false); // Reset check-in today filter
+        setFilter(null); // Reset custom filter
     };
 
     const handleApartmentCreated = (newApartment) => {
@@ -316,6 +316,9 @@ function ApartmentList({ condominium }) {
             ) : (
                 <>
                     <ControlsContainer>
+                        <ClearFiltersButton onClick={clearFilters}>
+                            Limpar Filtros
+                        </ClearFiltersButton>
                         <SearchInput
                             type="text"
                             placeholder="Buscar por número"
@@ -339,9 +342,7 @@ function ApartmentList({ condominium }) {
                             <option value="1">Ocupado</option>
                             <option value="2">Manutenção</option>
                         </FilterSelect>
-                        <ClearFiltersButton onClick={clearFilters}>
-                            Limpar Filtros
-                        </ClearFiltersButton>
+                        
                         {profile.user_type === 'admin' && (
                             <CreateButton onClick={() => setCreateModalOpen(true)}>+ Apartamento</CreateButton>
                         )}

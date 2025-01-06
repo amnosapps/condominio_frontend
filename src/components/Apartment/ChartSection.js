@@ -51,30 +51,29 @@ function ChartSection({ apartments, onChartClick }) {
         const today = new Date();
         const todayStart = startOfDay(today);
         const todayEnd = endOfDay(today);
-
+    
         let checkinsToday = [];
         let checkoutsToday = [];
-
+    
         apartments.forEach((apartment) => {
-            apartment.last_reservations.forEach((reservation) => {
-                const checkinDate = reservation.checkin ? parseISO(reservation.checkin) : null;
-                const checkoutDate = reservation.checkout ? parseISO(reservation.checkout) : null;
-                
-                if (apartment.number == '101') {
-                    console.log(apartment)
-                    console.log(checkinDate, todayStart, todayEnd)
-                }
-
-                if (checkinDate && isWithinInterval(checkinDate, { start: todayStart, end: todayEnd })) {
-                    checkinsToday.push(apartment);
-                }
-
-                if (checkoutDate && isWithinInterval(checkoutDate, { start: todayStart, end: todayEnd })) {
-                    checkoutsToday.push(apartment);
-                }
-            });
+            if (apartment.last_reservations) {
+                apartment.last_reservations.forEach((reservation) => {
+                    const checkinDate = reservation.checkin ? parseISO(reservation.checkin) : null;
+                    const checkoutDate = reservation.checkout ? parseISO(reservation.checkout) : null;
+    
+                    // Check if checkinDate falls within today
+                    if (checkinDate && isWithinInterval(checkinDate, { start: todayStart, end: todayEnd })) {
+                        checkinsToday.push(apartment);
+                    }
+    
+                    // Check if checkoutDate falls within today
+                    if (checkoutDate && isWithinInterval(checkoutDate, { start: todayStart, end: todayEnd })) {
+                        checkoutsToday.push(apartment);
+                    }
+                });
+            }
         });
-
+    
         return { checkinsToday, checkoutsToday };
     };
 
@@ -109,8 +108,12 @@ function ChartSection({ apartments, onChartClick }) {
     return (
         <ChartContainer>
             {/* Status Charts */}
-            <ChartWrapper>
-                <TittleDoughnut>Checkins</TittleDoughnut>
+            <ChartWrapper
+                onClick={() => {
+                    onChartClick({ filterType: 'checkinsToday', value: checkinsToday });
+                }}
+            >
+                <TittleDoughnut>Entradas</TittleDoughnut>
                 <Doughnut
                     data={createDonutData(checkinsToday.length, 'Check-ins Hoje', '#8e44ad')}
                     plugins={[centerTextPlugin]}
@@ -119,14 +122,15 @@ function ChartSection({ apartments, onChartClick }) {
                             legend: { display: false },
                         },
                         maintainAspectRatio: false,
-                        onClick: (_, elements) => {
-                            if (elements.length > 0) onChartClick({ filterType: 'checkinsToday', value: checkinsToday });
-                        },
                     }}
                 />
             </ChartWrapper>
-            <ChartWrapper>
-                <TittleDoughnut>Checkouts</TittleDoughnut>
+            <ChartWrapper
+                onClick={() => {
+                    onChartClick({ filterType: 'checkoutsToday', value: checkoutsToday });
+                }}
+            >
+                <TittleDoughnut>Saídas</TittleDoughnut>
                 <Doughnut
                     data={createDonutData(checkoutsToday.length, 'Check-outs Hoje', '#e67e22')}
                     plugins={[centerTextPlugin]}
@@ -135,9 +139,6 @@ function ChartSection({ apartments, onChartClick }) {
                             legend: { display: false },
                         },
                         maintainAspectRatio: false,
-                        onClick: (_, elements) => {
-                            if (elements.length > 0) onChartClick({ filterType: 'checkoutsToday', value: checkoutsToday });
-                        },
                     }}
                 />
             </ChartWrapper>
