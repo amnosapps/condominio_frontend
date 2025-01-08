@@ -5,6 +5,8 @@ import LoadingSpinner from '../utils/loader';
 import MessageDropdown from './MessageDropdown';
 import { format, subMonths, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import ReservationModal from '../ReservationModal';
+import ReservationCreationModal from '../Reservation/ReservationCreation';
 
 const Backdrop = styled.div`
     position: fixed;
@@ -161,6 +163,7 @@ const RemoveButton = styled.button`
 `;
 
 const ReservationCard = styled.div`
+    cursor: pointer;
     background: ${(props) => {
         const today = new Date();
         const checkinDate = new Date(props.checkin);
@@ -176,22 +179,61 @@ const ReservationCard = styled.div`
         return '#f8f9fa'; // Default background
     }};
     border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    border-radius: 12px;
+    padding: 1.5rem 1.5rem;
+    margin-bottom: 0.1rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+
+    &:hover {
+        background-color: rgba(0, 123, 255, 0.1); /* Light blue hover effect */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transform: scale(1.02);
+        border-color: #007bff; /* Blue border on hover */
+    }
 
     h4 {
-        font-size: 1rem;
+        font-size: 1.1rem;
         color: #343a40;
-        margin: 0;
+        margin: 0 0 0.1rem 0;
+        font-weight: bold;
     }
 
     span {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
         color: #495057;
+        /* margin: 0.2rem 0; */
+    }
+`;
+
+const StyledButton = styled.button`
+    margin-left: 20px;
+    background-color: #28a745;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 0.1rem 0.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+
+    &:hover {
+        background-color: #218838;
+        transform: scale(1.05);
+    }
+
+    &:active {
+        background-color: #1e7e34;
+        transform: scale(1);
+    }
+
+    &:focus {
+        outline: none;
+        box-shadow: 0 0 4px rgba(40, 167, 69, 0.8);
     }
 `;
 
@@ -246,6 +288,31 @@ const MarkAsReadButton = styled.button`
     }
 `;
 
+const FilterContainer = styled.div`
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+`;
+
+const FilterButton = styled.button`
+    background-color: ${(props) => (props.active ? '#007bff' : '#e9ecef')};
+    color: ${(props) => (props.active ? 'white' : '#495057')};
+    border: none;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+        background-color: ${(props) => (props.active ? '#0056b3' : '#d6d6d6')};
+    }
+
+    &:focus {
+        outline: none;
+    }
+`;
+
 function Modal({ selectedApartment, profile, onClose }) {
     const [residentToAdd, setResidentToAdd] = useState({ name: '', email: '', phone: '' });
     const [ownerToAdd, setOwnerToAdd] = useState({ name: '', email: '', phone: '', username: '', password: '' });
@@ -262,6 +329,10 @@ function Modal({ selectedApartment, profile, onClose }) {
     const [loading, setLoading] = useState(true);
     const [newMessage, setNewMessage] = useState('');
 
+    const [filter, setFilter] = useState('previous');
+
+    const [isModalOpen, setIsModalOpen] = useState(false); // For ReservationCreationModal
+    const [selectedReservation, setSelectedReservation] = useState(null); // For ReservationModal
     
     const fetchApartmentDetails = async (id) => {
         const token = localStorage.getItem('accessToken');
@@ -453,6 +524,18 @@ function Modal({ selectedApartment, profile, onClose }) {
     const previousMonth = format(subMonths(currentMonth, 1), "MMMM", { locale: ptBR });
     const nextMonth = format(addMonths(currentMonth, 1), "MMMM", { locale: ptBR });
 
+    const toggleModal = () => setIsModalOpen((prev) => !prev);
+
+    const openReservationModal = (reservation) => setSelectedReservation(reservation);
+    const closeReservationModal = () => setSelectedReservation(null);
+
+    const filteredReservations = apartmentDetails.last_reservations.filter((reservation) => {
+        const today = new Date();
+        const checkinDate = new Date(reservation.checkin);
+
+        return filter === 'next' ? checkinDate >= today : checkinDate < today;
+    });
+
     return (
         <>
             <Backdrop onClick={onClose} />
@@ -460,16 +543,16 @@ function Modal({ selectedApartment, profile, onClose }) {
                 <ModalHeader>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                         <ModalTitle>
-                            Apartamento {selectedApartment.number}
+                            Apartamento {apartmentDetails.number}
                         </ModalTitle>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             <StatusContainer>
                                 <StatusCircle
-                                    color={statusColors[selectedApartment.status_name]}
+                                    color={statusColors[apartmentDetails.status_name]}
                                 />
-                                <span>Status: {selectedApartment.status_name}</span>
-                                <span>Tipo: {selectedApartment.type_name}</span>
-                                <span>Capacidade: {selectedApartment.max_occupation}</span>
+                                <span>Status: {apartmentDetails.status_name}</span>
+                                <span>Tipo: {apartmentDetails.type_name}</span>
+                                <span>Capacidade: {apartmentDetails.max_occupation}</span>
                             </StatusContainer>
                         </div>
                     </div>
@@ -537,7 +620,7 @@ function Modal({ selectedApartment, profile, onClose }) {
                         </>
                     )}
 
-                    {selectedApartment.type_name === 'Moradia' ? (
+                    {apartmentDetails.type_name === 'Moradia' ? (
                         <>
                             <h3>Residentes Ativos</h3>
                             {residents.length > 0 ? (
@@ -649,16 +732,23 @@ function Modal({ selectedApartment, profile, onClose }) {
                         </>
                     ) : (
                         <>
-                            <h3>Últimas Reservas - {previousMonth} até {nextMonth}</h3>
-                            {/* <ReservationButton onClick={handleRegisterReservation}>
-                                Registrar Reserva
-                            </ReservationButton> */}
-                            {selectedApartment.last_reservations.length > 0 ? (
-                                selectedApartment.last_reservations.map((reservation) => (
+                            <h3>Últimas Reservas</h3>
+                            <FilterContainer>
+                                <FilterButton active={filter === 'previous'} onClick={() => setFilter('previous')}>
+                                    Últimas Reservas
+                                </FilterButton>
+                                <FilterButton active={filter === 'next'} onClick={() => setFilter('next')}>
+                                    Próximas Reservas
+                                </FilterButton>
+                                <StyledButton onClick={toggleModal}>+ Reserva</StyledButton>
+                            </FilterContainer>
+                            {filteredReservations.length > 0 ? (
+                                filteredReservations.map((reservation) => (
                                     <ReservationCard 
                                         key={reservation.id}
                                         checkin={reservation.checkin}
                                         checkout={reservation.checkout}
+                                        onClick={() => openReservationModal(reservation)}
                                     >
                                         <h4>#{reservation.id} {reservation.guest_name}</h4>
                                         <span>Check-in: {format(new Date(reservation.checkin), "dd/MM/yyyy HH:mm", { locale: ptBR })}</span>
@@ -673,6 +763,26 @@ function Modal({ selectedApartment, profile, onClose }) {
                     )}
                 </ModalContent>
             </ModalContainer>
+
+            {isModalOpen && (
+                <ReservationCreationModal
+                    onClose={toggleModal}
+                    fetchApartmentDetails={() => fetchApartmentDetails(selectedApartment.id)}
+                    apartments={[selectedApartment]}
+                    profile={profile}
+                />
+            )}
+
+            {/* Reservation Details Modal */}
+            {selectedReservation && (
+                <ReservationModal
+                    closeModal={closeReservationModal}
+                    selectedReservation={selectedReservation}
+                    selectedApartment={selectedApartment}
+                    fetchApartmentDetails={() => fetchApartmentDetails(selectedApartment.id)}
+                    profile={profile}
+                />
+            )}
         </>
     );
 }

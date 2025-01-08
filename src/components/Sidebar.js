@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
-import { FaCalendarAlt, FaChartLine, FaCity, FaCloudSun, FaCog, FaHome, FaKey, FaMoneyCheckAlt, FaPoll, FaUsers } from 'react-icons/fa';
+import { FaCalendarAlt, FaChartLine, FaCity, FaCloudSun, FaCog, FaHome, FaKey, FaMoneyCheckAlt, FaPoll, FaUnlockAlt, FaUsers } from 'react-icons/fa';
 
 const SidebarContainer = styled.div`
     background-color: #fff;
@@ -565,6 +565,15 @@ const Sidebar = ({ condominium }) => {
                         >
                         <FaMoneyCheckAlt />
                         Financeiro
+                        </NavButton>
+                    </NavItem>
+                    <NavItem>
+                        <NavButton
+                            onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
+                            // active={location.pathname.includes(`${selectedCondominium}/soon`)}
+                        >
+                        <FaUnlockAlt />
+                        Controle de Acesso
                         </NavButton>
                     </NavItem>
                     <NavItem>

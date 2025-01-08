@@ -195,13 +195,13 @@ const SubmitButton = styled.button`
   }
 `;
 
-function ReservationCreationModal({ onClose, fetchReservations, apartments }) {
+function ReservationCreationModal({ onClose, fetchReservations, apartments, fetchApartmentDetails }) {
   const [formData, setFormData] = useState({
     guest_name: "",
     guest_document: "",
     guest_phone: "",
     apartment: "",
-    guests_qty: 1,
+    guests_qty: 0,
     checkin: null,
     checkout: null,
   });
@@ -219,7 +219,7 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments }) {
     if (name === "apartment") {
       const selectedApartment = apartments.find((apartment) => apartment.id == value);
       setMaxGuests(selectedApartment ? selectedApartment.max_occupation : 1);
-      setFormData((prev) => ({ ...prev, guests_qty: 1 })); // Reset guests_qty to 1
+      setFormData((prev) => ({ ...prev, guests_qty: 0 })); // Reset guests_qty to 1
     }
   };
 
@@ -289,7 +289,14 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments }) {
 
       alert("Reserva criada com sucesso!");
       onClose();
-      fetchReservations(1, "right", false);
+
+      if (fetchReservations) {
+        fetchReservations(1, "right", false);
+      }
+      if (fetchApartmentDetails) {
+        fetchApartmentDetails();
+      }
+      
     } catch (error) {
       console.error("Erro ao criar reserva:", error);
       alert(
