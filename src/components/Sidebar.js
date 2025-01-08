@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
-import { FaCalendarAlt, FaChartLine, FaCity, FaCloudSun, FaCog, FaHome, FaKey, FaMoneyCheckAlt, FaPoll, FaUnlockAlt, FaUsers } from 'react-icons/fa';
+import { FaBell, FaCalendarAlt, FaChartLine, FaCity, FaCloudSun, FaCog, FaCommentAlt, FaHome, FaKey, FaMoneyCheckAlt, FaPoll, FaRegCommentAlt, FaUnlockAlt, FaUsers } from 'react-icons/fa';
 
 const SidebarContainer = styled.div`
     background-color: #fff;
@@ -594,6 +594,24 @@ const Sidebar = ({ condominium }) => {
                         Usuários
                         </NavButton>
                     </NavItem>
+                    <NavItem>
+                        <NavButton
+                            onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
+                            // active={location.pathname.includes(`${selectedCondominium}/soon`)}
+                        >
+                        <FaCommentAlt />
+                        Mensagens
+                        </NavButton>
+                    </NavItem>
+                    <NavItem>
+                        <NavButton
+                            onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
+                            // active={location.pathname.includes(`${selectedCondominium}/soon`)}
+                        >
+                        <FaBell />
+                        Notificações
+                        </NavButton>
+                    </NavItem>
                 </NavList>
                 
                 <ProfileAndLogoutContainer>
@@ -601,10 +619,10 @@ const Sidebar = ({ condominium }) => {
                         <ProfileContainer>
                             <Avatar>
                                 {profile.name?.charAt(0).toUpperCase() || "?"}
-                                    <NotificationBellContainer onClick={toggleNotifications}>
+                                    {/* <NotificationBellContainer onClick={toggleNotifications}>
                                         <BellIcon>🔔</BellIcon>
                                         <UnreadCount count={unreadCount}>{unreadCount}</UnreadCount>
-                                    </NotificationBellContainer>
+                                    </NotificationBellContainer> */}
                                     {showNotifications && (
                                         <NotificationContainer>
                                             <NotificationListContainer>
