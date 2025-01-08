@@ -542,6 +542,36 @@ const ReservationModal = ({
   };
 
   const handleSaveCheckin = async () => {
+    // Validate required fields
+    const requiredFields = [
+      { field: reservationData.guest_name, label: "Nome do hóspede" },
+      { field: reservationData.guest_document, label: "Documento do hóspede" },
+      { field: reservationData.document_type, label: "Tipo de documento" },
+      { field: reservationData.guest_phone, label: "Contato do hóspede" },
+      { field: reservationData.checkin, label: "Data de entrada" },
+      { field: reservationData.checkout, label: "Data de saída" },
+    ];
+  
+    const requiredAddressFields = [
+      { field: address.endereco, label: "Endereço" },
+      { field: address.bairro, label: "Bairro" },
+      { field: address.cep, label: "CEP" },
+      { field: address.cidade, label: "Cidade" },
+      { field: address.estado, label: "Estado" },
+      { field: address.pais, label: "País" },
+    ];
+  
+    const missingFields = requiredFields.filter((item) => !item.field);
+    const missingAddressFields = requiredAddressFields.filter((item) => !item.field);
+  
+    if (missingFields.length > 0 || missingAddressFields.length > 0) {
+      const missingFieldLabels = [...missingFields, ...missingAddressFields]
+        .map((item) => item.label)
+        .join(", ");
+      alert(`Os seguintes campos são obrigatórios: ${missingFieldLabels}`);
+      return;
+    }
+  
     const confirmMessage = reservationData.checkin_at
       ? "Você tem certeza que deseja atualizar as informações?"
       : "Você tem certeza que deseja fazer o checkin?";
@@ -557,7 +587,7 @@ const ReservationModal = ({
       : new Date().toISOString();
   
     const hasChildren = additionalGuests.some((guest) => guest.is_child);
-
+  
     if (hasChildren && reservationData.additional_photos.length === 0) {
       alert("Você deve adicionar pelo menos uma foto se houver crianças na reserva.");
       setIsSubmitting(false);
@@ -568,9 +598,10 @@ const ReservationModal = ({
     formData.append("observations", reservationData.observations);
     formData.append("guest_name", reservationData.guest_name);
     formData.append("guest_document", reservationData.guest_document);
+    formData.append("document_type", reservationData.document_type);
     formData.append("guest_phone", reservationData.guest_phone || "");
-    formData.append("guests_qty", reservationData.guests_qty); // Updated to use calculated total
-    formData.append("has_children", hasChildren); // Dynamically set
+    formData.append("guests_qty", reservationData.guests_qty);
+    formData.append("has_children", hasChildren);
     formData.append("checkin_at", formattedCheckinAt);
   
     // Append Address information
@@ -583,23 +614,20 @@ const ReservationModal = ({
   
     // Append Additional Guests
     formData.append("additional_guests", JSON.stringify(additionalGuests));
-    
-    console.log(reservationData.additional_photos)
+  
+    console.log(reservationData.additional_photos);
     const photos = reservationData.additional_photos.map(async (photoUrl, index) => {
-      console.log(photoUrl, index)
-      const response = await fetch(photoUrl); // Fetch the blob from the URL
-      const blob = await response.blob(); // Convert response to Blob
-      return new File([blob], `photo-${index}.jpg`, { type: blob.type }); // Convert Blob to File
+      const response = await fetch(photoUrl);
+      const blob = await response.blob();
+      return new File([blob], `photo-${index}.jpg`, { type: blob.type });
     });
   
-    // Wait for all photos to be processed
     const photoFiles = await Promise.all(photos);
   
-    // Append each photo to FormData
     photoFiles.forEach((file) => {
       formData.append("additional_photos", file);
     });
-
+  
     try {
       const response = await axios.patch(
         `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
@@ -618,7 +646,6 @@ const ReservationModal = ({
         closeModal();
         sessionStorage.setItem("reopenModalId", selectedReservation.id);
       } else {
-        console.error("Unexpected response status:", response.status);
         alert("Falha ao salvar as informações. Tente novamente.");
       }
     } catch (error) {
@@ -626,11 +653,7 @@ const ReservationModal = ({
   
       if (error.response) {
         console.error("Response data:", error.response.data);
-        alert(
-          `Erro no servidor: ${error.response.status}. Mensagem: ${
-            error.response.data.detail || "Erro desconhecido"
-          }`
-        );
+        alert(`Erro no servidor: ${error.response.status}. Mensagem: ${error.response.data.detail || "Erro desconhecido"}`);
       } else if (error.request) {
         console.error("Request data:", error.request);
         alert("Erro na comunicação com o servidor. Verifique sua conexão.");
@@ -640,7 +663,7 @@ const ReservationModal = ({
       }
     } finally {
       setIsSubmitting(false);
-      setIsEditing(false)
+      setIsEditing(false);
     }
   };
   
@@ -903,7 +926,6 @@ const ReservationModal = ({
                 value={reservationData.guests_qty}
                 onChange={(e) => handleChange("guests_qty", e.target.value)}
                 disabled={true}
-                
               />
               {/* <StyledSelect
                 name="guests_qty"
