@@ -828,7 +828,7 @@ const ReservationModal = ({
           </div>
         </div>
         
-        {profile?.user_type === 'owner' && (
+        {profile?.user_type === 'owner' || profile?.user_type === 'admin' && (
           <>
             <Row style={{ alignItems: "center", gap: "20px" }}>
               <Column>

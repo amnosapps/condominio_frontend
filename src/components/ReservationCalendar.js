@@ -341,7 +341,7 @@ const Tooltip = styled.div`
   position: absolute;
   background-color: rgba(0, 0, 0, 0.8);
   color: white;
-  padding: 8px;
+  padding: 10px 20px;
   font-size: 0.75rem;
   border-radius: 4px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -352,6 +352,10 @@ const Tooltip = styled.div`
   pointer-events: none;
   z-index: 1000;
   white-space: nowrap;
+
+  > div {
+    margin-bottom: 10px;
+  }
 `;
 
 const FilterContainer = styled.div`
@@ -524,7 +528,7 @@ const ReservationCalendar = ({ condominium }) => {
   const [loadingNavigation, setLoadingNavigation] = useState(false);
 
   const [viewType, setViewType] = useState("15");
-  const [currentStartDate, setCurrentStartDate] = useState(subDays(new Date(), 1));
+  const [currentStartDate, setCurrentStartDate] = useState(new Date());
   const [apartments, setApartments] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1102,7 +1106,6 @@ const ReservationCalendar = ({ condominium }) => {
           <div><strong>Entrada:</strong> {format(hoveredReservation.checkin, 'dd/MM/yyyy')}</div>
           <div><strong>Saída:</strong> {format(hoveredReservation.checkout, 'dd/MM/yyyy')}</div>
           <div><strong>Acompanhantes:</strong> {hoveredReservation.guests_qty || 0}</div>
-          <div><strong>Contato:</strong> {hoveredReservation.guest_phone}</div>
         </Tooltip>
       )}
       
