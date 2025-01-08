@@ -918,7 +918,7 @@ const ReservationCalendar = ({ condominium }) => {
     setStartDateFilter("");
     setEndDateFilter("");
     setSelectedDateRange({ startDate: null, endDate: null });
-    setCurrentStartDate(subDays(new Date(), 1)); // Reset to today's date
+    setCurrentStartDate(new Date()); // Reset to today's date
     setCurrentPage(1)
     fetchReservations(1, "right", false)
   };
@@ -929,9 +929,16 @@ const ReservationCalendar = ({ condominium }) => {
 
   const handleDateRangeChange = (dates) => {
     const [start, end] = dates;
+  
     setSelectedDateRange({ startDate: start, endDate: end });
+  
+    if (start) {
+      setCurrentStartDate(start); // Align calendar's start date with the selected range
+      fetchReservations(1, "right", false)
+    }
+  
     if (start && end) {
-      setShowDatePicker(false); // Close the DatePicker after selection
+      setShowDatePicker(false); // Close the DatePicker
     }
   };
 
