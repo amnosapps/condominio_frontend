@@ -896,7 +896,7 @@ const ReservationModal = ({
           </Column>
 
           <Column>
-            <FieldLabel>Acompanhantes (Previsão):</FieldLabel>
+            <FieldLabel>Acompanhantes:</FieldLabel>
             <FieldValue>
               <EditableInput
                 type="text"
