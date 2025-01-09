@@ -1,49 +1,64 @@
 import React from "react";
 import styled from "styled-components";
+import ReservationsWidget from './ReservationsWidget'
 import { Line, Pie } from "react-chartjs-2";
 import "chart.js/auto";
+import VisitorsWidget from "./VisitorsWidget";
+import ApartmentOccupation from "./OccupationWidget";
 
 // Styled Components
 const Container = styled.div`
-  padding: 20px;
-  background-color: #f9f9f9;
-  min-height: 100vh;
-  font-family: "Roboto", sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    background-color: #f9f9f9;
+    /* max-width: 100vh; */
+    /* min-height: 100vh; */
+    font-family: "Roboto", sans-serif;
+    overflow: auto;
+`;
+
+const ChartContainer = styled.div`
+  height: 400px; /* Adjust the height as needed */
 `;
 
 const DashboardGrid = styled.div`
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }
 `;
 
 const Column = styled.div`
-  display: grid;
-  grid-template-rows: auto;
-  gap: 20px;
+    display: grid;
+    grid-template-rows: auto;
+    gap: 10px;
 `;
 
 const Widget = styled.div`
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 `;
 
 const WidgetTitle = styled.h3`
   font-size: 16px;
   color: #333;
   font-weight: 600;
-  margin-bottom: 10px;
+  /* margin-bottom: 10px; */
 `;
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
+  margin: auto;
 
   th,
   td {
@@ -67,7 +82,7 @@ const ChatContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
-  height: 200px;
+  height: 100px;
   overflow-y: auto;
 `;
 
@@ -82,18 +97,88 @@ const ChatMessage = styled.div`
   margin-left: ${(props) => (props.isUser ? "auto" : "0")};
 `;
 
+const ShortcutList = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+`;
+
+const ShortcutItem = styled.div`
+  background: white;
+  color: #333;
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border: 1px solid #ffa726;
+  transition: transform 0.3s, box-shadow 0.3s;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const ShortcutIcon = styled.span`
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: #ffa726;
+`;
+
+const ShortcutText = styled.span`
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+`;
+
 // Mock Data
 const MOCK_RESERVATIONS = [
-  { id: 1, guest: "Jennifer Lopes", room: "Room 23B", dates: "17 Aug - 19 Aug" },
-  { id: 2, guest: "Benjamin", room: "Room 22A", dates: "18 Aug - 19 Aug" },
-  { id: 3, guest: "Lugatio Anderson", room: "Room 25A", dates: "20 Aug - 22 Aug" },
-];
+    {
+      id: 1,
+      guest: "Jennifer Lopes",
+      room: "Room 23B",
+      dates: "17 Aug - 19 Aug",
+      image: "https://randomuser.me/api/portraits/women/1.jpg",
+    },
+    {
+      id: 2,
+      guest: "Benjamin",
+      room: "Room 22A",
+      dates: "18 Aug - 19 Aug",
+      image: "https://randomuser.me/api/portraits/men/2.jpg",
+    },
+    {
+      id: 3,
+      guest: "Lugatio Anderson",
+      room: "Room 25A",
+      dates: "20 Aug - 22 Aug",
+      image: "https://randomuser.me/api/portraits/men/3.jpg",
+    },
+    {
+      id: 4,
+      guest: "Lugatio Anderson",
+      room: "Room 25A",
+      dates: "20 Aug - 22 Aug",
+      image: "https://randomuser.me/api/portraits/men/3.jpg",
+    },
+  ];
 
 const MOCK_VISITORS = [
   { id: 1, name: "Agatasya", schedule: "06:00 AM - 05:00 PM" },
   { id: 2, name: "Jessica Jane", schedule: "06:00 AM - 05:00 PM" },
   { id: 3, name: "Umar Heru", schedule: "06:00 AM - 05:00 PM" },
+  { id: 4, name: "Umar Heru", schedule: "06:00 AM - 05:00 PM" },
 ];
+
+const MOCK_SHORTCUTS = [
+    { id: 1, label: "Apartamentos", path: "/apartments", icon: "🏠" },
+    { id: 2, label: "Relatórios", path: "/reports", icon: "📊" },
+    { id: 3, label: "Usuários", path: "/users", icon: "👤" },
+    { id: 4, label: "Reservas", path: "/reservations", icon: "📅" },
+  ];
 
 const MOCK_NOTIFICATIONS = [
   { id: 1, message: "Reservation for Room 23B is pending check-in." },
@@ -106,16 +191,36 @@ const MOCK_OVERVIEW = {
 };
 
 const MOCK_GUESTS_DATA = {
-  labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-  datasets: [
-    {
-      label: "Guests",
-      data: [5, 8, 10, 4, 7, 9, 6],
-      fill: false,
-      borderColor: "#4CAF50",
-      tension: 0.1,
-    },
-  ],
+    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    datasets: [
+        {
+            label: "Visitantes",
+            data: [12, 15, 10, 20, 18, 16, 22],
+            borderColor: "#4CAF50",
+            backgroundColor: "rgba(76, 175, 80, 0.2)",
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: "#4CAF50",
+        },
+        {
+            label: "Hóspedes",
+            data: [8, 10, 12, 5, 7, 9, 6],
+            borderColor: "#2196F3",
+            backgroundColor: "rgba(33, 150, 243, 0.2)",
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: "#2196F3",
+        },
+        {
+            label: "Moradores",
+            data: [5, 6, 8, 4, 3, 7, 5],
+            borderColor: "#FF5722",
+            backgroundColor: "rgba(255, 87, 34, 0.2)",
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: "#FF5722",
+        },
+    ],
 };
 
 // Component
@@ -124,88 +229,100 @@ const Dashboard = () => {
     <Container>
       <DashboardGrid>
         <Column>
-            
-            <Widget>
-                <WidgetTitle>Guests Overview</WidgetTitle>
-                <Line data={MOCK_GUESTS_DATA} />
-            </Widget>
 
             <div
                 style={{
-                    display: 'grid',
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "20px",
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "20px",
+                alignItems: "stretch",
                 }}
             >
-                <Widget>
-                    <WidgetTitle>Reservations Today</WidgetTitle>
-                    <Table>
-                    <thead>
-                        <tr>
-                        <th>Guest</th>
-                        <th>Room</th>
-                        <th>Dates</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {MOCK_RESERVATIONS.map((res) => (
-                        <tr key={res.id}>
-                            <td>{res.guest}</td>
-                            <td>{res.room}</td>
-                            <td>{res.dates}</td>
-                        </tr>
-                        ))}
-                    </tbody>
-                    </Table>
-                </Widget>
-
-                <Widget>
-                    <WidgetTitle>Visitors Today</WidgetTitle>
-                    <Table>
-                    <thead>
-                        <tr>
-                        <th>Name</th>
-                        <th>Schedule</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {MOCK_VISITORS.map((visitor) => (
-                        <tr key={visitor.id}>
-                            <td>{visitor.name}</td>
-                            <td>{visitor.schedule}</td>
-                        </tr>
-                        ))}
-                    </tbody>
-                    </Table>
-                </Widget>
+                <ReservationsWidget reservations={MOCK_RESERVATIONS} />
+                <VisitorsWidget visitors={MOCK_VISITORS} />
+            
             </div>
+            
+            <Widget>
+                <WidgetTitle>Ocupação Semana</WidgetTitle>
+                <ChartContainer>
+                    <Line
+                        data={MOCK_GUESTS_DATA}
+                        options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                            position: "top",
+                            labels: {
+                                font: {
+                                size: 14,
+                                },
+                            },
+                            },
+                            tooltip: {
+                            enabled: true,
+                            callbacks: {
+                                label: (context) => {
+                                return `${context.dataset.label}: ${context.raw}`;
+                                },
+                            },
+                            },
+                        },
+                        scales: {
+                            x: {
+                            grid: {
+                                display: false,
+                            },
+                            ticks: {
+                                font: {
+                                size: 12,
+                                },
+                            },
+                            },
+                            y: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: {
+                                size: 12,
+                                },
+                            },
+                            },
+                        },
+                        }}
+                    />
+                </ChartContainer>
+            </Widget>
+           
         </Column>
 
         <Column>
-            <Widget>
-                <WidgetTitle>Apartment Occupation</WidgetTitle>
-                <Pie
-                data={{
-                    labels: ["Occupied", "Available"],
-                    datasets: [
-                    {
-                        data: [MOCK_OVERVIEW.occupied, MOCK_OVERVIEW.available],
-                        backgroundColor: ["#4CAF50", "#FFC107"],
-                    },
-                    ],
-                }}
-                />
+          <Widget>
+            <WidgetTitle>Atalhos</WidgetTitle>
+                <ShortcutList>
+                {MOCK_SHORTCUTS.map((shortcut) => (
+                    <ShortcutItem
+                    key={shortcut.id}
+                    onClick={() => (window.location.href = shortcut.path)}
+                    >
+                    <ShortcutIcon>{shortcut.icon}</ShortcutIcon>
+                    <ShortcutText>{shortcut.label}</ShortcutText>
+                    </ShortcutItem>
+                ))}
+                </ShortcutList>
           </Widget>
 
-          {/* Notifications */}
-            <Widget>
-                <WidgetTitle>Notifications</WidgetTitle>
-                <ChatContainer>
-                {MOCK_NOTIFICATIONS.map((notif, index) => (
-                    <ChatMessage key={index}>{notif.message}</ChatMessage>
-                ))}
-                </ChatContainer>
-            </Widget>
+          <Widget>
+            <WidgetTitle>Notifications</WidgetTitle>
+            <ChatContainer>
+              {MOCK_NOTIFICATIONS.map((notif, index) => (
+                <ChatMessage key={index}>{notif.message}</ChatMessage>
+              ))}
+            </ChatContainer>
+          </Widget>
+
+          <ApartmentOccupation />
+
         </Column>
       </DashboardGrid>
     </Container>
