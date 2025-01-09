@@ -1131,6 +1131,7 @@ const ReservationCalendar = ({ condominium }) => {
             selectedApartment={selectedApartment}
             fetchReservations={fetchReservations}
             profile={profile}
+            selectedCondominium={selectedCondominium}
           />
         )}
       <RodapeCalendar />

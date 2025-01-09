@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
 
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+
 import { format, isSameDay, isBefore, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import PhotoCapture from "./PhotoCapture";
@@ -348,7 +351,8 @@ const ReservationModal = ({
   selectedReservation,
   fetchReservations,
   selectedApartment,
-  profile
+  profile,
+  selectedCondominium
 }) => {
   const [logs, setLogs] = useState([]);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
@@ -768,35 +772,111 @@ const ReservationModal = ({
     closeModal();
   };
 
-  const openBase64Pdf = (base64String, fileName = "reservation.pdf") => {
-    try {
-      // Decode the base64 string
-      const byteCharacters = atob(base64String);
-      const byteNumbers = Array.from(byteCharacters, char => char.charCodeAt(0));
-      const byteArray = new Uint8Array(byteNumbers);
+  const generateDocumentPdf = () => {
+    const {
+      id,
+      guest_name,
+      guest_document,
+      guest_phone,
+      checkin,
+      checkout,
+      observations,
+      address,
+      vehicle_plate,
+      additional_guests,
+      apartment,
+      apartment_owner,
+    } = reservationData;
   
-      // Create a Blob from the byte array
-      const pdfBlob = new Blob([byteArray], { type: "application/pdf" });
+    const doc = new jsPDF();
   
-      // Generate a URL for the Blob
-      const pdfUrl = URL.createObjectURL(pdfBlob);
+    // Set document title
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Reserva #${selectedReservation.id}`, 105, 20, null, null, "center");
   
-      // Open the URL in a new tab
-      const newWindow = window.open(pdfUrl, "_blank");
-      if (!newWindow) {
-        // If the browser blocks the new tab, offer the file for download
-        const downloadLink = document.createElement("a");
-        downloadLink.href = pdfUrl;
-        downloadLink.download = fileName;
-        downloadLink.click();
-      }
-  
-      // Optional: Revoke the object URL after a delay to release memory
-      setTimeout(() => URL.revokeObjectURL(pdfUrl), 10000);
-    } catch (error) {
-      console.error("Erro ao abrir pdf:", error);
-      alert("Erro ao abrir pdf. Procure o suporte");
+    // Condominium and Apartment Information
+    doc.setFontSize(14);
+    doc.text("Condomínio", 10, 30);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Condomínio: ${selectedCondominium || "N/A"}`, 10, 40);
+    doc.text(`Apartamento: ${apartment || "N/A"}`, 10, 50);
+    if (apartment_owner) {
+      doc.text(`Proprietário: ${apartment_owner}`, 10, 60);
     }
+  
+    // Add a divider
+    doc.setDrawColor(200);
+    doc.setLineWidth(0.5);
+    doc.line(10, 65, 200, 65);
+  
+    // Add basic information
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Informações Gerais", 10, 75);
+  
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Hóspede: ${guest_name}`, 10, 85);
+    doc.text(`Documento: ${guest_document}`, 10, 95);
+    doc.text(`Contato: ${guest_phone || "N/A"}`, 10, 105);
+    doc.text(`Check-in: ${format(new Date(checkin), "dd/MM/yyyy")}`, 10, 115);
+    doc.text(`Check-out: ${format(new Date(checkout), "dd/MM/yyyy")}`, 10, 125);
+  
+    // Add observations
+    doc.setFont("helvetica", "bold");
+    doc.text("Observações", 10, 135);
+    doc.setFont("helvetica", "normal");
+    doc.text(observations || "Nenhuma observação.", 10, 145);
+  
+    // Add address
+    doc.setFont("helvetica", "bold");
+    doc.text("Endereço", 10, 155);
+    doc.setFont("helvetica", "normal");
+    doc.text(
+      `${address.endereco || "N/A"}, ${address.bairro || "N/A"}, ${address.cidade || "N/A"}, ${address.estado || "N/A"}, ${address.pais || "N/A"} (${address.cep || "N/A"})`,
+      10,
+      165
+    );
+  
+    // Add vehicle information
+    if (vehicle_plate) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Veículo", 10, 175);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Placa: ${vehicle_plate}`, 10, 185);
+    }
+  
+    // Add additional guests
+    if (additional_guests.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Hóspedes Adicionais", 10, 195);
+      additional_guests.forEach((guest, index) => {
+        doc.setFont("helvetica", "normal");
+        doc.text(
+          `${index + 1}. ${guest.name || "N/A"} - ${guest.document || "N/A"} (${
+            guest.is_child ? "Criança" : "Adulto"
+          })`,
+          10,
+          205 + index * 10
+        );
+      });
+    }
+  
+    // Footer
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "italic");
+    doc.text(
+      "Documento gerado automaticamente.",
+      105,
+      290,
+      null,
+      null,
+      "center"
+    );
+  
+    // Save the PDF
+    doc.save(`${selectedCondominium}_reserva_${selectedReservation.id}_${apartment}.pdf`);
   };
 
   const toggleEditing = () => {
@@ -821,8 +901,17 @@ const ReservationModal = ({
 
   return (
     <ModalOverlay onClick={closeModal1}>
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
+      <ModalContainer onClick={(e) => e.stopPropagation()} className="modal-container">
         <div style={{ display: 'flex', alignContent: 'center', alignItems: 'center' }}>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center", margin: '15px 0px' }}>
+            <a onClick={generateDocumentPdf} style={{ color: "white", padding: "10px", borderRadius: "5px", cursor: "pointer" }}>
+              <img
+                  src="/download-pdf.png"
+                  alt="PDF Reserva"
+                  style={{ width: "30px", height: "auto", cursor: "pointer" }}
+                />
+            </a>
+          </div>
           <div><strong style={{ fontSize: '20px' }}>#{selectedReservation.id} - Apto {reservationData.apartment}</strong> {reservationData.apartment_owner != '' && (<>({reservationData.apartment_owner})</>)} </div>
           
           <CloseButton onClick={closeModal1}>&times;</CloseButton>
@@ -837,20 +926,8 @@ const ReservationModal = ({
               </LogsModalContainer>
             </LogsModalOverlay>
           )}
-          <div style={{ display: "flex", gap: "10px", alignItems: "center", margin: '15px 0px' }}>
-            {/* <a onClick={() => openBase64Pdf(reservationData.reservation_file, `${selectedReservation.apartment}_${selectedReservation.id}reservation.pdf`)}>
-              <img
-                src="/download-pdf.png"
-                alt="PDF Reserva"
-                style={{ width: "30px", height: "auto", cursor: "pointer" }}
-              />
-            </a> */}
-            <strong style={{ fontSize: '18px' }}>
-              {format(new Date(reservationData.checkin), 'dd/MM/yyyy', { locale: ptBR })} - {format(new Date(reservationData.checkout), 'dd/MM/yyyy', { locale: ptBR })}
-            </strong>
-          </div>
         </div>
-        
+
         {profile?.user_type === 'owner' || profile?.user_type === 'admin' && (
           <>
             <Row style={{ alignItems: "center", gap: "20px" }}>
