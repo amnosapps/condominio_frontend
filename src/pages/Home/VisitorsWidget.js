@@ -1,5 +1,5 @@
 import React from "react";
-import styled from "styled-components"; // Ensure this import is included
+import styled, {keyframes} from "styled-components";
 
 const Widget = styled.div`
   background: #fff;
@@ -7,18 +7,10 @@ const Widget = styled.div`
   padding: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   max-height: 260px;
-  overflow-y: auto; /* Enable vertical scrolling */
-
-  &::-webkit-scrollbar {
-    width: 3px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 4px;
-  }
-  &::-webkit-scrollbar-thumb:hover {
-    background: #b3b3b3;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 `;
 
 const WidgetTitle = styled.h3`
@@ -28,59 +20,38 @@ const WidgetTitle = styled.h3`
   margin-bottom: 15px;
 `;
 
-const VisitorList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-`;
-
-const VisitorItem = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px;
-  border-radius: 8px;
-  background: #f5f5f5;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const VisitorDetails = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const VisitorName = styled.span`
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-`;
-
-const VisitorSchedule = styled.span`
+const PlaceholderMessage = styled.p`
   font-size: 14px;
-  color: #555;
+  color: #757575;
+  text-align: center;
 `;
 
-const ChevronIcon = styled.span`
-  font-size: 18px;
-  color: #4caf50;
-  cursor: pointer;
+const bounce = keyframes`
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-20px);
+  }
+  60% {
+    transform: translateY(-10px);
+  }
 `;
 
-const VisitorsWidget = ({ visitors }) => (
+const AnimatedIcon = styled.div`
+  font-size: 3rem;
+  color: #007bff;
+  margin-bottom: 1rem;
+  animation: ${bounce} 2s infinite;
+`;
+
+const VisitorsWidget = () => (
   <Widget>
     <WidgetTitle>Visitantes do Dia</WidgetTitle>
-    <button>+</button>
-    <VisitorList>
-      {visitors?.map((visitor) => (
-        <VisitorItem key={visitor.id}>
-          <VisitorDetails>
-            <VisitorName>{visitor.name}</VisitorName>
-            <VisitorSchedule>{visitor.schedule}</VisitorSchedule>
-          </VisitorDetails>
-          <ChevronIcon>➔</ChevronIcon>
-        </VisitorItem>
-      ))}
-    </VisitorList>
+    <PlaceholderMessage>Em Construção</PlaceholderMessage>
+    <AnimatedIcon>
+        🚧
+      </AnimatedIcon>
   </Widget>
 );
 

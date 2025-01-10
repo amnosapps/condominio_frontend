@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import ReservationModal from "../../components/ReservationModal";
 
@@ -37,7 +37,7 @@ const Header = styled.div`
 `;
 
 const OpenButton = styled.button`
-  background-color: #F46600;
+  background-color: #f46600;
   color: white;
   border: none;
   border-radius: 8px;
@@ -63,7 +63,7 @@ const ReservationList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 15px;
-  max-height: 260px; 
+  max-height: 260px;
   margin-bottom: 100px;
 `;
 
@@ -121,11 +121,15 @@ const ChevronIcon = styled.span`
 `;
 
 // ReservationsWidget Component
-const ReservationsWidget = ({ onOpen, reservations, fetchReservations, selectedCondominium }) => {
-
+const ReservationsWidget = ({
+  onOpen,
+  reservations,
+  fetchReservations,
+  selectedCondominium,
+}) => {
   const [selectedReservation, setSelectedReservation] = useState(null);
 
-  const handleReservationClick = (reservation, apartment) => {
+  const handleReservationClick = (reservation) => {
     setSelectedReservation(reservation);
   };
 
@@ -134,42 +138,46 @@ const ReservationsWidget = ({ onOpen, reservations, fetchReservations, selectedC
   };
 
   return (
-  <Widget>
-    <Header>
-      <WidgetTitle>Checkins Próximos</WidgetTitle>
-      <OpenButton onClick={onOpen}>+ Nova Reserva</OpenButton>
-    </Header>
-    <ReservationList>
-      {reservations?.map((res) => (
-        <ReservationItem key={res.id}
-          onClick={() => handleReservationClick(res)}
-        >
-          <GuestImage
-            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(res.guest_name)}`}
-            alt={`${res.guest_name}'s avatar`}
-          />
-          <ReservationDetails>
-            <GuestName>{res.guest_name || "Unknown Guest"}</GuestName>
-            <RoomDetails>{`Apartment ${res.apt_number || "N/A"}`}</RoomDetails>
-            <Dates>
-              {new Date(res.checkin).toLocaleDateString()} -{" "}
-              {new Date(res.checkout).toLocaleDateString()}
-            </Dates>
-          </ReservationDetails>
-          <ChevronIcon>➔</ChevronIcon>
-        </ReservationItem>
-      ))}
-    </ReservationList>
+    <Widget>
+      <Header>
+        <WidgetTitle>Checkins Próximos</WidgetTitle>
+        <OpenButton onClick={onOpen}>+ Nova Reserva</OpenButton>
+      </Header>
+      <ReservationList>
+        {reservations?.map((res) => (
+          <ReservationItem
+            key={res.id}
+            onClick={() => handleReservationClick(res)}
+          >
+            <GuestImage
+              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                res.guest_name
+              )}`}
+              alt={`${res.guest_name}'s avatar`}
+            />
+            <ReservationDetails>
+              <GuestName>{res.guest_name || "Unknown Guest"}</GuestName>
+              <RoomDetails>{`Apartment ${res.apt_number || "N/A"}`}</RoomDetails>
+              <Dates>
+                {new Date(res.checkin).toLocaleDateString("pt-BR")} -{" "}
+                {new Date(res.checkout).toLocaleDateString("pt-BR")}
+              </Dates>
+            </ReservationDetails>
+            <ChevronIcon>➔</ChevronIcon>
+          </ReservationItem>
+        ))}
+      </ReservationList>
 
-    {selectedReservation && (
-      <ReservationModal
-        closeModal={closeModal}
-        selectedReservation={selectedReservation}
-        fetchReservations={fetchReservations}
-        selectedCondominium={selectedCondominium}
-      />
-    )}
-  </Widget>
-)};
+      {selectedReservation && (
+        <ReservationModal
+          closeModal={closeModal}
+          selectedReservation={selectedReservation}
+          fetchReservations={fetchReservations}
+          selectedCondominium={selectedCondominium}
+        />
+      )}
+    </Widget>
+  );
+};
 
 export default ReservationsWidget;

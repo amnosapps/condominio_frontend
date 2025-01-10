@@ -9,6 +9,8 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import LoadingSpinner from "../../components/utils/loader";
 import ReservationCreationModal from "../../components/Reservation/ReservationCreation";
+import NotificationsWidget from "./NotificationsWidget";
+import LineChart from "./LineChart";
 
 // Styled Components
 const Container = styled.div`
@@ -149,38 +151,6 @@ const ShortcutText = styled.span`
   text-align: center;
 `;
 
-// Mock Data
-const MOCK_RESERVATIONS = [
-    {
-      id: 1,
-      guest: "Jennifer Lopes",
-      room: "Room 23B",
-      dates: "17 Aug - 19 Aug",
-      image: "https://randomuser.me/api/portraits/women/1.jpg",
-    },
-    {
-      id: 2,
-      guest: "Benjamin",
-      room: "Room 22A",
-      dates: "18 Aug - 19 Aug",
-      image: "https://randomuser.me/api/portraits/men/2.jpg",
-    },
-    {
-      id: 3,
-      guest: "Lugatio Anderson",
-      room: "Room 25A",
-      dates: "20 Aug - 22 Aug",
-      image: "https://randomuser.me/api/portraits/men/3.jpg",
-    },
-    {
-      id: 4,
-      guest: "Lugatio Anderson",
-      room: "Room 25A",
-      dates: "20 Aug - 22 Aug",
-      image: "https://randomuser.me/api/portraits/men/3.jpg",
-    },
-  ];
-
 const MOCK_VISITORS = [
   { id: 1, name: "Agatasya", schedule: "06:00 AM - 05:00 PM" },
   { id: 2, name: "Jessica Jane", schedule: "06:00 AM - 05:00 PM" },
@@ -192,18 +162,8 @@ const MOCK_SHORTCUTS = [
     { id: 1, label: "Apartamentos", path: "/apartments", icon: "🏠" },
     { id: 2, label: "Relatórios", path: "/reports", icon: "📊" },
     { id: 3, label: "Usuários", path: "/users", icon: "👤" },
-    { id: 4, label: "Reservas", path: "/reservations", icon: "📅" },
+    { id: 4, label: "Reservas", path: "/occupation", icon: "📅" },
   ];
-
-const MOCK_NOTIFICATIONS = [
-  { id: 1, message: "Reservation for Room 23B is pending check-in." },
-  { id: 2, message: "Maintenance scheduled for Room 303." },
-];
-
-const MOCK_OVERVIEW = {
-  occupied: 35,
-  available: 15,
-};
 
 const MOCK_GUESTS_DATA = {
     labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
@@ -251,10 +211,27 @@ const Dashboard = ({ condominium }) => {
 
     const [reservations, setReservations] = useState([]);
     const [apartments, setApartments] = useState([]);
+    const [notifications, setNotifications] = useState([]);
+    const [FilteredApartments, setFilteredApartments] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [filterType, setFilterType] = useState("Temporada");
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const fetchNotifications = async () => {
+        const token = localStorage.getItem('accessToken');
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/notifications/`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setNotifications(response.data);
+            const unread = response.data.filter((notif) => !notif.is_read).length;
+            setUnreadCount(unread);
+        } catch (error) {
+            console.error("Error fetching notifications:", error);
+        }
+    };
 
     const fetchReservations = async () => {
         try {
@@ -285,12 +262,14 @@ const Dashboard = ({ condominium }) => {
             headers: { Authorization: `Bearer ${token}` },
             params: { condominium: selectedCondominium },
           });
-    
+
+          
           const filteredApartments = response.data.filter((apartment) =>
             filterType === "Todos" ? true : apartment.type_name === filterType
-          );
-    
-          setApartments(filteredApartments);
+        );
+        
+            setApartments(response.data)
+            setFilteredApartments(filteredApartments);
         } catch (error) {
           console.error("Error fetching apartments:", error);
         }
@@ -299,6 +278,7 @@ const Dashboard = ({ condominium }) => {
   useEffect(() => {
     fetchReservations();
     fetchApartments()
+    fetchNotifications()
   }, []);
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
@@ -312,7 +292,7 @@ const Dashboard = ({ condominium }) => {
                 <ReservationCreationModal
                     onClose={toggleModal}
                     fetchReservations={fetchReservations}
-                    apartments={apartments}
+                    apartments={FilteredApartments}
                 />
             )}
 
@@ -327,66 +307,24 @@ const Dashboard = ({ condominium }) => {
                 {loading ? (
                     <LoadingSpinner />
                 ) : (
+                    <>
                     <ReservationsWidget 
-                    fetchReservations={fetchReservations}
-                    selectedCondominium={selectedCondominium}
-                    reservations={reservations} onOpen={toggleModal} />
+                        fetchReservations={fetchReservations}
+                        selectedCondominium={selectedCondominium}
+                        reservations={reservations} onOpen={toggleModal} 
+                    />
+                    <VisitorsWidget visitors={MOCK_VISITORS} />
+                    </>
                 )}
-                {/* <VisitorsWidget visitors={MOCK_VISITORS} /> */}
             
             </div>
             
             <Widget>
                 <WidgetTitle>Ocupação Semana</WidgetTitle>
                 <ChartContainer>
-                    <Line
-                        data={MOCK_GUESTS_DATA}
-                        options={{
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                            position: "top",
-                            labels: {
-                                font: {
-                                size: 14,
-                                },
-                            },
-                            },
-                            tooltip: {
-                            enabled: true,
-                            callbacks: {
-                                label: (context) => {
-                                return `${context.dataset.label}: ${context.raw}`;
-                                },
-                            },
-                            },
-                        },
-                        scales: {
-                            x: {
-                            grid: {
-                                display: false,
-                            },
-                            ticks: {
-                                font: {
-                                size: 12,
-                                },
-                            },
-                            },
-                            y: {
-                            beginAtZero: true,
-                            ticks: {
-                                font: {
-                                size: 12,
-                                },
-                            },
-                            },
-                        },
-                        }}
-                    />
+                    <LineChart reservations={reservations} />
                 </ChartContainer>
             </Widget>
-           
         </Column>
 
         <Column>
@@ -395,26 +333,26 @@ const Dashboard = ({ condominium }) => {
                 <ShortcutList>
                 {MOCK_SHORTCUTS.map((shortcut) => (
                     <ShortcutItem
-                    key={shortcut.id}
-                    onClick={() => (window.location.href = shortcut.path)}
+                        key={shortcut.id}
+                        onClick={() => {
+                        if (selectedCondominium) {
+                            const fullPath = `/${selectedCondominium}${shortcut.path}`;
+                            window.location.href = fullPath; // Navigate to the constructed path
+                        } else {
+                            console.error("selectedCondominium is undefined");
+                        }
+                        }}
                     >
-                    <ShortcutIcon>{shortcut.icon}</ShortcutIcon>
-                    <ShortcutText>{shortcut.label}</ShortcutText>
+                        <ShortcutIcon>{shortcut.icon}</ShortcutIcon>
+                        <ShortcutText>{shortcut.label}</ShortcutText>
                     </ShortcutItem>
-                ))}
+                    ))}
                 </ShortcutList>
           </Widget>
 
-          <Widget>
-            <WidgetTitle>Notifications</WidgetTitle>
-            <ChatContainer>
-              {MOCK_NOTIFICATIONS.map((notif, index) => (
-                <ChatMessage key={index}>{notif.message}</ChatMessage>
-              ))}
-            </ChatContainer>
-          </Widget>
+          <NotificationsWidget notifications={notifications} setNotifications={setNotifications} />
 
-          <ApartmentOccupation />
+          <ApartmentOccupation apartments={apartments} />
 
         </Column>
       </DashboardGrid>

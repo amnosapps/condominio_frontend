@@ -65,37 +65,45 @@ const LegendText = styled.span`
   color: #4b5563;
 `;
 
-// Mock Data
-const MOCK_OVERVIEW = {
-  occupied: 35,
-  available: 15,
-};
+// ApartmentOccupation Component
+const ApartmentOccupation = ({ apartments }) => {
+  // Calculate totals based on apartment statuses
+  const totalAvailable = apartments.filter((apt) => apt.status === 0).length;
+  const totalOccupied = apartments.filter((apt) => apt.status === 1).length;
+  const totalMaintenance = apartments.filter((apt) => apt.status === 2).length;
+  const total = totalOccupied + totalAvailable + totalMaintenance;
 
-// Chart Data
-const pieData = {
-  labels: ["Occupied", "Available"],
-  datasets: [
-    {
-      data: [MOCK_OVERVIEW.occupied, MOCK_OVERVIEW.available],
-      backgroundColor: ["#4CAF50", "#FFC107"],
-      hoverBackgroundColor: ["#45A049", "#FFB300"],
-      borderWidth: 0,
-    },
-  ],
-};
-
-const ApartmentOccupation = () => {
-  const total = MOCK_OVERVIEW.occupied + MOCK_OVERVIEW.available;
+  // Chart Data
+  const pieData = {
+    labels: ["Ocupado", "Disponível", "Manuntenção"],
+    datasets: [
+      {
+        data: [totalOccupied, totalAvailable, totalMaintenance],
+        backgroundColor: ["#FF9800", "#2196F3", "#BDBDBD"], // Azul, Cinza, Laranja
+        hoverBackgroundColor: ["#FB8C00", "#1E88E5", "#9E9E9E"], // Darker shades
+        borderWidth: 0,
+      },
+    ],
+  };
 
   return (
     <Widget>
-      <WidgetTitle>Apartment Occupation</WidgetTitle>
+      <WidgetTitle>Apartmentos</WidgetTitle>
       <ChartWrapper>
         <Pie
           data={pieData}
           options={{
             plugins: {
-              tooltip: { enabled: false },
+              tooltip: {
+                enabled: true,
+                callbacks: {
+                  label: function (tooltipItem) {
+                    const value = tooltipItem.raw; // Gets the value for the hovered segment
+                    const label = tooltipItem.label; // Gets the label for the hovered segment
+                    return `${label}: ${value}`;
+                  },
+                },
+              },
               legend: { display: false },
             },
             cutout: "70%",
