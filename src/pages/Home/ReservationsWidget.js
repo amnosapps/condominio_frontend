@@ -77,10 +77,13 @@ const ReservationItem = styled.div`
   background: #f9f9f9;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s;
+  border: 1px solid #e9ecef;
 
   &:hover {
     transform: translateY(-3px);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    background-color: rgba(0, 123, 255, 0.1);
+    border-color: #007bff; /* Blue border on hover */
   }
 `;
 
@@ -156,8 +159,8 @@ const ReservationsWidget = ({
               alt={`${res.guest_name}'s avatar`}
             />
             <ReservationDetails>
-              <GuestName>{res.guest_name || "Unknown Guest"}</GuestName>
-              <RoomDetails>{`Apartment ${res.apt_number || "N/A"}`}</RoomDetails>
+              <GuestName>{res.guest_name || "N/A"}</GuestName>
+              <RoomDetails>{`Apto ${res.apt_number || "N/A"}`}</RoomDetails>
               <Dates>
                 {new Date(res.checkin).toLocaleDateString("pt-BR")} -{" "}
                 {new Date(res.checkout).toLocaleDateString("pt-BR")}

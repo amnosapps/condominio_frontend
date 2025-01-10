@@ -285,77 +285,77 @@ const Dashboard = ({ condominium }) => {
 
   return (
     <Container>
-      <DashboardGrid>
-        <Column>
 
-            {isModalOpen && (
-                <ReservationCreationModal
-                    onClose={toggleModal}
-                    fetchReservations={fetchReservations}
-                    apartments={FilteredApartments}
-                />
-            )}
+    {loading ? (
+        <LoadingSpinner />
+    ) : (
+        <DashboardGrid>
+            <Column>
 
-            <div
-                style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "20px",
-                alignItems: "stretch",
-                }}
-            >
-                {loading ? (
-                    <LoadingSpinner />
-                ) : (
-                    <>
+                {isModalOpen && (
+                    <ReservationCreationModal
+                        onClose={toggleModal}
+                        fetchReservations={fetchReservations}
+                        apartments={FilteredApartments}
+                    />
+                )}
+
+                <div
+                    style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "20px",
+                    alignItems: "stretch",
+                    }}
+                >
+                    
                     <ReservationsWidget 
                         fetchReservations={fetchReservations}
                         selectedCondominium={selectedCondominium}
                         reservations={reservations} onOpen={toggleModal} 
                     />
                     <VisitorsWidget visitors={MOCK_VISITORS} />
-                    </>
-                )}
-            
-            </div>
-            
+                
+                </div>
+                
+                <Widget>
+                    <WidgetTitle>Ocupação Semana</WidgetTitle>
+                    <ChartContainer>
+                        <LineChart reservations={reservations} />
+                    </ChartContainer>
+                </Widget>
+            </Column>
+
+            <Column>
             <Widget>
-                <WidgetTitle>Ocupação Semana</WidgetTitle>
-                <ChartContainer>
-                    <LineChart reservations={reservations} />
-                </ChartContainer>
+                <WidgetTitle>Atalhos</WidgetTitle>
+                    <ShortcutList>
+                    {MOCK_SHORTCUTS.map((shortcut) => (
+                        <ShortcutItem
+                            key={shortcut.id}
+                            onClick={() => {
+                            if (selectedCondominium) {
+                                const fullPath = `/${selectedCondominium}${shortcut.path}`;
+                                window.location.href = fullPath; // Navigate to the constructed path
+                            } else {
+                                console.error("selectedCondominium is undefined");
+                            }
+                            }}
+                        >
+                            <ShortcutIcon>{shortcut.icon}</ShortcutIcon>
+                            <ShortcutText>{shortcut.label}</ShortcutText>
+                        </ShortcutItem>
+                        ))}
+                    </ShortcutList>
             </Widget>
-        </Column>
 
-        <Column>
-          <Widget>
-            <WidgetTitle>Atalhos</WidgetTitle>
-                <ShortcutList>
-                {MOCK_SHORTCUTS.map((shortcut) => (
-                    <ShortcutItem
-                        key={shortcut.id}
-                        onClick={() => {
-                        if (selectedCondominium) {
-                            const fullPath = `/${selectedCondominium}${shortcut.path}`;
-                            window.location.href = fullPath; // Navigate to the constructed path
-                        } else {
-                            console.error("selectedCondominium is undefined");
-                        }
-                        }}
-                    >
-                        <ShortcutIcon>{shortcut.icon}</ShortcutIcon>
-                        <ShortcutText>{shortcut.label}</ShortcutText>
-                    </ShortcutItem>
-                    ))}
-                </ShortcutList>
-          </Widget>
+            <NotificationsWidget notifications={notifications} setNotifications={setNotifications} />
 
-          <NotificationsWidget notifications={notifications} setNotifications={setNotifications} />
+            <ApartmentOccupation apartments={apartments} />
 
-          <ApartmentOccupation apartments={apartments} />
-
-        </Column>
-      </DashboardGrid>
+            </Column>
+        </DashboardGrid>
+       )}
     </Container>
   );
 };
