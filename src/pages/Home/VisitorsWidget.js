@@ -6,11 +6,11 @@ const Widget = styled.div`
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  max-height: 300px; /* Set the maximum height for the widget */
+  max-height: 260px;
   overflow-y: auto; /* Enable vertical scrolling */
 
   &::-webkit-scrollbar {
-    width: 8px;
+    width: 3px;
   }
   &::-webkit-scrollbar-thumb {
     background: #ccc;
@@ -68,7 +68,7 @@ const ChevronIcon = styled.span`
 
 const VisitorsWidget = ({ visitors }) => (
   <Widget>
-    <WidgetTitle>Visitors Today</WidgetTitle>
+    <WidgetTitle>Visitantes do Dia</WidgetTitle>
     <button>+</button>
     <VisitorList>
       {visitors?.map((visitor) => (

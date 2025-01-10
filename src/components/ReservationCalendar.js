@@ -483,7 +483,7 @@ const spin = keyframes`
   }
 `;
 
-const LoadingSpinner = styled.div`
+export const LoadingSpinner = styled.div`
   position: fixed;
   top: 50%;
   left: 50%;
@@ -859,25 +859,6 @@ const ReservationCalendar = ({ condominium }) => {
     return bars;
   };
   
-
-  const updateReservationTime = async (type) => {
-    if (!selectedReservation) return;
-
-    const timestamp = new Date().toISOString();
-    const updateData = type === "checkin" ? { checkin_at: timestamp } : { checkout_at: timestamp };
-
-    try {
-      await axios.patch(
-        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
-        updateData,
-        { headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` } }
-      );
-      setSelectedReservation({ ...selectedReservation, ...updateData });
-    } catch (error) {
-      console.error("Error updating reservation:", error);
-    }
-  };
-
   const generateYearRange = () => {
     const currentYear = new Date().getFullYear();
     const startYear = currentYear - 5; // Adjust range as needed

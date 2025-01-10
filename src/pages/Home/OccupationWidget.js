@@ -13,6 +13,7 @@ const Widget = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  max-height: 270px;
 `;
 
 const WidgetTitle = styled.h3`
@@ -24,8 +25,8 @@ const WidgetTitle = styled.h3`
 
 const ChartWrapper = styled.div`
   position: relative;
-  width: 200px;
-  height: 200px;
+  width: 150px;
+  height: 150px;
 `;
 
 const TotalText = styled.div`
@@ -41,7 +42,7 @@ const TotalText = styled.div`
 
 const LegendContainer = styled.div`
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 10px;
   margin-top: 20px;
 `;

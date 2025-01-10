@@ -1,21 +1,36 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import ReservationsWidget from './ReservationsWidget'
 import { Line, Pie } from "react-chartjs-2";
 import "chart.js/auto";
 import VisitorsWidget from "./VisitorsWidget";
 import ApartmentOccupation from "./OccupationWidget";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+import LoadingSpinner from "../../components/utils/loader";
+import ReservationCreationModal from "../../components/Reservation/ReservationCreation";
 
 // Styled Components
 const Container = styled.div`
     display: flex;
-    justify-content: center;
-    padding: 20px;
+    justify-content: start;
+    padding: 4px 10px;
+    padding-bottom: 20px;
     background-color: #f9f9f9;
-    /* max-width: 100vh; */
-    /* min-height: 100vh; */
+    max-width: 100%;
     font-family: "Roboto", sans-serif;
     overflow: auto;
+
+    &::-webkit-scrollbar {
+        width: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: #b3b3b3;
+    }
 `;
 
 const ChartContainer = styled.div`
@@ -24,8 +39,8 @@ const ChartContainer = styled.div`
 
 const DashboardGrid = styled.div`
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 30px;
+    grid-template-columns: 3fr 1fr;
+    gap: 20px;
 
     @media (max-width: 768px) {
         grid-template-columns: 1fr;
@@ -223,12 +238,83 @@ const MOCK_GUESTS_DATA = {
     ],
 };
 
+const LoadingText = styled.p`
+  font-size: 16px;
+  color: #555;
+  text-align: center;
+`;
+
 // Component
-const Dashboard = () => {
+const Dashboard = ({ condominium }) => {
+    const params = useParams();
+    const selectedCondominium = condominium || params.condominium;
+
+    const [reservations, setReservations] = useState([]);
+    const [apartments, setApartments] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [filterType, setFilterType] = useState("Temporada");
+
+    const fetchReservations = async () => {
+        try {
+          const token = localStorage.getItem('accessToken');
+          const response = await axios.get(
+            `${process.env.REACT_APP_API_URL}/api/reservations/`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+              params: {
+                condominium: selectedCondominium, // Replace with actual value
+                start_date: new Date().toISOString(),
+                end_date: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
+              },
+            }
+          );
+          setReservations(response.data);
+        } catch (error) {
+          console.error("Error fetching reservations:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const fetchApartments = async () => {
+        const token = localStorage.getItem("accessToken");
+        try {
+          const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { condominium: selectedCondominium },
+          });
+    
+          const filteredApartments = response.data.filter((apartment) =>
+            filterType === "Todos" ? true : apartment.type_name === filterType
+          );
+    
+          setApartments(filteredApartments);
+        } catch (error) {
+          console.error("Error fetching apartments:", error);
+        }
+      };
+
+  useEffect(() => {
+    fetchReservations();
+    fetchApartments()
+  }, []);
+
+  const toggleModal = () => setIsModalOpen(!isModalOpen);
+
   return (
     <Container>
       <DashboardGrid>
         <Column>
+
+            {isModalOpen && (
+                <ReservationCreationModal
+                    onClose={toggleModal}
+                    fetchReservations={fetchReservations}
+                    apartments={apartments}
+                />
+            )}
 
             <div
                 style={{
@@ -238,8 +324,15 @@ const Dashboard = () => {
                 alignItems: "stretch",
                 }}
             >
-                <ReservationsWidget reservations={MOCK_RESERVATIONS} />
-                <VisitorsWidget visitors={MOCK_VISITORS} />
+                {loading ? (
+                    <LoadingSpinner />
+                ) : (
+                    <ReservationsWidget 
+                    fetchReservations={fetchReservations}
+                    selectedCondominium={selectedCondominium}
+                    reservations={reservations} onOpen={toggleModal} />
+                )}
+                {/* <VisitorsWidget visitors={MOCK_VISITORS} /> */}
             
             </div>
             
