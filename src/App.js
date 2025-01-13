@@ -13,6 +13,7 @@ import Dashboard from './pages/Services/Dashboard';
 import HomePage from './pages/Home/HomePage';
 import Soon from './pages/Soon'
 import UserManagement from './pages/User/User';
+import ReservationsPage from './pages/Reserations/Reservations';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('accessToken'));
@@ -141,6 +142,7 @@ function App() {
                     <Route path="occupation" element={<ReservationCalendar />} />
                     <Route path="apartments" element={<ApartmentList />} />
                     <Route path="reports" element={<CondominiumReport />} />
+                    <Route path="reservations" element={<ReservationsPage />} />
                     <Route
                         path="services"
                         element={<ServicesPage services={services} setServices={setServices} />}
