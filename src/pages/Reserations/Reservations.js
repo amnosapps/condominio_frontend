@@ -78,7 +78,6 @@ const SearchInput = styled.input`
 `;
 
 const TableContainer = styled.div`
-  padding: 20px;
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -86,27 +85,31 @@ const TableContainer = styled.div`
 
 const Table = styled.table`
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: collapse; /* Prevent spacing between table cells */
+  table-layout: fixed; /* Make column widths consistent */
 `;
 
 const TableHeader = styled.thead`
   background: #f5f5f5;
 
   th {
-    text-align: left;
-    padding: 10px;
+    text-align: center; /* Center-align */
+    padding: 12px; /* Ensure consistent padding */
     font-size: 14px;
     color: #555;
     border-bottom: 1px solid #e5e5e5;
+    box-sizing: border-box; /* Include padding in element width */
   }
 `;
 
 const TableBody = styled.tbody`
   td {
-    padding: 10px;
+    text-align: center; /* Match header alignment */
+    padding: 12px; /* Match padding with header */
     font-size: 14px;
     color: #333;
     border-bottom: 1px solid #e5e5e5;
+    box-sizing: border-box; /* Include padding in element width */
 
     &:last-child {
       text-align: center;
@@ -212,22 +215,22 @@ const ReservationsPage = ({ condominium }) => {
     <Container>
       {/* Header */}
       <Header>
-        <HeaderTitle>Reservations</HeaderTitle>
-        <CreateButton>Create Reservation</CreateButton>
+        <HeaderTitle>Reservas</HeaderTitle>
+        <CreateButton>+ Reserva</CreateButton>
       </Header>
 
       <StatsContainer>
         <StatCard bgColor="#e6f7ff">
           <StatValue color="#0056d2">1046</StatValue>
-          <StatLabel>Active Reservations</StatLabel>
+          <StatLabel>Total</StatLabel>
         </StatCard>
         <StatCard bgColor="#fff7e6">
           <StatValue color="#ff9800">159</StatValue>
-          <StatLabel>Unfulfilled</StatLabel>
+          <StatLabel>Em Curso</StatLabel>
         </StatCard>
         <StatCard bgColor="#f3e5f5">
           <StatValue color="#9c27b0">624</StatValue>
-          <StatLabel>Pending</StatLabel>
+          <StatLabel>Futuras</StatLabel>
         </StatCard>
       </StatsContainer>
 
@@ -235,16 +238,16 @@ const ReservationsPage = ({ condominium }) => {
       <FiltersRow>
         <div>
           <Tab active={activeTab === "Active"} onClick={() => setActiveTab("Active")}>
-            Active
+            Em Curso
           </Tab>
           <Tab active={activeTab === "Unfulfilled"} onClick={() => setActiveTab("Unfulfilled")}>
-            Unfulfilled
+            Futuras
           </Tab>
           <Tab active={activeTab === "All"} onClick={() => setActiveTab("All")}>
-            All Reservations
+            Totas Reservas
           </Tab>
         </div>
-        <SearchInput placeholder="Search by guest name or ID" />
+        <SearchInput placeholder="Buscar Reserva / Hóspede" />
       </FiltersRow>
 
       {/* Table */}
@@ -252,20 +255,19 @@ const ReservationsPage = ({ condominium }) => {
         <Table>
           <TableHeader>
             <tr>
-              <th>Order ID</th>
-              <th>Created</th>
-              <th>Guest</th>
-              <th>Fulfillment</th>
-              <th>Total Guests</th>
+              <th>ID</th>
+              <th>Hóspede</th>
+              <th>Checkin</th>
+              <th>Checkout</th>
+              <th>Acompanhantes</th>
               <th>Status</th>
-              <th>Actions</th>
             </tr>
           </TableHeader>
           <TableBody>
             {reservations.map((reservation) => (
               <ReservationRow key={reservation.id}>
                 <td>{reservation.id}</td>
-                <td>{new Date(reservation.checkin).toLocaleDateString()}</td>
+                
                 <td>
                   <ProfileCell>
                     <ProfileImage
@@ -277,15 +279,11 @@ const ReservationsPage = ({ condominium }) => {
                     {reservation.guest_name}
                   </ProfileCell>
                 </td>
-                <td>
-                  <Badge status="Unfulfilled">Unfulfilled</Badge>
-                </td>
+                <td>{new Date(reservation.checkin).toLocaleDateString()}</td>
+                <td>{new Date(reservation.checkout).toLocaleDateString()}</td>
                 <td>{reservation.guests_qty || 0}</td>
                 <td>
                   <Badge status="Authorized">Authorized</Badge>
-                </td>
-                <td>
-                  <button>View</button>
                 </td>
               </ReservationRow>
             ))}
