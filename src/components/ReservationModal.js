@@ -337,13 +337,16 @@ const FieldValue = styled.span`
   }
 `;
 
-const EditableField = styled.div`
-  margin-bottom: 15px;
-`;
-
-const Divider = styled.div`
-  border-bottom: 1px solid #ddd;
-  margin: 15px 0;
+const Badge = styled.span`
+  margin-left: 10px;
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: white;
+  background-color: ${(props) => (props.active ? "#28a745" : "#dc3545")};
 `;
 
 const ReservationModal = ({
@@ -895,9 +898,87 @@ const ReservationModal = ({
     ? isBefore(new Date(), reservationData.checkout) && isAfter(new Date(), reservationData.checkin)// Check if check-in is before checkout
     : false;
 
-  console.log(isCheckinToday, isCheckinPassed, canCheckin, reservationData.checkin)
-
   if (!selectedReservation) return null;
+
+  const handleCancelReservation = async () => {
+    const confirmCancel = window.confirm(
+      "Você tem certeza que deseja cancelar esta reserva? Esta ação não pode ser desfeita."
+    );
+    if (!confirmCancel) return;
+  
+    setIsSubmitting(true);
+  
+    const token = localStorage.getItem("accessToken");
+    const formData = new FormData();
+    formData.append("active", false);
+  
+    try {
+      const response = await axios.patch(
+        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        alert("Reserva cancelada com sucesso!");
+        fetchReservations(1, "right", false); // Refresh reservations
+        closeModal(); // Close the modal
+      } else {
+        alert("Falha ao cancelar a reserva. Tente novamente.");
+      }
+    } catch (error) {
+      console.error("Erro ao cancelar a reserva:", error);
+      alert("Erro ao cancelar a reserva. Verifique sua conexão ou tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+
+  const handleReactivateReservation = async () => {
+    const confirmReactivate = window.confirm(
+      "Você tem certeza que deseja reativar esta reserva?"
+    );
+    if (!confirmReactivate) return;
+  
+    setIsSubmitting(true);
+  
+    const token = localStorage.getItem("accessToken");
+    const formData = new FormData();
+    formData.append("active", true);
+  
+    try {
+      const response = await axios.patch(
+        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        alert("Reserva reativada com sucesso!");
+        fetchReservations(1, "right", false); // Refresh reservations
+        closeModal(); // Close the modal
+      } else {
+        alert("Falha ao reativar a reserva. Tente novamente.");
+      }
+    } catch (error) {
+      console.error("Erro ao reativar a reserva:", error);
+      alert("Erro ao reativar a reserva. Verifique sua conexão ou tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
 
   return (
     <ModalOverlay onClick={closeModal1}>
@@ -913,7 +994,11 @@ const ReservationModal = ({
             </a>
           </div>
           <div><strong style={{ fontSize: '20px' }}>#{selectedReservation.id} - Apto {reservationData.apartment}</strong> {reservationData.apartment_owner != '' && (<>({reservationData.apartment_owner})</>)} </div>
-          
+          {!selectedReservation.active && (
+            <Badge active={selectedReservation.active}>
+              {selectedReservation.active ? "Ativo" : "Cancelado"}
+            </Badge>
+          )}
           <CloseButton onClick={closeModal1}>&times;</CloseButton>
         </div>
         <div style={{ marginBottom: "10px" }}>
@@ -1333,7 +1418,32 @@ const ReservationModal = ({
           </GreenButton>
           )}
           <LogsButton onClick={fetchLogs}>Auditoria</LogsButton> 
-          <RedButton onClick={closeModal1}>Cancelar</RedButton>
+          
+          {profile?.user_type === "owner" || profile?.user_type === "admin" ? (
+            !selectedReservation.active ? (
+              <GreenButton 
+                onClick={handleReactivateReservation} 
+                disabled={isSubmitting}
+                style={{
+                  backgroundColor: isSubmitting ? "grey" : "#28a745", // Green for active
+                  cursor: isSubmitting ? "not-allowed" : "pointer",
+                }}
+              >
+                {isSubmitting ? "Processando..." : "Reativar Reserva"}
+              </GreenButton>
+            ) : (
+              <RedButton 
+                onClick={handleCancelReservation} 
+                disabled={isSubmitting || !selectedReservation.active} 
+                style={{
+                  backgroundColor: !selectedReservation.active ? "grey" : "#dc3545", // Grey while submitting
+                  cursor: !selectedReservation.active ? "not-allowed" : "pointer",  // Disabled cursor during submission
+                }}
+              >
+                {!selectedReservation.active ? "Cancelado" : "Cancelar"}
+              </RedButton>
+            )
+          ) : null}
         </div>
       </ModalContainer>
     </ModalOverlay>

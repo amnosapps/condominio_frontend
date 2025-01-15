@@ -217,6 +217,7 @@ const ReservationsPage = ({ condominium }) => {
 
   const [selectedReservation, setSelectedReservation] = useState(null);
   const [apartments, setApartments] = useState([]);
+  const [profile, setProfile] = useState(null);
   const [FilteredApartments, setFilteredApartments] = useState([]);
   const [filterType, setFilterType] = useState("Temporada");
 
@@ -251,6 +252,18 @@ const ReservationsPage = ({ condominium }) => {
     }
   };
 
+  const fetchUserProfile = async () => {
+    const token = localStorage.getItem('accessToken');
+    try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/profile/`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        setProfile(response.data);
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+    }
+  };
+
   const applyFilter = (filterType, data = reservations) => {
     let filtered;
     if (filterType === "Current") {
@@ -281,8 +294,16 @@ const ReservationsPage = ({ condominium }) => {
   };
 
   const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    applyFilter(activeTab); // Reapply filter with updated search term
+    const value = e.target.value;
+    setSearchTerm(value);
+  
+    if (value.trim() === "") {
+      // If the search term is empty, reset the search filter
+      applyFilter(activeTab); // Reapply the current active tab filter without search
+    } else {
+      // Otherwise, apply the filter with the updated search term
+      applyFilter(activeTab);
+    }
   };
 
   const handleDateRangeChange = (dates) => {
@@ -316,9 +337,12 @@ const ReservationsPage = ({ condominium }) => {
   useEffect(() => {
       fetchReservations();
       fetchApartments();
+      fetchUserProfile()
     }, [selectedDateRange]);
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
+
+  console.log(profile)
 
   return (
     <Container>
@@ -465,6 +489,7 @@ const ReservationsPage = ({ condominium }) => {
           selectedReservation={selectedReservation}
           fetchReservations={fetchReservations}
           selectedCondominium={selectedCondominium}
+          profile={profile}
         />
       )}
 
