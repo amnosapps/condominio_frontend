@@ -219,6 +219,8 @@ const ReservationsPage = ({ condominium }) => {
   const [apartments, setApartments] = useState([]);
   const [FilteredApartments, setFilteredApartments] = useState([]);
   const [filterType, setFilterType] = useState("Temporada");
+
+  const [searchTerm, setSearchTerm] = useState("");
   
   const handleReservationClick = (reservation) => {
     setSelectedReservation(reservation);
@@ -227,7 +229,6 @@ const ReservationsPage = ({ condominium }) => {
   const closeModal = () => {
     setSelectedReservation(null);
   };
-  
 
   const fetchReservations = async () => {
     try {
@@ -267,8 +268,21 @@ const ReservationsPage = ({ condominium }) => {
         (res) => !res.active
       );
     }
+
+     // Apply search term filter
+     if (searchTerm) {
+      filtered = filtered.filter((res) =>
+        res.guest_name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
     setFilteredReservations(filtered);
     setActiveTab(filterType);
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    applyFilter(activeTab); // Reapply filter with updated search term
   };
 
   const handleDateRangeChange = (dates) => {
@@ -355,7 +369,11 @@ const ReservationsPage = ({ condominium }) => {
             </Tab>
         </div>
         <div>
-          <SearchInput placeholder="Buscar Reserva / Hóspede" />
+          <SearchInput
+            placeholder="Buscar Reserva / Hóspede"
+            value={searchTerm}
+            onChange={handleSearchChange} // Handle search input
+          />
           <CreateButton onClick={toggleModal}>
             + Reserva
           </CreateButton>
