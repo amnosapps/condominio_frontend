@@ -675,8 +675,6 @@ const ReservationCalendar = ({ condominium }) => {
     }
   };
   
-  console.log(reservations)
-
   const loadData = async () => {
     await Promise.all([fetchApartments(), fetchReservations(currentPage), fetchUserProfile()]);
     setLoading(false);
@@ -928,8 +926,6 @@ const ReservationCalendar = ({ condominium }) => {
   };
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
-
-  console.log(reservations.length)
 
   return (
     <CalendarWrapper>

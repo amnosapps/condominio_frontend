@@ -2,18 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
-import { FaBell, FaCalendarAlt, FaChartLine, FaCity, FaCloudSun, FaCog, FaCommentAlt, FaHome, FaKey, FaMoneyCheckAlt, FaPoll, FaRegCommentAlt, FaUnlockAlt, FaUsers } from 'react-icons/fa';
+import { FaAngleDown, FaBell, FaCalendarAlt, FaChartLine, FaCity, FaCloudSun, FaCog, FaCommentAlt, FaHome, FaKey, FaMoneyCheckAlt, FaPoll, FaRegCommentAlt, FaUnlockAlt, FaUsers } from 'react-icons/fa';
 
 const SidebarContainer = styled.div`
     background-color: #fff;
-    width: ${(props) => (props.isMobile ? (props.isOpen ? '250px' : '0') : '250px')};
+    width: ${(props) => (props.isMobile ? (props.isOpen ? '300px' : '0') : '300px')};
     height: 100%;
     position: fixed;
     top: 0;
     left: 0;
     display: flex;
     flex-direction: column;
-    padding: ${(props) => (props.isMobile ? (props.isOpen ? '1.5rem' : '0') : '1.5rem')};
+    padding: ${(props) => (props.isMobile ? (props.isOpen ? '1.5rem' : '0') : '1rem')};
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     align-items: center;
     z-index: 100;
@@ -153,7 +153,7 @@ const ImgSidebar = styled.img`
 `;
 
 const ImgLogo = styled.img`
-    width: 200px;
+    width: 100px;
 `;
 
 const LogoutButton = styled.button`
@@ -355,6 +355,12 @@ const Sidebar = ({ condominium }) => {
     const [isOpen, setIsOpen] = useState(true); // Open by default for desktop
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
+    const [isReportsDropdownOpen, setIsReportsDropdownOpen] = useState(false);
+
+    const toggleReportsDropdown = () => {
+        setIsReportsDropdownOpen((prev) => !prev);
+    };
+
     useEffect(() => {
         const fetchUserProfile = async () => {
             const token = localStorage.getItem('accessToken');
@@ -480,7 +486,7 @@ const Sidebar = ({ condominium }) => {
 
     const handleCondominiumChange = (event) => {
         const newCondominium = event.target.value;
-        navigate(`/${newCondominium}/occupation`);
+        navigate(`/${newCondominium}/home`);
     };
 
     if (loading) {
@@ -531,14 +537,24 @@ const Sidebar = ({ condominium }) => {
                             Apartamentos
                         </NavButton>
                     </NavItem>
-                    <NavItem>
-                        <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium}/reports`)}
-                            active={location.pathname.includes(`${selectedCondominium}/reports`)}
-                        >
+                    <NavItem style={{ paddingBottom: '10px', paddingTop: '10px', borderRadius: '10px' , backgroundColor: isReportsDropdownOpen ? '#f7f7f7' : '#fff' }}>
+                        <NavButton onClick={toggleReportsDropdown}>
                             <FaChartLine />
                             Relatórios
+                            <FaAngleDown />
                         </NavButton>
+                        {isReportsDropdownOpen && (
+                            <div style={{ marginLeft: "30px", marginTop: "10px" }}>
+                                <NavButton
+                                    onClick={() => handleNavigation(`/${selectedCondominium}/reports`)}
+                                    active={location.pathname.includes(`${selectedCondominium}/reports`)}
+                                >Geral</NavButton>
+                                <NavButton
+                                    onClick={() => handleNavigation(`/${selectedCondominium}/reservations`)}
+                                    active={location.pathname.includes(`${selectedCondominium}/reservations`)}
+                                >Reservas</NavButton>
+                            </div>
+                        )}
                     </NavItem>
                     <NavItem>
                         <NavButton

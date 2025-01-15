@@ -14,7 +14,7 @@ const LayoutContainer = styled.div`
 `;
 
 const MainContent = styled.main`
-    margin-left: 18rem;
+    margin-left: 19rem;
     padding: 2rem;
     flex: 1;
     background-color: #f7f9fc;
