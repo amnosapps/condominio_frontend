@@ -359,11 +359,11 @@ const ReservationsPage = ({ condominium }) => {
           </StatValue> {/* Medium Green */}
           <StatLabel>Em Curso</StatLabel>
         </StatCard>
-        <StatCard bgColor="#fff3e0"> {/* Soft Light Orange for "Futuras" */}
+        <StatCard bgColor="#fff3e0"> {/* Soft Light Orange for "Previstas" */}
           <StatValue color="#fb8c00">
             {reservations.filter((res) => !res.checkin_at && !res.checkout_at).length}
           </StatValue> {/* Medium Orange */}
-          <StatLabel>Futuras</StatLabel>
+          <StatLabel>Previstas</StatLabel>
         </StatCard>
         <StatCard bgColor="#ffebee"> {/* Soft Light Red for "Canceladas" */}
           <StatValue color="#e53935">
@@ -386,7 +386,7 @@ const ReservationsPage = ({ condominium }) => {
                 Em Curso
             </Tab>
             <Tab active={activeTab === "Future"} onClick={() => applyFilter("Future")}>
-                Futuras
+                Previstas
             </Tab>
             <Tab active={activeTab === "Canceled"} onClick={() => applyFilter("Canceled")}>
                 Canceladas
@@ -474,7 +474,7 @@ const ReservationsPage = ({ condominium }) => {
                       ? "Em Curso"
                       : reservation.checkin_at && reservation.checkout_at
                       ? "Finalizada"
-                      : "Futura"}
+                      : "Prevista"}
                   </Badge>
                 </td>
               </ReservationRow>
