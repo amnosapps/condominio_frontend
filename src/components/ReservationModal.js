@@ -1349,7 +1349,7 @@ const ReservationModal = ({
                   <StyledCheckbox
                     checked={guest.is_child}
                     onClick={() =>
-                      updateGuestDetails(index, "is_child", !guest.isChild)
+                      updateGuestDetails(index, "is_child", !guest.is_child)
                     }
                     disabled={!isEditing} 
                   />
