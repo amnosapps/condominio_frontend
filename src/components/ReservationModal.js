@@ -1048,6 +1048,7 @@ const ReservationModal = ({
                 <FieldLabel>Data de Entrada:</FieldLabel>
                 <FieldValue>
                   <DatePicker
+                    selected={selectedReservation.checkin}
                     dateFormat="dd/MM/yyyy"
                     disabled={true}
                      className="custom-date-picker"
@@ -1058,6 +1059,7 @@ const ReservationModal = ({
                 <FieldLabel>Data de Saída:</FieldLabel>
                 <FieldValue>
                   <DatePicker
+                    selected={selectedReservation.checkout}
                     dateFormat="dd/MM/yyyy"
                     disabled={true}
                      className="custom-date-picker"
