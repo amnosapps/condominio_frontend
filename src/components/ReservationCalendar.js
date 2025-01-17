@@ -763,15 +763,18 @@ const ReservationCalendar = ({ condominium }) => {
 
   const handlePrev = async () => {
     const newStartDate = addDays(currentStartDate, -parseInt(viewType, 10));
+    
+    if (isBefore(newStartDate, startOfDay(new Date()))) {
+      return; // Exit if the new start date is in the past
+    }
+  
     setCurrentStartDate(newStartDate);
   
-    // Clear current reservations to avoid duplicates
     setReservations([]);
   
-    // Fetch reservations for the new date range
     await fetchReservations(currentPage, "left", false);
-  };
-    
+  }
+
   const handleNext = async () => {
     const newStartDate = addDays(currentStartDate, parseInt(viewType, 10));
     setCurrentStartDate(newStartDate);
@@ -868,6 +871,11 @@ const ReservationCalendar = ({ condominium }) => {
   const handleYearChange = (event) => {
     const selectedYear = parseInt(event.target.value, 10);
     const newStartDate = new Date(selectedYear, currentStartDate.getMonth(), 1); // Keep current month
+
+    if (isBefore(newStartDate, startOfDay(new Date()))) {
+      return; // Exit if the new start date is in the past
+    }
+
     setCurrentStartDate(newStartDate);
   };
 
@@ -969,10 +977,20 @@ const ReservationCalendar = ({ condominium }) => {
                 inline
                 dateFormat="dd/MM/yyyy"
                 locale="pt-BR"
+                minDate={new Date()} // Restrict selection to today and future dates
               />
             )}
           </DatePickerContainer>
-          <button style={{ marginRight: '100px' }} onClick={handlePrev}>{"<"}</button>
+          {!isBefore(addDays(currentStartDate, -parseInt(viewType, 10)), startOfDay(new Date())) && (
+            <button 
+              style={{ marginRight: '100px' }} 
+              onClick={handlePrev} 
+              disabled={isBefore(addDays(currentStartDate, -parseInt(viewType, 10)), startOfDay(new Date()))}
+            > 
+              {"<"}
+            </button>
+          )}
+         
           {selectedDateRange.startDate && selectedDateRange.endDate ? (
             <span style={{ cursor: 'pointer' }} onClick={toggleDatePicker}>{`${format(selectedDateRange.startDate, "dd MMM yyyy", { locale: ptBR  })} - ${format(selectedDateRange.endDate, "dd MMM yyyy", { locale: ptBR  })}`}</span>
           ) : (
@@ -983,14 +1001,23 @@ const ReservationCalendar = ({ condominium }) => {
         <div style={{ display: "flex", gap: "10px" }}>
           <select onChange={handleMonthChange} value={currentStartDate.getMonth()}>
             {monthNames.map((month, index) => (
-              <option key={month} value={index}>
+              <option key={month} value={index}
+                disabled={
+                  isBefore(
+                    new Date(currentStartDate.getFullYear(), index, 1), 
+                    startOfDay(new Date())
+                  )
+                }
+              >
                 {month}
               </option>
             ))}
           </select>
           <select onChange={handleYearChange} value={currentStartDate.getFullYear()}>
             {generateYearRange().map((year) => (
-              <option key={year} value={year}>
+              <option key={year} value={year}
+               disabled={year < new Date().getFullYear()}
+              >
                 {year}
               </option>
             ))}
