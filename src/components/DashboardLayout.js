@@ -30,7 +30,7 @@ const MainContent = styled.main`
     }
 `;
 
-const DashboardLayout = () => {
+const DashboardLayout = ({ profile }) => {
     const [isSidebarOpen, setSidebarOpen] = useState(false);
 
     const toggleSidebar = () => {
@@ -39,7 +39,7 @@ const DashboardLayout = () => {
 
     return (
         <LayoutContainer>
-            <Sidebar isOpen={isSidebarOpen} onToggle={setSidebarOpen} />
+            <Sidebar profile={profile} isOpen={isSidebarOpen} onToggle={setSidebarOpen} />
             <MainContent>
                 <Outlet />
             </MainContent>

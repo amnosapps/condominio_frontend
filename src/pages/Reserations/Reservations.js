@@ -202,9 +202,9 @@ const DatePickerContainer = styled.div`
 `;
 
 // Main Component
-const ReservationsPage = ({ condominium }) => {
+const ReservationsPage = ({ profile }) => {
   const params = useParams();
-  const selectedCondominium = condominium || params.condominium;
+  const selectedCondominium = params.condominium;
   const [reservations, setReservations] = useState([]);
   const [activeTab, setActiveTab] = useState("All");
   const [filteredReservations, setFilteredReservations] = useState([]);
@@ -217,7 +217,6 @@ const ReservationsPage = ({ condominium }) => {
 
   const [selectedReservation, setSelectedReservation] = useState(null);
   const [apartments, setApartments] = useState([]);
-  const [profile, setProfile] = useState(null);
   const [FilteredApartments, setFilteredApartments] = useState([]);
   const [filterType, setFilterType] = useState("Temporada");
 
@@ -249,18 +248,6 @@ const ReservationsPage = ({ condominium }) => {
       applyFilter("All", response.data); // Apply initial filter
     } catch (error) {
       console.error("Error fetching reservations:", error);
-    }
-  };
-
-  const fetchUserProfile = async () => {
-    const token = localStorage.getItem('accessToken');
-    try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/profile/`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        setProfile(response.data);
-    } catch (error) {
-        console.error('Error fetching user profile:', error);
     }
   };
 
@@ -337,7 +324,6 @@ const ReservationsPage = ({ condominium }) => {
   useEffect(() => {
       fetchReservations();
       fetchApartments();
-      fetchUserProfile()
     }, [selectedDateRange]);
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);

@@ -205,9 +205,9 @@ const LoadingText = styled.p`
 `;
 
 // Component
-const Dashboard = ({ condominium }) => {
+const Dashboard = ({ profile }) => {
     const params = useParams();
-    const selectedCondominium = condominium || params.condominium;
+    const selectedCondominium = params.condominium;
 
     const [reservations, setReservations] = useState([]);
     const [apartments, setApartments] = useState([]);

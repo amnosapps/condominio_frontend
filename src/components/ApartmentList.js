@@ -205,14 +205,13 @@ const ClearFiltersButton = styled.button`
     }
 `;
 
-function ApartmentList({ condominium }) {
+function ApartmentList({ profile }) {
     const params = useParams();
-    const selectedCondominium = condominium || params.condominium;
+    const selectedCondominium = params.condominium;
     const [apartments, setApartments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedApartment, setSelectedApartment] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
-    const [profile, setProfile] = useState(null);
     const [filter, setFilter] = useState(null);
     const [search, setSearch] = useState('');
     const [typeFilter, setTypeFilter] = useState('');
@@ -220,22 +219,9 @@ function ApartmentList({ condominium }) {
     const [checkinTodayFilter, setCheckinTodayFilter] = useState(false);
     const [createModalOpen, setCreateModalOpen] = useState(false);
 
-    const fetchUserProfile = async () => {
-        const token = localStorage.getItem('accessToken');
-        try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/profile/`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setProfile(response.data);
-        } catch (error) {
-            console.error('Error fetching user profile:', error);
-        }
-    };
-
     const fetchApartments = async () => {
         const token = localStorage.getItem('accessToken');
         try {
-            await fetchUserProfile();
             const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/`, {
                 headers: { Authorization: `Bearer ${token}` },
                 params: { condominium: selectedCondominium },

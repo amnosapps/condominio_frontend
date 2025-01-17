@@ -338,15 +338,13 @@ const UnreadCount = styled.span`
     display: ${(props) => (props.count > 0 ? "inline" : "none")};
 `;
 
-const Sidebar = ({ condominium }) => {
+const Sidebar = ({ profile }) => {
     const navigate = useNavigate();
     const location = useLocation()
     const params = useParams();
-    const selectedCondominium = condominium || params.condominium;
+    const selectedCondominium = params.condominium;
 
-    const [profile, setProfile] = useState(null);
-    const [condominiums, setCondominiums] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const condominiums = profile.condominiums
 
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -362,26 +360,6 @@ const Sidebar = ({ condominium }) => {
     };
 
     useEffect(() => {
-        const fetchUserProfile = async () => {
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                navigate('/login');
-                return;
-            }
-
-            try {
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/profile/`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                setProfile(response.data);
-                setCondominiums(response.data.condominiums || []);
-            } catch (error) {
-                console.error("Error fetching user profile:", error);
-                navigate('/login');
-            } finally {
-                setLoading(false);
-            }
-        };
 
         const fetchNotifications = async () => {
             const token = localStorage.getItem('accessToken');
@@ -403,7 +381,6 @@ const Sidebar = ({ condominium }) => {
             if (!isNowMobile) setIsOpen(true); // Ensure sidebar is open for desktop
         };
 
-        fetchUserProfile();
         fetchNotifications();
 
         window.addEventListener('resize', handleResize);
@@ -488,17 +465,6 @@ const Sidebar = ({ condominium }) => {
         const newCondominium = event.target.value;
         navigate(`/${newCondominium}/home`);
     };
-
-    if (loading) {
-        return (
-            <></>
-            // <SidebarContainer>
-            //     <CenteredContainer>
-            //         <LoadingSpinner />
-            //     </CenteredContainer>
-            // </SidebarContainer>
-        );
-    }
 
     return (
         <>

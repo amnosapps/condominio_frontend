@@ -520,9 +520,9 @@ const monthNames = [
 ];
 
 // Main component
-const ReservationCalendar = ({ condominium }) => {
+const ReservationCalendar = ({ profile }) => {
   const params = useParams();
-  const selectedCondominium = condominium || params.condominium;
+  const selectedCondominium = params.condominium;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loadingNavigation, setLoadingNavigation] = useState(false);
@@ -546,8 +546,6 @@ const ReservationCalendar = ({ condominium }) => {
     setHoveredReservation(null);
   };
 
-  const [profile, setProfile] = useState(null);
-
   const [guestNameFilter, setGuestNameFilter] = useState("");
   const [startDateFilter, setStartDateFilter] = useState("");
   const [endDateFilter, setEndDateFilter] = useState("");
@@ -567,18 +565,6 @@ const ReservationCalendar = ({ condominium }) => {
   const scrollableRef = useRef(null);
 
   const [currentPage, setCurrentPage] = useState(1); // For horizontal pagination
-
-  const fetchUserProfile = async () => {
-    const token = localStorage.getItem('accessToken');
-    try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/profile/`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        setProfile(response.data);
-    } catch (error) {
-        console.error('Error fetching user profile:', error);
-    }
-};
 
   const fetchApartments = async () => {
     const token = localStorage.getItem("accessToken");
@@ -676,7 +662,7 @@ const ReservationCalendar = ({ condominium }) => {
   };
   
   const loadData = async () => {
-    await Promise.all([fetchApartments(), fetchReservations(currentPage), fetchUserProfile()]);
+    await Promise.all([fetchApartments(), fetchReservations(currentPage)]);
     setLoading(false);
   };
 
