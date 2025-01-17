@@ -123,6 +123,18 @@ const ChevronIcon = styled.span`
   cursor: pointer;
 `;
 
+const Label = styled.span`
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-top: 5px;
+  align-self: flex-start;
+
+  color: ${(props) => (props.isToday ? "white" : "#fff")};
+  background-color: ${(props) => (props.isToday ? "#4caf50" : "#ffa500")}; /* Green for today, orange for pending */
+`;
+
 // ReservationsWidget Component
 const ReservationsWidget = ({
   onOpen,
@@ -140,7 +152,18 @@ const ReservationsWidget = ({
     setSelectedReservation(null);
   };
 
-  console.log(selectedReservation)
+  const isToday = (date) => {
+    const today = new Date();
+    return (
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate()
+    );
+  };
+
+  const isPast = (date) => {
+    return new Date(date) < new Date();
+  };
 
   return (
     <Widget>
@@ -149,28 +172,36 @@ const ReservationsWidget = ({
         <OpenButton onClick={onOpen}>+ Nova Reserva</OpenButton>
       </Header>
       <ReservationList>
-        {reservations?.map((res) => (
-          <ReservationItem
-            key={res.id}
-            onClick={() => handleReservationClick(res)}
-          >
-            <GuestImage
-              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                res.guest_name
-              )}`}
-              alt={`${res.guest_name}'s avatar`}
-            />
-            <ReservationDetails>
-              <GuestName>{res.guest_name || "N/A"}</GuestName>
-              <RoomDetails>{`Apto ${res.apt_number || "N/A"}`}</RoomDetails>
-              <Dates>
-                {new Date(res.checkin).toLocaleDateString("pt-BR")} -{" "}
-                {new Date(res.checkout).toLocaleDateString("pt-BR")}
-              </Dates>
-            </ReservationDetails>
-            <ChevronIcon>➔</ChevronIcon>
-          </ReservationItem>
-        ))}
+        {reservations?.map((res) => {
+          const checkinDate = new Date(res.checkin);
+
+          return (
+            <ReservationItem
+              key={res.id}
+              onClick={() => handleReservationClick(res)}
+            >
+              <GuestImage
+                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                  res.guest_name
+                )}`}
+                alt={`${res.guest_name}'s avatar`}
+              />
+              <ReservationDetails>
+                <GuestName>{res.guest_name || "N/A"}</GuestName>
+                <RoomDetails>{`Apto ${res.apt_number || "N/A"}`}</RoomDetails>
+                <Dates>
+                  {checkinDate.toLocaleDateString("pt-BR")} -{" "}
+                  {new Date(res.checkout).toLocaleDateString("pt-BR")}
+                </Dates>
+                {isToday(checkinDate) && <Label isToday>Hoje</Label>}
+                {isPast(checkinDate) && !isToday(checkinDate) && (
+                  <Label>Pendente</Label>
+                )}
+              </ReservationDetails>
+              <ChevronIcon>➔</ChevronIcon>
+            </ReservationItem>
+          );
+        })}
       </ReservationList>
 
       {selectedReservation && (

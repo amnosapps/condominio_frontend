@@ -36,6 +36,34 @@ const UnreadCount = styled.span`
   font-weight: 600;
 `;
 
+const MarkAllButton = styled.button`
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #45a049;
+  }
+
+  &:active {
+    background-color: #3e8e41;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+`;
+
 const ChatContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -68,7 +96,7 @@ const ChatMessage = styled.div`
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   font-size: 14px;
   font-weight: ${(props) => (props.isUnread ? "600" : "400")};
-  cursor: pointer; /* Add cursor pointer for clickable effect */
+  cursor: pointer;
 `;
 
 const TimeStamp = styled.span`
@@ -101,11 +129,47 @@ const NotificationsWidget = ({ notifications, setNotifications }) => {
     }
   };
 
+  const markAllAsRead = async () => {
+    const token = localStorage.getItem("accessToken");
+
+    try {
+        // Iterate through each unread notification and mark it as read
+        const unreadNotifications = notifications.filter((notif) => !notif.is_read);
+
+        await Promise.all(
+            unreadNotifications.map((notif) =>
+                axios.post(
+                    `${process.env.REACT_APP_API_URL}/api/notifications/${notif.id}/mark_as_read/`,
+                    null,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                )
+            )
+        );
+
+        // Update all notifications in the state to mark them as read
+        setNotifications((prev) =>
+            prev.map((notif) => ({ ...notif, is_read: true }))
+        );
+    } catch (error) {
+        console.error("Error marking all notifications as read:", error);
+    }
+  };
+
   return (
     <Widget>
       <WidgetHeader>
         <WidgetTitle>Notificações</WidgetTitle>
-        {unreadCount > 0 && <UnreadCount>{unreadCount}</UnreadCount>}
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          {unreadCount > 0 && <UnreadCount>{unreadCount}</UnreadCount>}
+          <MarkAllButton
+            onClick={markAllAsRead}
+            disabled={unreadCount === 0} // Disable if there are no unread notifications
+          >
+            Marcar Tudo
+          </MarkAllButton>
+        </div>
       </WidgetHeader>
       <ChatContainer>
         {notifications.map((notif) => (

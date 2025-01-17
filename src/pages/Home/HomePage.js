@@ -233,47 +233,57 @@ const Dashboard = ({ profile }) => {
         }
     };
 
-    const fetchReservations = async () => {
-        try {
-          const token = localStorage.getItem('accessToken');
-          const response = await axios.get(
+  const fetchReservations = async () => {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await axios.get(
             `${process.env.REACT_APP_API_URL}/api/reservations/`,
             {
-              headers: { Authorization: `Bearer ${token}` },
-              params: {
-                condominium: selectedCondominium, // Replace with actual value
-                start_date: new Date().toISOString(),
-                end_date: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
-              },
+                headers: { Authorization: `Bearer ${token}` },
+                params: {
+                    condominium: selectedCondominium, // Replace with actual value
+                    start_date: new Date().toISOString(),
+                    end_date: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
+                },
             }
-          );
-          setReservations(response.data);
-        } catch (error) {
-          console.error("Error fetching reservations:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      const fetchApartments = async () => {
-        const token = localStorage.getItem("accessToken");
-        try {
-          const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/`, {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { condominium: selectedCondominium },
-          });
-
-          
-          const filteredApartments = response.data.filter((apartment) =>
-            filterType === "Todos" ? true : apartment.type_name === filterType
         );
-        
-            setApartments(response.data)
-            setFilteredApartments(filteredApartments);
-        } catch (error) {
-          console.error("Error fetching apartments:", error);
-        }
-      };
+
+        // Remove reservations with checkin_at and sort the rest by nearest check-in date
+        const filteredReservations = response.data
+            .filter(reservation => !reservation.checkin_at) // Exclude reservations with checkin_at
+            .sort((a, b) => {
+                const dateA = new Date(a.checkin);
+                const dateB = new Date(b.checkin);
+                return dateA - dateB; // Sort ascending (nearest date first)
+            });
+
+        setReservations(filteredReservations);
+    } catch (error) {
+        console.error("Error fetching reservations:", error);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const fetchApartments = async () => {
+    const token = localStorage.getItem("accessToken");
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { condominium: selectedCondominium },
+      });
+
+      
+      const filteredApartments = response.data.filter((apartment) =>
+        filterType === "Todos" ? true : apartment.type_name === filterType
+    );
+    
+        setApartments(response.data)
+        setFilteredApartments(filteredApartments);
+    } catch (error) {
+      console.error("Error fetching apartments:", error);
+    }
+  };
 
   useEffect(() => {
     fetchReservations();
