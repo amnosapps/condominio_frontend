@@ -140,6 +140,8 @@ const ReservationsWidget = ({
     setSelectedReservation(null);
   };
 
+  console.log(selectedReservation)
+
   return (
     <Widget>
       <Header>

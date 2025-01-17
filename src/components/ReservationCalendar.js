@@ -641,7 +641,7 @@ const ReservationCalendar = ({ condominium }) => {
         guest_document: reservation.guest_document,
         guest_phone: reservation.guest_phone || "",
         guests_qty: reservation.guests_qty,
-        apartment: reservation.apt_number,
+        apt_number: reservation.apt_number,
         apartment_owner: reservation.apt_owner_name,
         photos: reservation.photo,
         additional_photos: reservation.additional_photos_urls || [],
@@ -799,7 +799,7 @@ const ReservationCalendar = ({ condominium }) => {
 
   const getReservationBars = (apartment, day) => {
     const roomReservations = filteredReservations
-      .filter((reservation) => reservation.apartment === apartment)
+      .filter((reservation) => reservation.apt_number === apartment)
       .filter(
         (reservation) =>
           reservation.checkin <= endOfDay(day) &&

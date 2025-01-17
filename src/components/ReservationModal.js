@@ -369,7 +369,7 @@ const ReservationModal = ({
     document_type: selectedReservation?.document_type || "",
     guest_phone: selectedReservation?.guest_phone || "", // Handle null values
     guests_qty: selectedReservation?.guests_qty || 0,
-    apartment: selectedReservation?.apartment || "", // Optional apartment number
+    apartment: selectedReservation?.apt_number || "", // Optional apartment number
     apartment_owner: selectedReservation?.apartment_owner || "", // Optional apartment owner name
     hasChildren: selectedReservation?.hasChildren || "no",
     photos: selectedReservation?.photos || "", // Main photo URL
@@ -993,7 +993,7 @@ const ReservationModal = ({
                 />
             </a>
           </div>
-          <div><strong style={{ fontSize: '20px' }}>#{selectedReservation.id} - Apto {reservationData.apartment}</strong> {reservationData.apartment_owner != '' && (<>({reservationData.apartment_owner})</>)} </div>
+          <div><strong style={{ fontSize: '20px' }}>#{selectedReservation.id} - Apto {reservationData.apartment}</strong></div>
           {!selectedReservation.active && (
             <Badge active={selectedReservation.active}>
               {selectedReservation.active ? "Ativo" : "Cancelado"}
@@ -1013,9 +1013,9 @@ const ReservationModal = ({
           )}
         </div>
 
-        {profile?.user_type === 'owner' || profile?.user_type === 'admin' && (
+        {profile?.user_type === 'owner' || profile?.user_type === 'admin' ? (
           <>
-            <Row style={{ alignItems: "center", gap: "20px" }}>
+            <Row style={{ alignItems: "center", gap: "20px", marginBottom: '20px' }}>
               <Column>
                 <FieldLabel>Data de Entrada:</FieldLabel>
                 <FieldValue>
@@ -1040,17 +1040,31 @@ const ReservationModal = ({
                   />
                 </FieldValue>
               </Column>
-              <Column style={{ display: 'flex', flexDirection: 'row', justifyContent: 'end'}}>
-                <RedButton 
-                  onClick={handleDeleteReservation}
-                  style={{ marginTop: '30px', backgroundColor: !isEditing ? 'grey' : '#dc3545'}}
-                  disabled={!isEditing}
-                >
-                  Excluir Reserva
-                </RedButton>
-              </Column>
             </Row>
           </>
+        ) : (
+          <Row style={{ alignItems: "center", gap: "20px", marginBottom: '10px' }}>
+              <Column>
+                <FieldLabel>Data de Entrada:</FieldLabel>
+                <FieldValue>
+                  <DatePicker
+                    dateFormat="dd/MM/yyyy"
+                    disabled={true}
+                     className="custom-date-picker"
+                  />
+                </FieldValue>
+              </Column>
+              <Column>
+                <FieldLabel>Data de Saída:</FieldLabel>
+                <FieldValue>
+                  <DatePicker
+                    dateFormat="dd/MM/yyyy"
+                    disabled={true}
+                     className="custom-date-picker"
+                  />
+                </FieldValue>
+              </Column>
+            </Row>
         )}
 
         {/* Guest Information */}
