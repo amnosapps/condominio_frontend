@@ -7,6 +7,12 @@ import { FaRegCalendarAlt } from "react-icons/fa";
 import ReservationModal from "../../components/ReservationModal";
 import ReservationCreationModal from "../../components/Reservation/ReservationCreation";
 
+import {
+  format,
+} from "date-fns";
+
+import { ptBR  } from "date-fns/locale"; 
+
 // Styled Components
 const Container = styled.div`
   display: flex;
@@ -364,6 +370,7 @@ const ReservationsPage = ({ profile }) => {
         <div>
             <Tab onClick={() => setShowDatePicker((prev) => !prev)} style={{ alignContent: 'center', fontSize: '14px' }}>
                 <FaRegCalendarAlt />
+                <span style={{ cursor: 'pointer', marginLeft: '10px' }}>{`${format(selectedDateRange.startDate, "dd MMM yyyy", { locale: ptBR  })} - ${format(selectedDateRange.endDate, "dd MMM yyyy", { locale: ptBR  })}`}</span>
             </Tab>
             <Tab active={activeTab === "All"} onClick={() => applyFilter("All")}>
                 Todas Reservas
