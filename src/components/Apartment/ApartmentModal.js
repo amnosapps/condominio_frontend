@@ -854,13 +854,13 @@ function Modal({ selectedApartment, profile, onClose }) {
                                         <span><strong>Reserva:</strong> #{currentReservation.id} - {currentReservation.guest_name}</span>
                                         <span>
                                             <strong>Check-in:</strong>{" "}
-                                            {format(new Date(currentReservation.checkin), "dd/MM/yyyy HH:mm", {
+                                            {format(new Date(currentReservation.checkin), "dd/MM/yyyy", {
                                                 locale: ptBR,
                                             })}
                                         </span>
                                         <span>
                                             <strong>Checkout:</strong>{" "}
-                                            {format(new Date(currentReservation.checkout), "dd/MM/yyyy HH:mm", {
+                                            {format(new Date(currentReservation.checkout), "dd/MM/yyyy", {
                                                 locale: ptBR,
                                             })}
                                         </span>
@@ -886,13 +886,13 @@ function Modal({ selectedApartment, profile, onClose }) {
                                                     <h4>#{reservation.id} {reservation.guest_name}</h4>
                                                     <span>
                                                         <strong>Check-in:</strong>{" "}
-                                                        {format(new Date(reservation.checkin), "dd/MM/yyyy HH:mm", {
+                                                        {format(new Date(reservation.checkin), "dd/MM/yyyy", {
                                                             locale: ptBR,
                                                         })}
                                                     </span>
                                                     <span>
                                                         <strong>Check-out:</strong>{" "}
-                                                        {format(new Date(reservation.checkout), "dd/MM/yyyy HH:mm", {
+                                                        {format(new Date(reservation.checkout), "dd/MM/yyyy", {
                                                             locale: ptBR,
                                                         })}
                                                     </span>
