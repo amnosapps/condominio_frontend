@@ -59,6 +59,13 @@ const OpenButton = styled.button`
   }
 `;
 
+const NoReservationsText = styled.div`
+  font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+  margin-top: 100px;
+`;
+
 const ReservationList = styled.div`
   display: flex;
   flex-direction: column;
@@ -171,38 +178,43 @@ const ReservationsWidget = ({
         <WidgetTitle>Checkins Próximos</WidgetTitle>
         <OpenButton onClick={onOpen}>+ Nova Reserva</OpenButton>
       </Header>
-      <ReservationList>
-        {reservations?.map((res) => {
-          const checkinDate = new Date(res.checkin);
+      {reservations && reservations.length > 0 ? (
+        <ReservationList>
+          {reservations?.map((res) => {
+            const checkinDate = new Date(res.checkin);
 
-          return (
-            <ReservationItem
-              key={res.id}
-              onClick={() => handleReservationClick(res)}
-            >
-              <GuestImage
-                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                  res.guest_name
-                )}`}
-                alt={`${res.guest_name}'s avatar`}
-              />
-              <ReservationDetails>
-                <GuestName>{res.guest_name || "N/A"}</GuestName>
-                <RoomDetails>{`Apto ${res.apt_number || "N/A"}`}</RoomDetails>
-                <Dates>
-                  {checkinDate.toLocaleDateString("pt-BR")} -{" "}
-                  {new Date(res.checkout).toLocaleDateString("pt-BR")}
-                </Dates>
-                {isToday(checkinDate) && <Label isToday>Hoje</Label>}
-                {isPast(checkinDate) && !isToday(checkinDate) && (
-                  <Label>Pendente</Label>
-                )}
-              </ReservationDetails>
-              <ChevronIcon>➔</ChevronIcon>
-            </ReservationItem>
-          );
-        })}
-      </ReservationList>
+            return (
+              <ReservationItem
+                key={res.id}
+                onClick={() => handleReservationClick(res)}
+              >
+                <GuestImage
+                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    res.guest_name
+                  )}`}
+                  alt={`${res.guest_name}'s avatar`}
+                />
+                <ReservationDetails>
+                  <GuestName>{res.guest_name || "N/A"}</GuestName>
+                  <RoomDetails>{`Apto ${res.apt_number || "N/A"}`}</RoomDetails>
+                  <Dates>
+                    {checkinDate.toLocaleDateString("pt-BR")} -{" "}
+                    {new Date(res.checkout).toLocaleDateString("pt-BR")}
+                  </Dates>
+                  {isToday(checkinDate) && <Label isToday>Hoje</Label>}
+                  {isPast(checkinDate) && !isToday(checkinDate) && (
+                    <Label>Pendente</Label>
+                  )}
+                </ReservationDetails>
+                <ChevronIcon>➔</ChevronIcon>
+              </ReservationItem>
+            );
+          })}
+        </ReservationList>
+      ) : (
+        <NoReservationsText>Nenhuma reserva disponível</NoReservationsText>
+      )}
+      
 
       {selectedReservation && (
         <ReservationModal

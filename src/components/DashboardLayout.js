@@ -11,6 +11,17 @@ const LayoutContainer = styled.div`
     @media (max-width: 768px) {
         flex-direction: column;
     }
+
+    &::-webkit-scrollbar {
+        width: 3px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: #b3b3b3;
+    }
 `;
 
 const MainContent = styled.main`
@@ -27,6 +38,17 @@ const MainContent = styled.main`
     @media (max-width: 480px) {
         padding: 2.5rem;
         margin-left: 0;
+    }
+
+    &::-webkit-scrollbar {
+        width: 3px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: #b3b3b3;
     }
 `;
 

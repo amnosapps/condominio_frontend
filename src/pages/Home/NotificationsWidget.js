@@ -99,6 +99,13 @@ const ChatMessage = styled.div`
   cursor: pointer;
 `;
 
+const NoNotificationsText = styled.div`
+  font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+  margin-top: 80px;
+`;
+
 const TimeStamp = styled.span`
   font-size: 12px;
   color: #9e9e9e;
@@ -172,25 +179,29 @@ const NotificationsWidget = ({ notifications, setNotifications }) => {
         </div>
       </WidgetHeader>
       <ChatContainer>
-        {notifications.map((notif) => (
-          <ChatMessage
-            key={notif.id}
-            isUnread={!notif.is_read}
-            onClick={() => markNotificationAsRead(notif.id)}
-          >
-            <div>
-              <strong>{notif.title}</strong>
-              <div>{notif.message}</div>
-            </div>
-            <TimeStamp>
-              {new Date(notif.created_at).toLocaleDateString("pt-BR", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "2-digit",
-              })}
-            </TimeStamp>
-          </ChatMessage>
-        ))}
+        {notifications.length > 0 ? (
+          notifications.map((notif) => (
+            <ChatMessage
+              key={notif.id}
+              isUnread={!notif.is_read}
+              onClick={() => markNotificationAsRead(notif.id)}
+            >
+              <div>
+                <strong>{notif.title}</strong>
+                <div>{notif.message}</div>
+              </div>
+              <TimeStamp>
+                {new Date(notif.created_at).toLocaleDateString("pt-BR", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "2-digit",
+                })}
+              </TimeStamp>
+            </ChatMessage>
+          ))
+        ) : (
+          <NoNotificationsText>Nenhuma notificação disponível</NoNotificationsText>
+        )}
       </ChatContainer>
     </Widget>
   );
