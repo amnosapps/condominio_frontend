@@ -630,6 +630,7 @@ const ReservationCalendar = ({ profile }) => {
         apt_number: reservation.apt_number,
         apartment_owner: reservation.apt_owner_name,
         photos: reservation.photo,
+        active: reservation.active,
         additional_photos: reservation.additional_photos_urls || [],
         checkin: reservation.checkin ? parseISO(reservation.checkin) : null,
         checkout: reservation.checkout ? parseISO(reservation.checkout) : null,

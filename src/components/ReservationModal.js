@@ -23,30 +23,27 @@ const ModalOverlay = styled.div`
   height: 100vh;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: start;
+  align-items: center;
   justify-content: center;
   z-index: 1000;
 `;
 
 const ModalContainer = styled.div`
-  margin-top: 30px;
-  margin-left: 100px;
   background-color: white;
   width: 90%;
-  max-width: 700px;
-  max-height: 80vh; /* Constrain height to 80% of the viewport */
-  padding: 30px;
+  max-width: 1200px;
+  max-height: 650px;
+  padding: 20px;
   border-radius: 5px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  position: relative;
-  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-y: auto;
 
-  /* Custom scrollbar styling */
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
   &::-webkit-scrollbar {
-    width: 8px;
-  }
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    width: 6px;
   }
   &::-webkit-scrollbar-thumb {
     background: #888;
@@ -60,16 +57,16 @@ const ModalContainer = styled.div`
 const CloseButton = styled.button`
   position: absolute;
   /* top: 10px; */
-  right: 50px;
+  right: 410px;
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 40px;
   cursor: pointer;
 `;
 
 
 const GreenButton = styled.button`
-  margin: 10px 5px;
+  margin: 1px 5px;
   padding: 10px 20px;
   font-size: 15px;
   font-weight: 600;
@@ -85,7 +82,7 @@ const GreenButton = styled.button`
 `;
 
 const RedButton = styled.button`
-  margin: 10px 5px;
+  margin: 1px 5px;
   padding: 10px 20px;
   background-color: #dc3545;
   color: white;
@@ -114,7 +111,6 @@ const RemoveGuestButton = styled.button`
 `;
 
 const AddGuestButton = styled.button`
-  margin: 15px 0;
   padding: 10px 10px;
   background-color: #F46600;
   color: white;
@@ -134,7 +130,7 @@ const CheckboxContainer = styled.div`
 `;
 
 const StyledSelect = styled.select`
-  margin-top: 9px;
+  /* margin-top: 9px; */
   width: 100%;
   padding: 7px;
   font-size: 16px;
@@ -178,8 +174,8 @@ const HiddenCheckbox = styled.input.attrs({ type: "checkbox" })`
 
 const StyledCheckbox = styled.div`
   display: inline-block;
-  width: 20px;
-  height: 20px;
+  width: 15px;
+  height: 15px;
   background: ${(props) => (props.checked ? "#28a745" : "white")};
   border: 2px solid #ccc;
   border-radius: 4px;
@@ -215,7 +211,6 @@ const Label = styled.label`
 const EditableInput = styled.input`
   width: 95%;
   padding: 8px;
-  margin: 10px 0;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 14px;
@@ -250,7 +245,7 @@ const LogsModalContainer = styled.div`
 `;
 
 const LogsButton = styled.button`
-  margin: 10px 5px;
+  margin: 1px 5px;
   padding: 10px 20px;
   background-color: #007bff;
   color: white;
@@ -263,14 +258,6 @@ const LogsButton = styled.button`
   }
 `;
 
-const LogsList = styled.div`
-  margin-top: 20px;
-`;
-
-const LogItem = styled.div`
-  border-bottom: 1px solid #ccc;
-  padding: 10px 0;
-`;
 
 const LogsModalOverlay = styled.div`
   position: fixed;
@@ -295,13 +282,6 @@ const CloseLogsButton = styled.button`
   cursor: pointer;
 `;
 
-const SectionTitle = styled.h4`
-  margin: 20px 0 10px;
-  font-size: 18px;
-  font-weight: bold;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 5px;
-`;
 
 const Row = styled.div`
   display: flex;
@@ -313,7 +293,7 @@ const Row = styled.div`
 
 const Column = styled.div`
   flex: 1;
-  margin-right: 10px;
+  margin-right: 15px;
   min-width: 150px; /* Ensure columns are responsive */
 `;
 
@@ -493,8 +473,14 @@ const ReservationModal = ({
     const formData = new FormData();
   
     // Append updated reservation data
-    formData.append("checkin", new Date(reservationData.checkin).toISOString());
-    formData.append("checkout", new Date(reservationData.checkout).toISOString());
+    if (reservationData.checkin != selectedReservation.checkin) {
+      formData.append("checkin", new Date(reservationData.checkin).toISOString());
+    }
+
+    if (reservationData.checkout != selectedReservation.checkout) {
+      formData.append("checkout", new Date(reservationData.checkout).toISOString());
+    }
+    
     formData.append("observations", reservationData.observations);
     formData.append("guest_name", reservationData.guest_name);
     formData.append("guest_document", reservationData.guest_document);
@@ -980,12 +966,12 @@ const ReservationModal = ({
     }
   };
   
-  console.log(selectedReservation)
+  console.log(selectedReservation.active)
   return (
     <ModalOverlay onClick={closeModal1}>
       <ModalContainer onClick={(e) => e.stopPropagation()} className="modal-container">
         <div style={{ display: 'flex', alignContent: 'center', alignItems: 'center' }}>
-          <div style={{ display: "flex", gap: "10px", alignItems: "center", margin: '15px 0px' }}>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center", margin: '1px 0px' }}>
             <a onClick={generateDocumentPdf} style={{ color: "white", padding: "10px", borderRadius: "5px", cursor: "pointer" }}>
               <img
                   src="/download-pdf.png"
@@ -1002,7 +988,7 @@ const ReservationModal = ({
           )}
           <CloseButton onClick={closeModal1}>&times;</CloseButton>
         </div>
-        <div style={{ marginBottom: "10px" }}>
+        <div>
           {isLogsOpen && (
             <LogsModalOverlay onClick={() => setIsLogsOpen(false)}>
               <LogsModalContainer onClick={(e) => e.stopPropagation()}>
@@ -1016,7 +1002,7 @@ const ReservationModal = ({
 
         {profile?.user_type === 'owner' || profile?.user_type === 'admin' ? (
           <>
-            <Row style={{ alignItems: "center", gap: "20px", marginBottom: '20px' }}>
+            <Row style={{ alignItems: "center", marginBottom: '1px' }}>
               <Column>
                 <FieldLabel>Data de Entrada:</FieldLabel>
                 <FieldValue>
@@ -1044,7 +1030,7 @@ const ReservationModal = ({
             </Row>
           </>
         ) : (
-          <Row style={{ alignItems: "center", gap: "20px", marginBottom: '10px' }}>
+          <Row style={{ alignItems: "center", gap: "2px" }}>
               <Column>
                 <FieldLabel>Data de Entrada:</FieldLabel>
                 <FieldValue>
@@ -1098,31 +1084,6 @@ const ReservationModal = ({
           </Column>
 
           <Column>
-            <FieldLabel>Acompanhantes:</FieldLabel>
-            <FieldValue>
-              <EditableInput
-                type="text"
-                value={reservationData.guests_qty}
-                onChange={(e) => handleChange("guests_qty", e.target.value)}
-                disabled={true}
-              />
-              {/* <StyledSelect
-                name="guests_qty"
-                value={reservationData.guests_qty}
-                onChange={handleChange}
-                disabled={true} // Disable if no apartment is selected
-                style={{ backgroundColor: '#f1f1f1' }}
-              >
-                {Array.from({ length: maxGuests }, (_, i) => (
-                  <option key={i} value={i}>{i}</option>
-                ))}
-              </StyledSelect> */}
-            </FieldValue>
-          </Column>
-        </Row>
-
-        <Row>
-          <Column>
             <FieldLabel>Tipo de Documento:</FieldLabel>
             <FieldValue>
               <StyledSelect
@@ -1137,6 +1098,7 @@ const ReservationModal = ({
               </StyledSelect>
             </FieldValue>
           </Column>
+          
           <Column>
             <FieldLabel>Documento:</FieldLabel>
             <FieldValue>
@@ -1145,6 +1107,18 @@ const ReservationModal = ({
                 value={reservationData.guest_document}
                 onChange={(e) => handleChange("guest_document", e.target.value)}
                 disabled={!isEditing} 
+              />
+            </FieldValue>
+          </Column>
+          
+          <Column>
+            <FieldLabel>Acompanhantes:</FieldLabel>
+            <FieldValue>
+              <EditableInput
+                type="text"
+                value={reservationData.guests_qty}
+                onChange={(e) => handleChange("guests_qty", e.target.value)}
+                disabled={true}
               />
             </FieldValue>
           </Column>
@@ -1214,8 +1188,8 @@ const ReservationModal = ({
               />
             </FieldValue>
           </Column>
-        </Row>
-        <Row>
+        {/* </Row>
+        <Row> */}
           <Column>
             <FieldLabel>Cidade:</FieldLabel>
             <FieldValue>
@@ -1261,7 +1235,7 @@ const ReservationModal = ({
                 disabled={!isEditing}
                 style={{
                   width: "100%",
-                  height: "100px",
+                  height: "50px",
                   padding: "10px",
                   fontSize: "14px",
                   border: "1px solid #ccc",
@@ -1418,13 +1392,13 @@ const ReservationModal = ({
                   }
                   handleSaveCheckin();
               }}
-              disabled={isSubmitting || (!isCheckinToday && !canCheckin && !isCheckinPassed)}
+              disabled={isSubmitting || (!isCheckinToday && !canCheckin)}
               style={{
                   backgroundColor: 
                       isCheckinToday ? '#28a745' // Green for today
                       : canCheckin ? '#dc3545' // Red for past check-ins
                       : 'grey',   // Grey if not allowed
-                  cursor: isSubmitting || (!isCheckinToday && !canCheckin && !isCheckinPassed) ? 'not-allowed' : 'pointer',
+                  cursor: isSubmitting || (!isCheckinToday && !canCheckin) ? 'not-allowed' : 'pointer',
               }}
           >
               {isSubmitting  ? "Enviando..."
@@ -1457,7 +1431,7 @@ const ReservationModal = ({
                   cursor: !selectedReservation.active ? "not-allowed" : "pointer",  // Disabled cursor during submission
                 }}
               >
-                {!selectedReservation.active ? "Cancelado" : "Cancelar"}
+                {!selectedReservation.active ? "Cancelado" : "Cancelar Reserva"}
               </RedButton>
             )
           ) : null}
