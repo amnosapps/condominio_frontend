@@ -646,18 +646,15 @@ function Modal({ selectedApartment, profile, onClose }) {
     const openReservationModal = (reservation) => setSelectedReservation(reservation);
     const closeReservationModal = () => setSelectedReservation(null);
 
-    const filteredReservations = apartmentDetails.last_reservations.filter((reservation) => {
-        const today = new Date();
-        const checkinDate = new Date(reservation.checkin);
-
-        return filter === 'next' ? checkinDate >= today : checkinDate < today;
+    const filteredReservations = apartmentDetails?.last_reservations.filter((reservation) => {
+        return !reservation.checkin_at && !reservation.checkout_at;
     });
 
-    const currentReservation = apartmentDetails?.last_reservations?.find(
-        (reservation) =>
-            new Date(reservation.checkin) <= new Date() &&
-            (!reservation.checkout || new Date(reservation.checkout) > new Date())
-    );
+    const currentReservation = apartmentDetails?.last_reservations.find((reservation) => {
+        return reservation.checkin_at && !reservation.checkout_at;
+    });
+
+    console.log(apartmentDetails.last_reservations, filteredReservations, currentReservation)
 
     return (
         <>
@@ -861,37 +858,46 @@ function Modal({ selectedApartment, profile, onClose }) {
                                         <span><strong>Status:</strong> Em curso</span>
                                     </FeaturedReservationCard>
                                 )}
-                                <h3>Próximas Reservas</h3>
-                                <ReservationGrid>
-                                    {filteredReservations.map((reservation) => {
-                                        if (currentReservation?.id === reservation.id) {
-                                            return null
-                                        }
-
-                                        return (
-                                        <ReservationCard
-                                            key={reservation.id}
-                                            checkin={reservation.checkin}
-                                            checkout={reservation.checkout}
-                                            onClick={() => openReservationModal(reservation)}
-                                        >
-                                            <h4>#{reservation.id} {reservation.guest_name}</h4>
-                                            <span>
-                                                <strong>Check-in:</strong>{" "}
-                                                {format(new Date(reservation.checkin), "dd/MM/yyyy HH:mm", {
-                                                    locale: ptBR,
-                                                })}
-                                            </span>
-                                            <span>
-                                                <strong>Check-out:</strong>{" "}
-                                                {format(new Date(reservation.checkout), "dd/MM/yyyy HH:mm", {
-                                                    locale: ptBR,
-                                                })}
-                                            </span>
-                                            <span><strong>Hóspedes:</strong> {reservation.guest_qty + 1 || 1}</span>
-                                        </ReservationCard>
-                                    )})}
-                                </ReservationGrid>
+                                {filteredReservations.length > 0 ? (
+                                    <>
+                                        <h3>Próximas Reservas</h3>
+                                        <ReservationGrid>
+                                            {filteredReservations.map((reservation) => {
+                                                if (currentReservation?.id === reservation.id) {
+                                                    return null
+                                                }
+        
+                                                return (
+                                                <ReservationCard
+                                                    key={reservation.id}
+                                                    checkin={reservation.checkin}
+                                                    checkout={reservation.checkout}
+                                                    onClick={() => openReservationModal(reservation)}
+                                                >
+                                                    <h4>#{reservation.id} {reservation.guest_name}</h4>
+                                                    <span>
+                                                        <strong>Check-in:</strong>{" "}
+                                                        {format(new Date(reservation.checkin), "dd/MM/yyyy HH:mm", {
+                                                            locale: ptBR,
+                                                        })}
+                                                    </span>
+                                                    <span>
+                                                        <strong>Check-out:</strong>{" "}
+                                                        {format(new Date(reservation.checkout), "dd/MM/yyyy HH:mm", {
+                                                            locale: ptBR,
+                                                        })}
+                                                    </span>
+                                                    <span><strong>Hóspedes:</strong> {reservation.guest_qty + 1 || 1}</span>
+                                                </ReservationCard>
+                                            )})}
+                                        </ReservationGrid>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span>Nenhuma reserva encontrada para os próximo 30 dias</span>
+                                    </>
+                                )}
+                                
                             </>
                         )}
                     </ModalContent>
