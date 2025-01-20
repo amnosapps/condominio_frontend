@@ -400,6 +400,7 @@ const ReservationModal = ({
     selectedReservation?.additional_guests.map((guest) => ({
       name: guest.name || "",
       document: guest.document || "",
+      document_type: guest.document_type || "",
       age: guest.age || 0,
       is_child: guest.is_child || false,
     })) || []
@@ -979,7 +980,7 @@ const ReservationModal = ({
     }
   };
   
-
+  console.log(selectedReservation)
   return (
     <ModalOverlay onClick={closeModal1}>
       <ModalContainer onClick={(e) => e.stopPropagation()} className="modal-container">
