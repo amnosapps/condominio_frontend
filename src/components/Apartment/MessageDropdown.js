@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { format } from 'date-fns';
 
 const Dropdown = styled.div`
     margin-top: 1rem;
@@ -7,10 +8,11 @@ const Dropdown = styled.div`
     border-radius: 8px;
     background: #f9f9f9;
     overflow: hidden;
+    padding: 10px;
 `;
 
 const DropdownHeader = styled.div`
-    padding: 0.75rem 1rem;
+    padding: 0.35rem 1rem;
     font-size: 1rem;
     font-weight: bold;
     background: #36A2EB;
@@ -31,68 +33,56 @@ const DropdownContent = styled.div`
     transition: max-height 0.3s ease-in-out;
     padding: 0 1rem;
 
-    /* Styling the scrollbar */
     &::-webkit-scrollbar {
-        width: 6px; /* Make the scrollbar thinner */
+        width: 6px;
     }
 
     &::-webkit-scrollbar-thumb {
-        background-color: rgba(0, 0, 0, 0.3); /* Subtle dark color for thumb */
-        border-radius: 10px; /* Rounded edges for thumb */
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
     }
 
     &::-webkit-scrollbar-thumb:hover {
-        background-color: rgba(0, 0, 0, 0.5); /* Darker on hover */
+        background-color: rgba(0, 0, 0, 0.5);
     }
 
     &::-webkit-scrollbar-track {
-        background-color: #f0f0f0; /* Light background for track */
-        border-radius: 10px; /* Rounded edges for track */
+        background-color: #f0f0f0;
+        border-radius: 10px;
     }
 
-    /* Fallback for non-WebKit browsers */
-    scrollbar-width: thin; /* Firefox-specific: Makes scrollbar thin */
-    scrollbar-color: rgba(0, 0, 0, 0.3) #f0f0f0; /* Thumb color and track color */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.3) #f0f0f0;
 `;
 
 const MessageSection = styled.div`
-    padding: 1rem;
     border-top: 1px solid #ccc;
 `;
 
+const MessageContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: ${({ isCurrentUser }) => (isCurrentUser ? 'flex-end' : 'flex-start')};
+`;
+
 const Message = styled.div`
-    background: ${({ read }) => (read ? '#f8f9fa' : '#fff3cd')};
+    background: ${({ isCurrentUser }) => (isCurrentUser ? '#007bff' : '#f8f9fa')};
+    color: ${({ isCurrentUser }) => (isCurrentUser ? 'white' : '#333')};
     border: 1px solid #e9ecef;
     border-radius: 8px;
-    padding: 0.75rem;
-    margin-bottom: 0.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    span {
-        font-size: 0.9rem;
-        color: #495057;
-    }
+    padding: 0.5rem;
+    max-width: 70%;
+    text-align: ${({ isCurrentUser }) => (isCurrentUser ? 'right' : 'left')};
 `;
 
-const MarkAsReadButton = styled.button`
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 0.4rem 0.8rem;
-    font-size: 0.9rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-
-    &:hover {
-        background-color: #218838;
-    }
+const MessageHeader = styled.div`
+    font-size: 0.7rem;
+    color: ${({ isCurrentUser }) => (isCurrentUser ? '#f0f0f0' : '#495057')};
+    margin-bottom: 0.3rem;
 `;
 
-const ModalInput = styled.input`
-    width: 100%;
+const ModalInput = styled.textarea`
+    width: 95%;
     margin-top: 1rem;
     padding: 0.5rem;
     font-size: 1rem;
@@ -116,7 +106,6 @@ const SaveButton = styled.button`
     cursor: pointer;
     transition: background-color 0.3s;
     margin-top: 8px;
-    margin-bottom: 10px;
 
     &:hover {
         background-color: #0056b3;
@@ -128,35 +117,34 @@ function MessageDropdown({ messages, profile, markMessageAsRead, handleSendMessa
 
     return (
         <Dropdown>
-            <DropdownHeader onClick={() => setIsOpen(!isOpen)}>
-                Observações e Mensagens
-                <span>{isOpen ? '▲' : '▼'}</span>
+            <DropdownHeader onClick={() => setIsOpen((prev) => !prev)}>
+                Mensagens
+                <span>▼</span>
             </DropdownHeader>
-            <DropdownContent isOpen={isOpen}>
+            <DropdownContent isOpen={true}>
                 <MessageSection>
-                    {messages.map((message, index) => (
-                        <Message key={index} read={message.read}>
-                            <span>{message.text}</span>
-                            {message.sender === profile.user ? (
-                                <span>{message.read ? 'Lida' : 'Não lida'}</span>
-                            ) : (
-                                !message.read && (
-                                    <MarkAsReadButton onClick={() => markMessageAsRead(index)}>
-                                        Marcar como lida
-                                    </MarkAsReadButton>
-                                )
-                            )}
-                        </Message>
-                    ))}
-                    <ModalInput
-                        type="text"
-                        placeholder="Escreva uma mensagem"
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                    />
-                    <SaveButton onClick={handleSendMessage}>Enviar</SaveButton>
+                    {messages.map((message, index) => {
+                        const isCurrentUser = message.sender === profile.user;
+                        return (
+                            <MessageContainer key={index} isCurrentUser={isCurrentUser}>
+                                <MessageHeader isCurrentUser={isCurrentUser}>
+                                    {isCurrentUser ? 'Você' : `De: ${message.sender}`} |{' '}
+                                    {format(new Date(message.timestamp), 'dd/MM/yyyy HH:mm')}
+                                </MessageHeader>
+                                <Message isCurrentUser={isCurrentUser}>{message.text}</Message>
+                            </MessageContainer>
+                        );
+                    })}
+                    
                 </MessageSection>
             </DropdownContent>
+            <ModalInput
+                type="text"
+                placeholder="Escreva uma mensagem"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+            />
+            <SaveButton onClick={handleSendMessage}>Enviar</SaveButton>
         </Dropdown>
     );
 }

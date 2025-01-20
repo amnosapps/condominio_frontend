@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import ApartmentCard from './Apartment/ApartmentCard';
 import ChartSection from './Apartment/ChartSection';
-import Modal from './Apartment/Modal';
+import ApartamentModal from './Apartment/ApartmentModal';
 import styled from 'styled-components';
 import CreateApartmentModal from './Apartment/CreateApartmentModal';
 import LoadingSpinner from './utils/loader';
@@ -259,36 +259,31 @@ function ApartmentList({ profile }) {
     };
 
     const handleChartClick = ({ filterType, value }) => {
+        clearFilters('custom');
         if (filterType === 'status') setStatusFilter(value);
         if (filterType === 'type_name') setTypeFilter(value);
-        if (filterType === 'checkinsToday') {
-            setFilter(() => (apartment) => {
-                return value.some((filteredApartment) => filteredApartment.id === apartment.id);
-            });
-        }
-        if (filterType === 'checkoutsToday') {
-            setFilter(() => (apartment) => {
-                return value.some((filteredApartment) => filteredApartment.id === apartment.id);
-            });
+        if (filterType === 'checkinsToday' || filterType === 'checkoutsToday') {
+            setFilter(() => (apartment) =>
+                value.some((filteredApartment) => filteredApartment.id === apartment.id)
+            );
         }
     };
     
     // Apply filters and search
-    var filteredApartments = apartments.filter((apartment) => {
+    const filteredApartments = apartments.filter((apartment) => {
         const matchesSearch = search === '' || apartment.number.includes(search);
         const matchesType = typeFilter === '' || apartment.type_name === typeFilter;
         const matchesStatus = statusFilter === '' || apartment.status === parseInt(statusFilter, 10);
         const matchesCustomFilter = filter ? filter(apartment) : true;
-    
+
         return matchesSearch && matchesType && matchesStatus && matchesCustomFilter;
     });
 
-    const clearFilters = () => {
-        setSearch(''); // Reset search filter
-        setTypeFilter(''); // Reset type filter
-        setStatusFilter(''); // Reset status filter
-        setCheckinTodayFilter(false); // Reset check-in today filter
-        setFilter(null); // Reset custom filter
+    const clearFilters = (currentFilter = '') => {
+        if (currentFilter !== 'search') setSearch('');
+        if (currentFilter !== 'type') setTypeFilter('');
+        if (currentFilter !== 'status') setStatusFilter('');
+        if (currentFilter !== 'custom') setFilter(null);
     };
 
     const handleApartmentCreated = (newApartment) => {
@@ -311,23 +306,6 @@ function ApartmentList({ profile }) {
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
-                        <FilterSelect
-                            value={typeFilter}
-                            onChange={(e) => setTypeFilter(e.target.value)}
-                        >
-                            <option value="">Filtrar por tipo</option>
-                            <option value="Temporada">Temporada</option>
-                            <option value="Moradia">Moradia</option>
-                        </FilterSelect>
-                        <FilterSelect
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                        >
-                            <option value="">Filtrar por status</option>
-                            <option value="0">Disponível</option>
-                            <option value="1">Ocupado</option>
-                            <option value="2">Manutenção</option>
-                        </FilterSelect>
                         
                         {profile.user_type === 'admin' && (
                             <CreateButton onClick={() => setCreateModalOpen(true)}>+ Apartamento</CreateButton>
@@ -353,7 +331,7 @@ function ApartmentList({ profile }) {
                         onApartmentCreated={handleApartmentCreated}
                     />
                     {modalOpen && (
-                        <Modal
+                        <ApartamentModal
                             selectedApartment={selectedApartment}
                             profile={profile}
                             onClose={handleModalClose}
