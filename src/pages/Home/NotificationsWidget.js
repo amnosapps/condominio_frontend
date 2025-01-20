@@ -1,5 +1,5 @@
 import React from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import axios from "axios";
 
 // Styled Components
@@ -111,6 +111,31 @@ const TimeStamp = styled.span`
   color: #9e9e9e;
 `;
 
+const bounce = keyframes`
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-20px);
+  }
+  60% {
+    transform: translateY(-10px);
+  }
+`;
+
+const AnimatedIcon = styled.div`
+  font-size: 3rem;
+  color: #007bff;
+  margin-bottom: 1rem;
+  animation: ${bounce} 2s infinite;
+`;
+
+const PlaceholderMessage = styled.p`
+  font-size: 14px;
+  color: #757575;
+  text-align: center;
+`;
+
 // Notifications Widget
 const NotificationsWidget = ({ notifications, setNotifications }) => {
   const unreadCount = notifications.filter((notif) => !notif.is_read).length;
@@ -168,7 +193,7 @@ const NotificationsWidget = ({ notifications, setNotifications }) => {
     <Widget>
       <WidgetHeader>
         <WidgetTitle>Notificações</WidgetTitle>
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+        {/* <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
           {unreadCount > 0 && <UnreadCount>{unreadCount}</UnreadCount>}
           <MarkAllButton
             onClick={markAllAsRead}
@@ -176,10 +201,10 @@ const NotificationsWidget = ({ notifications, setNotifications }) => {
           >
             Marcar Tudo
           </MarkAllButton>
-        </div>
+        </div> */}
       </WidgetHeader>
       <ChatContainer>
-        {notifications.length > 0 ? (
+        {/* {notifications.length > 0 ? (
           notifications.map((notif) => (
             <ChatMessage
               key={notif.id}
@@ -201,7 +226,14 @@ const NotificationsWidget = ({ notifications, setNotifications }) => {
           ))
         ) : (
           <NoNotificationsText>Nenhuma notificação disponível</NoNotificationsText>
-        )}
+        )} */}
+        <PlaceholderMessage>
+          Em Manuntenção  
+          <AnimatedIcon>
+            ⚙️
+          </AnimatedIcon>
+        </PlaceholderMessage>
+       
       </ChatContainer>
     </Widget>
   );
