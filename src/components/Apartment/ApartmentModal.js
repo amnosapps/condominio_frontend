@@ -651,8 +651,17 @@ function Modal({ selectedApartment, profile, onClose }) {
     });
 
     const currentReservation = apartmentDetails?.last_reservations.find((reservation) => {
-        return reservation.checkin_at && !reservation.checkout_at;
-    });
+        const today = new Date();
+        const checkinDate = new Date(reservation.checkin);
+        const checkoutDate = new Date(reservation.checkout);
+    
+        return (
+            checkinDate <= today && // Stay started before or today
+            checkoutDate >= today && // Stay hasn't ended
+            reservation.checkin_at && // Already checked in
+            !reservation.checkout_at // Not checked out
+        );
+    })
 
     console.log(apartmentDetails.last_reservations, filteredReservations, currentReservation)
 
