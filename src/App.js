@@ -12,8 +12,9 @@ import ServicesPage from './pages/Services';
 import Dashboard from './pages/Services/Dashboard';
 import HomePage from './pages/Home/HomePage';
 import Soon from './pages/Soon'
-import UserManagement from './pages/User/User';
+import UserManagement from './pages/Users/User';
 import ReservationsPage from './pages/Reserations/Reservations';
+import VisitorsPage from './pages/Users/Visitors';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('accessToken'));
@@ -155,6 +156,7 @@ function App() {
                     />
                     <Route path="soon" element={<Soon />} />
                     <Route path="users" element={<UserManagement profile={profile} />} />
+                    <Route path="visitors" element={<VisitorsPage profile={profile} />} />
                 </Route>
 
                 {/* Fallback Route */}

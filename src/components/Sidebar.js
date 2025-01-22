@@ -354,9 +354,15 @@ const Sidebar = ({ profile }) => {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
     const [isReportsDropdownOpen, setIsReportsDropdownOpen] = useState(false);
+    const [isUsersDropdownOpen, setIsUsersDropdownOpen] = useState(false);
+
 
     const toggleReportsDropdown = () => {
         setIsReportsDropdownOpen((prev) => !prev);
+    };
+
+    const toggleUsersDropdown = () => {
+        setIsUsersDropdownOpen((prev) => !prev);
     };
 
     useEffect(() => {
@@ -503,7 +509,7 @@ const Sidebar = ({ profile }) => {
                             Apartamentos
                         </NavButton>
                     </NavItem>
-                    <NavItem style={{ paddingBottom: '10px', paddingTop: '10px', borderRadius: '10px' , backgroundColor: isReportsDropdownOpen ? '#f7f7f7' : '#fff' }}>
+                    <NavItem style={{ borderRadius: '10px' , backgroundColor: isReportsDropdownOpen ? '#f7f7f7' : '#fff' }}>
                         <NavButton onClick={toggleReportsDropdown}>
                             <FaChartLine />
                             Relatórios
@@ -518,7 +524,39 @@ const Sidebar = ({ profile }) => {
                                 <NavButton
                                     onClick={() => handleNavigation(`/${selectedCondominium}/reservations`)}
                                     active={location.pathname.includes(`${selectedCondominium}/reservations`)}
+                                    style={{ paddingBottom: '10px' }}
                                 >Reservas</NavButton>
+                            </div>
+                        )}
+                    </NavItem>
+                    <NavItem
+                        style={{
+                            // paddingBottom: "10px",
+                            // paddingTop: "10px",
+                            borderRadius: "10px",
+                            backgroundColor: isUsersDropdownOpen ? "#f7f7f7" : "#fff",
+                        }}
+                    >
+                        <NavButton onClick={toggleUsersDropdown}>
+                            <FaUsers />
+                            Pessoas
+                            <FaAngleDown />
+                        </NavButton>
+                        {isUsersDropdownOpen && (
+                            <div style={{ marginLeft: "30px", marginTop: "10px" }}>
+                                <NavButton
+                                    onClick={() => handleNavigation(`/${selectedCondominium}/users`)}
+                                    active={location.pathname.includes(`${selectedCondominium}/users`)}
+                                >
+                                    Usuários
+                                </NavButton>
+                                <NavButton
+                                    onClick={() => handleNavigation(`/${selectedCondominium}/visitors`)}
+                                    active={location.pathname.includes(`${selectedCondominium}/visitors`)}
+                                    style={{ paddingBottom: '10px' }}
+                                >
+                                    Visitantes
+                                </NavButton>
                             </div>
                         )}
                     </NavItem>
@@ -567,15 +605,7 @@ const Sidebar = ({ profile }) => {
                         Condomínio
                         </NavButton>
                     </NavItem>
-                    <NavItem>
-                        <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium}/users`)}
-                            active={location.pathname.includes(`${selectedCondominium}/users`)}
-                        >
-                        <FaUsers />
-                        Usuários
-                        </NavButton>
-                    </NavItem>
+                    
                     <NavItem>
                         <NavButton
                             onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
