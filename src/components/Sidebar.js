@@ -2,18 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
-import { FaCalendarAlt, FaChartLine, FaCity, FaCloudSun, FaCog, FaHome, FaKey, FaMoneyCheckAlt, FaPoll, FaUsers } from 'react-icons/fa';
+import { FaAngleDown, FaBell, FaCalendarAlt, FaChartLine, FaCity, FaCloudSun, FaCog, FaCommentAlt, FaHome, FaKey, FaMoneyCheckAlt, FaPoll, FaRegCommentAlt, FaUnlockAlt, FaUsers } from 'react-icons/fa';
 
 const SidebarContainer = styled.div`
     background-color: #fff;
-    width: ${(props) => (props.isMobile ? (props.isOpen ? '250px' : '0') : '250px')};
+    width: ${(props) => (props.isMobile ? (props.isOpen ? '300px' : '0') : '300px')};
     height: 100%;
     position: fixed;
     top: 0;
     left: 0;
     display: flex;
     flex-direction: column;
-    padding: ${(props) => (props.isMobile ? (props.isOpen ? '1.5rem' : '0') : '1.5rem')};
+    padding: ${(props) => (props.isMobile ? (props.isOpen ? '1.5rem' : '0') : '1rem')};
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     align-items: center;
     z-index: 100;
@@ -153,7 +153,7 @@ const ImgSidebar = styled.img`
 `;
 
 const ImgLogo = styled.img`
-    width: 200px;
+    width: 100px;
 `;
 
 const LogoutButton = styled.button`
@@ -338,15 +338,13 @@ const UnreadCount = styled.span`
     display: ${(props) => (props.count > 0 ? "inline" : "none")};
 `;
 
-const Sidebar = ({ condominium }) => {
+const Sidebar = ({ profile }) => {
     const navigate = useNavigate();
     const location = useLocation()
     const params = useParams();
-    const selectedCondominium = condominium || params.condominium;
+    const selectedCondominium = params.condominium;
 
-    const [profile, setProfile] = useState(null);
-    const [condominiums, setCondominiums] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const condominiums = profile.condominiums
 
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -355,27 +353,19 @@ const Sidebar = ({ condominium }) => {
     const [isOpen, setIsOpen] = useState(true); // Open by default for desktop
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-    useEffect(() => {
-        const fetchUserProfile = async () => {
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                navigate('/login');
-                return;
-            }
+    const [isReportsDropdownOpen, setIsReportsDropdownOpen] = useState(false);
+    const [isUsersDropdownOpen, setIsUsersDropdownOpen] = useState(false);
 
-            try {
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/profile/`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                setProfile(response.data);
-                setCondominiums(response.data.condominiums || []);
-            } catch (error) {
-                console.error("Error fetching user profile:", error);
-                navigate('/login');
-            } finally {
-                setLoading(false);
-            }
-        };
+
+    const toggleReportsDropdown = () => {
+        setIsReportsDropdownOpen((prev) => !prev);
+    };
+
+    const toggleUsersDropdown = () => {
+        setIsUsersDropdownOpen((prev) => !prev);
+    };
+
+    useEffect(() => {
 
         const fetchNotifications = async () => {
             const token = localStorage.getItem('accessToken');
@@ -397,7 +387,6 @@ const Sidebar = ({ condominium }) => {
             if (!isNowMobile) setIsOpen(true); // Ensure sidebar is open for desktop
         };
 
-        fetchUserProfile();
         fetchNotifications();
 
         window.addEventListener('resize', handleResize);
@@ -480,19 +469,8 @@ const Sidebar = ({ condominium }) => {
 
     const handleCondominiumChange = (event) => {
         const newCondominium = event.target.value;
-        navigate(`/${newCondominium}/occupation`);
+        navigate(`/${newCondominium}/home`);
     };
-
-    if (loading) {
-        return (
-            <></>
-            // <SidebarContainer>
-            //     <CenteredContainer>
-            //         <LoadingSpinner />
-            //     </CenteredContainer>
-            // </SidebarContainer>
-        );
-    }
 
     return (
         <>
@@ -531,14 +509,56 @@ const Sidebar = ({ condominium }) => {
                             Apartamentos
                         </NavButton>
                     </NavItem>
-                    <NavItem>
-                        <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium}/reports`)}
-                            active={location.pathname.includes(`${selectedCondominium}/reports`)}
-                        >
+                    <NavItem style={{ borderRadius: '10px' , backgroundColor: isReportsDropdownOpen ? '#f7f7f7' : '#fff' }}>
+                        <NavButton onClick={toggleReportsDropdown}>
                             <FaChartLine />
                             Relatórios
+                            <FaAngleDown />
                         </NavButton>
+                        {isReportsDropdownOpen && (
+                            <div style={{ marginLeft: "30px", marginTop: "10px" }}>
+                                <NavButton
+                                    onClick={() => handleNavigation(`/${selectedCondominium}/reports`)}
+                                    active={location.pathname.includes(`${selectedCondominium}/reports`)}
+                                >Geral</NavButton>
+                                <NavButton
+                                    onClick={() => handleNavigation(`/${selectedCondominium}/reservations`)}
+                                    active={location.pathname.includes(`${selectedCondominium}/reservations`)}
+                                    style={{ paddingBottom: '10px' }}
+                                >Reservas</NavButton>
+                            </div>
+                        )}
+                    </NavItem>
+                    <NavItem
+                        style={{
+                            // paddingBottom: "10px",
+                            // paddingTop: "10px",
+                            borderRadius: "10px",
+                            backgroundColor: isUsersDropdownOpen ? "#f7f7f7" : "#fff",
+                        }}
+                    >
+                        <NavButton onClick={toggleUsersDropdown}>
+                            <FaUsers />
+                            Pessoas
+                            <FaAngleDown />
+                        </NavButton>
+                        {isUsersDropdownOpen && (
+                            <div style={{ marginLeft: "30px", marginTop: "10px" }}>
+                                <NavButton
+                                    onClick={() => handleNavigation(`/${selectedCondominium}/users`)}
+                                    active={location.pathname.includes(`${selectedCondominium}/users`)}
+                                >
+                                    Usuários
+                                </NavButton>
+                                <NavButton
+                                    onClick={() => handleNavigation(`/${selectedCondominium}/visitors`)}
+                                    active={location.pathname.includes(`${selectedCondominium}/visitors`)}
+                                    style={{ paddingBottom: '10px' }}
+                                >
+                                    Visitantes
+                                </NavButton>
+                            </div>
+                        )}
                     </NavItem>
                     <NavItem>
                         <NavButton
@@ -572,17 +592,36 @@ const Sidebar = ({ condominium }) => {
                             onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
                             // active={location.pathname.includes(`${selectedCondominium}/soon`)}
                         >
-                        <FaCity />
-                        Condomínio
+                        <FaUnlockAlt />
+                        Controle de Acesso
                         </NavButton>
                     </NavItem>
                     <NavItem>
                         <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium}/users`)}
-                            active={location.pathname.includes(`${selectedCondominium}/users`)}
+                            onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
+                            // active={location.pathname.includes(`${selectedCondominium}/soon`)}
                         >
-                        <FaUsers />
-                        Usuários
+                        <FaCity />
+                        Condomínio
+                        </NavButton>
+                    </NavItem>
+                    
+                    <NavItem>
+                        <NavButton
+                            onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
+                            // active={location.pathname.includes(`${selectedCondominium}/soon`)}
+                        >
+                        <FaCommentAlt />
+                        Mensagens
+                        </NavButton>
+                    </NavItem>
+                    <NavItem>
+                        <NavButton
+                            onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
+                            // active={location.pathname.includes(`${selectedCondominium}/soon`)}
+                        >
+                        <FaBell />
+                        Notificações
                         </NavButton>
                     </NavItem>
                 </NavList>
@@ -592,10 +631,10 @@ const Sidebar = ({ condominium }) => {
                         <ProfileContainer>
                             <Avatar>
                                 {profile.name?.charAt(0).toUpperCase() || "?"}
-                                    <NotificationBellContainer onClick={toggleNotifications}>
+                                    {/* <NotificationBellContainer onClick={toggleNotifications}>
                                         <BellIcon>🔔</BellIcon>
                                         <UnreadCount count={unreadCount}>{unreadCount}</UnreadCount>
-                                    </NotificationBellContainer>
+                                    </NotificationBellContainer> */}
                                     {showNotifications && (
                                         <NotificationContainer>
                                             <NotificationListContainer>
