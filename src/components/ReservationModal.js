@@ -901,8 +901,8 @@ const ReservationModal = ({
     formData.append("active", false);
   
     try {
-      const response = await axios.patch(
-        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
+      const response = await api.patch(
+        `/api/reservations/${selectedReservation.id}/`,
         formData,
         {
           headers: {
@@ -941,8 +941,8 @@ const ReservationModal = ({
     formData.append("active", true);
   
     try {
-      const response = await axios.patch(
-        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
+      const response = await api.patch(
+        `/api/reservations/${selectedReservation.id}/`,
         formData,
         {
           headers: {

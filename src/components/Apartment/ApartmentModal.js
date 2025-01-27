@@ -9,6 +9,7 @@ import ReservationModal from '../ReservationModal';
 import ReservationCreationModal from '../Reservation/ReservationCreation';
 import { FaCommentAlt, FaHouseUser, FaUserEdit } from 'react-icons/fa';
 import OwnerDetailsSection, { OwnerDetailsSidebar } from './OwnerDetailsSection';
+import api from '../../services/api';
 
 const Overlay = styled.div`
     position: fixed;
@@ -391,7 +392,7 @@ function Modal({ selectedApartment, profile, onClose }) {
     const fetchApartmentDetails = async (id) => {
         const token = localStorage.getItem('accessToken');
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/${id}/`, {
+            const response = await api.get(`/api/apartments/${id}/`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setApartmentDetails(response.data);
@@ -429,8 +430,8 @@ function Modal({ selectedApartment, profile, onClose }) {
         };
     
         try {
-            const response = await axios.post(
-                `${process.env.REACT_APP_API_URL}/api/residents/`,
+            const response = await api.post(
+                `/api/residents/`,
                 newResident,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -451,7 +452,7 @@ function Modal({ selectedApartment, profile, onClose }) {
     const handleRemoveResident = async (residentId) => {
         const token = localStorage.getItem('accessToken');
         try {
-            await axios.delete(`${process.env.REACT_APP_API_URL}/api/residents/${residentId}/`, {
+            await api.delete(`/api/residents/${residentId}/`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             alert('Residente removido com sucesso.');
@@ -485,8 +486,8 @@ function Modal({ selectedApartment, profile, onClose }) {
         };
 
         try {
-            const response = await axios.post(
-                `${process.env.REACT_APP_API_URL}/api/owners/`,
+            const response = await api.post(
+                `/api/owners/`,
                 newOwner,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -505,7 +506,7 @@ function Modal({ selectedApartment, profile, onClose }) {
         const token = localStorage.getItem('accessToken');
 
         try {
-            await axios.delete(`${process.env.REACT_APP_API_URL}/api/owners/${selectedApartment.owner_details.id}/`, {
+            await api.delete(`/api/owners/${selectedApartment.owner_details.id}/`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             alert('Proprietário removido com sucesso.');
@@ -519,8 +520,8 @@ function Modal({ selectedApartment, profile, onClose }) {
     const handleSendMessage = async () => {
         const token = localStorage.getItem('accessToken');
         try {
-            await axios.post(
-                `${process.env.REACT_APP_API_URL}/api/apartments/${selectedApartment.id}/add_message/`,
+            await api.post(
+                `/api/apartments/${selectedApartment.id}/add_message/`,
                 { message: newMessage },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -535,8 +536,8 @@ function Modal({ selectedApartment, profile, onClose }) {
     const markMessageAsRead = async (index) => {
         const token = localStorage.getItem('accessToken');
         try {
-            await axios.post(
-                `${process.env.REACT_APP_API_URL}/api/apartments/${selectedApartment.id}/mark_message_read/`,
+            await api.post(
+                `/api/apartments/${selectedApartment.id}/mark_message_read/`,
                 { message_index: index },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -558,8 +559,8 @@ function Modal({ selectedApartment, profile, onClose }) {
         };
 
         try {
-            await axios.post(
-                `${process.env.REACT_APP_API_URL}/api/reservations/`,
+            await api.post(
+                `/api/reservations/`,
                 newReservation,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -588,8 +589,8 @@ function Modal({ selectedApartment, profile, onClose }) {
         }
     
         try {
-            await axios.patch(
-                `${process.env.REACT_APP_API_URL}/api/apartments/${selectedApartment.id}/`,
+            await api.patch(
+                `/api/apartments/${selectedApartment.id}/`,
                 { type: newType },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -620,8 +621,8 @@ function Modal({ selectedApartment, profile, onClose }) {
         }
     
         try {
-            await axios.patch(
-                `${process.env.REACT_APP_API_URL}/api/apartments/${selectedApartment.id}/`,
+            await api.patch(
+                `/api/apartments/${selectedApartment.id}/`,
                 { status: newStatus },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

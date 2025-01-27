@@ -1,6 +1,7 @@
 import React from "react";
 import styled, { keyframes } from "styled-components";
 import axios from "axios";
+import api from "../../services/api";
 
 // Styled Components
 const Widget = styled.div`
@@ -143,8 +144,8 @@ const NotificationsWidget = ({ notifications, setNotifications }) => {
   const markNotificationAsRead = async (id) => {
     const token = localStorage.getItem("accessToken");
     try {
-      await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/notifications/${id}/mark_as_read/`,
+      await api.post(
+        `/api/notifications/${id}/mark_as_read/`,
         null,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -170,8 +171,8 @@ const NotificationsWidget = ({ notifications, setNotifications }) => {
 
         await Promise.all(
             unreadNotifications.map((notif) =>
-                axios.post(
-                    `${process.env.REACT_APP_API_URL}/api/notifications/${notif.id}/mark_as_read/`,
+                api.post(
+                    `/api/notifications/${notif.id}/mark_as_read/`,
                     null,
                     {
                         headers: { Authorization: `Bearer ${token}` },

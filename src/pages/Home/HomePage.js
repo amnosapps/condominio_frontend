@@ -11,6 +11,7 @@ import LoadingSpinner from "../../components/utils/loader";
 import ReservationCreationModal from "../../components/Reservation/ReservationCreation";
 import NotificationsWidget from "./NotificationsWidget";
 import LineChart from "./LineChart";
+import api from "../../services/api";
 
 // Styled Components
 const Container = styled.div`
@@ -222,7 +223,7 @@ const Dashboard = ({ profile }) => {
     const fetchNotifications = async () => {
         const token = localStorage.getItem('accessToken');
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/notifications/`, {
+            const response = await api.get(`/api/notifications/`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setNotifications(response.data);
@@ -236,8 +237,8 @@ const Dashboard = ({ profile }) => {
   const fetchReservations = async () => {
     try {
         const token = localStorage.getItem('accessToken');
-        const response = await axios.get(
-            `${process.env.REACT_APP_API_URL}/api/reservations/`,
+        const response = await api.get(
+            `/api/reservations/`,
             {
                 headers: { Authorization: `Bearer ${token}` },
                 params: {
@@ -268,7 +269,7 @@ const Dashboard = ({ profile }) => {
   const fetchApartments = async () => {
     const token = localStorage.getItem("accessToken");
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/`, {
+      const response = await api.get(`/api/apartments/`, {
         headers: { Authorization: `Bearer ${token}` },
         params: { condominium: selectedCondominium },
       });

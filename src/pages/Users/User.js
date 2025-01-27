@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import axios from 'axios';
 import { FaEdit, FaTrash, FaPlus, FaFilter } from 'react-icons/fa';
 import UserModal from '../../components/Users/UserModal';
+import api from '../../services/api';
 
 // Styled Components
 const PageContainer = styled.div`
@@ -210,8 +211,8 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     const token = localStorage.getItem('accessToken');
     try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/users/`,
+      const response = await api.get(
+        `/api/users/`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -244,8 +245,8 @@ const UserManagement = () => {
       const endpoint =
         userToDelete.user_type === 'Resident' ? 'residents' : 'owners';
 
-      await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/${endpoint}/${userId}/`,
+      await api.delete(
+        `/api/${endpoint}/${userId}/`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
