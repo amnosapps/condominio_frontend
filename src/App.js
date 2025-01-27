@@ -12,12 +12,16 @@ import ServicesPage from './pages/Services';
 import Dashboard from './pages/Services/Dashboard';
 import HomePage from './pages/Home/HomePage';
 import Soon from './pages/Soon'
-import UserManagement from './pages/User/User';
+
 import api from './services/api';
+import UserManagement from './pages/Users/User';
+import ReservationsPage from './pages/Reserations/Reservations';
+import VisitorsPage from './pages/Users/Visitors';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('accessToken'));
     const [selectedCondominium, setSelectedCondominium] = useState(null);
+    const [profile, setProfile] = useState(null);
     const [condominiums, setCondominium] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -29,17 +33,18 @@ function App() {
                 setLoading(false);
                 return;
             }
-
+        
             try {
                 const profileResponse = await api.get(`/api/profile/`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-
+        
                 const userData = profileResponse.data;
+                setProfile(userData); // Save user data in profile state
                 setIsAuthenticated(true);
                 setCondominium(userData.condominiums || []);
-
-                // Auto-select a condominium if there's only one or use the current URL
+        
+                // Auto-select a condominium
                 const currentCondo = window.location.pathname.split('/')[1];
                 if (userData.condominiums.includes(currentCondo)) {
                     setSelectedCondominium(currentCondo);
@@ -133,25 +138,27 @@ function App() {
                     element={
                         <ProtectedRoute>
                             <CondoRoute>
-                                <DashboardLayout />
+                                <DashboardLayout profile={profile} />
                             </CondoRoute>
                         </ProtectedRoute>
                     }
                 >
-                    <Route path="home" element={<HomePage />} />
-                    <Route path="occupation" element={<ReservationCalendar />} />
-                    <Route path="apartments" element={<ApartmentList />} />
-                    <Route path="reports" element={<CondominiumReport />} />
+                    <Route path="home" element={<HomePage profile={profile} />} />
+                    <Route path="occupation" element={<ReservationCalendar profile={profile} />} />
+                    <Route path="apartments" element={<ApartmentList profile={profile} />} />
+                    <Route path="reports" element={<CondominiumReport profile={profile} />} />
+                    <Route path="reservations" element={<ReservationsPage profile={profile} />} />
                     <Route
                         path="services"
                         element={<ServicesPage services={services} setServices={setServices} />}
                     />
                     <Route
                         path="dashboard"
-                        element={<Dashboard services={services} />}
+                        element={<Dashboard services={services} profile={profile} />}
                     />
                     <Route path="soon" element={<Soon />} />
-                    <Route path="users" element={<UserManagement />} />
+                    <Route path="users" element={<UserManagement profile={profile} />} />
+                    <Route path="visitors" element={<VisitorsPage profile={profile} />} />
                 </Route>
 
                 {/* Fallback Route */}

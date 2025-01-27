@@ -11,10 +11,21 @@ const LayoutContainer = styled.div`
     @media (max-width: 768px) {
         flex-direction: column;
     }
+
+    &::-webkit-scrollbar {
+        width: 3px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: #b3b3b3;
+    }
 `;
 
 const MainContent = styled.main`
-    margin-left: 18rem;
+    margin-left: 19rem;
     padding: 2rem;
     flex: 1;
     background-color: #f7f9fc;
@@ -28,9 +39,20 @@ const MainContent = styled.main`
         padding: 2.5rem;
         margin-left: 0;
     }
+
+    &::-webkit-scrollbar {
+        width: 3px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: #b3b3b3;
+    }
 `;
 
-const DashboardLayout = () => {
+const DashboardLayout = ({ profile }) => {
     const [isSidebarOpen, setSidebarOpen] = useState(false);
 
     const toggleSidebar = () => {
@@ -39,7 +61,7 @@ const DashboardLayout = () => {
 
     return (
         <LayoutContainer>
-            <Sidebar isOpen={isSidebarOpen} onToggle={setSidebarOpen} />
+            <Sidebar profile={profile} isOpen={isSidebarOpen} onToggle={setSidebarOpen} />
             <MainContent>
                 <Outlet />
             </MainContent>

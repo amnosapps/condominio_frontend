@@ -13,7 +13,7 @@ const ApartmentCardContainer = styled.div`
     border: 1px solid #e3e7ed;
     border-radius: 8px;
     width: 130px; /* Slightly wider */
-    height: 220px; /* Adjusted height */
+    height: 160px; /* Adjusted height */
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s, box-shadow 0.3s;
     cursor: pointer;

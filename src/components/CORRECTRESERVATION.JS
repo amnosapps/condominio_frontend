@@ -824,8 +824,6 @@ const ReservationCalendar = ({ condominium }) => {
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
-  console.log(reservations)
-
   return (
     <CalendarWrapper>
       <FilterContainer>

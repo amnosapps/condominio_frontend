@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
 
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+
 import { format, isSameDay, isBefore, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import PhotoCapture from "./PhotoCapture";
@@ -21,30 +24,27 @@ const ModalOverlay = styled.div`
   height: 100vh;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: start;
+  align-items: center;
   justify-content: center;
   z-index: 1000;
 `;
 
 const ModalContainer = styled.div`
-  margin-top: 30px;
-  margin-left: 100px;
   background-color: white;
   width: 90%;
-  max-width: 700px;
-  max-height: 80vh; /* Constrain height to 80% of the viewport */
-  padding: 30px;
+  max-width: 1000px;
+  max-height: 650px;
+  padding: 20px;
   border-radius: 5px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  position: relative;
-  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-y: auto;
 
-  /* Custom scrollbar styling */
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
   &::-webkit-scrollbar {
-    width: 8px;
-  }
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    width: 6px;
   }
   &::-webkit-scrollbar-thumb {
     background: #888;
@@ -58,16 +58,16 @@ const ModalContainer = styled.div`
 const CloseButton = styled.button`
   position: absolute;
   /* top: 10px; */
-  right: 50px;
+  right: 500px;
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 40px;
   cursor: pointer;
 `;
 
 
 const GreenButton = styled.button`
-  margin: 10px 5px;
+  margin: 1px 5px;
   padding: 10px 20px;
   font-size: 15px;
   font-weight: 600;
@@ -83,7 +83,7 @@ const GreenButton = styled.button`
 `;
 
 const RedButton = styled.button`
-  margin: 10px 5px;
+  margin: 1px 5px;
   padding: 10px 20px;
   background-color: #dc3545;
   color: white;
@@ -112,7 +112,6 @@ const RemoveGuestButton = styled.button`
 `;
 
 const AddGuestButton = styled.button`
-  margin: 15px 0;
   padding: 10px 10px;
   background-color: #F46600;
   color: white;
@@ -132,7 +131,7 @@ const CheckboxContainer = styled.div`
 `;
 
 const StyledSelect = styled.select`
-  margin-top: 9px;
+  /* margin-top: 9px; */
   width: 100%;
   padding: 7px;
   font-size: 16px;
@@ -176,8 +175,8 @@ const HiddenCheckbox = styled.input.attrs({ type: "checkbox" })`
 
 const StyledCheckbox = styled.div`
   display: inline-block;
-  width: 20px;
-  height: 20px;
+  width: 15px;
+  height: 15px;
   background: ${(props) => (props.checked ? "#28a745" : "white")};
   border: 2px solid #ccc;
   border-radius: 4px;
@@ -213,7 +212,6 @@ const Label = styled.label`
 const EditableInput = styled.input`
   width: 95%;
   padding: 8px;
-  margin: 10px 0;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 14px;
@@ -248,7 +246,7 @@ const LogsModalContainer = styled.div`
 `;
 
 const LogsButton = styled.button`
-  margin: 10px 5px;
+  margin: 1px 5px;
   padding: 10px 20px;
   background-color: #007bff;
   color: white;
@@ -261,14 +259,6 @@ const LogsButton = styled.button`
   }
 `;
 
-const LogsList = styled.div`
-  margin-top: 20px;
-`;
-
-const LogItem = styled.div`
-  border-bottom: 1px solid #ccc;
-  padding: 10px 0;
-`;
 
 const LogsModalOverlay = styled.div`
   position: fixed;
@@ -293,13 +283,6 @@ const CloseLogsButton = styled.button`
   cursor: pointer;
 `;
 
-const SectionTitle = styled.h4`
-  margin: 20px 0 10px;
-  font-size: 18px;
-  font-weight: bold;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 5px;
-`;
 
 const Row = styled.div`
   display: flex;
@@ -311,7 +294,7 @@ const Row = styled.div`
 
 const Column = styled.div`
   flex: 1;
-  margin-right: 10px;
+  margin-right: 15px;
   min-width: 150px; /* Ensure columns are responsive */
 `;
 
@@ -335,13 +318,16 @@ const FieldValue = styled.span`
   }
 `;
 
-const EditableField = styled.div`
-  margin-bottom: 15px;
-`;
-
-const Divider = styled.div`
-  border-bottom: 1px solid #ddd;
-  margin: 15px 0;
+const Badge = styled.span`
+  margin-left: 10px;
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: white;
+  background-color: ${(props) => (props.active ? "#28a745" : "#dc3545")};
 `;
 
 const ReservationModal = ({
@@ -349,7 +335,8 @@ const ReservationModal = ({
   selectedReservation,
   fetchReservations,
   selectedApartment,
-  profile
+  profile,
+  selectedCondominium
 }) => {
   const [logs, setLogs] = useState([]);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
@@ -363,7 +350,7 @@ const ReservationModal = ({
     document_type: selectedReservation?.document_type || "",
     guest_phone: selectedReservation?.guest_phone || "", // Handle null values
     guests_qty: selectedReservation?.guests_qty || 0,
-    apartment: selectedReservation?.apartment || "", // Optional apartment number
+    apartment: selectedReservation?.apt_number || "", // Optional apartment number
     apartment_owner: selectedReservation?.apartment_owner || "", // Optional apartment owner name
     hasChildren: selectedReservation?.hasChildren || "no",
     photos: selectedReservation?.photos || "", // Main photo URL
@@ -394,6 +381,7 @@ const ReservationModal = ({
     selectedReservation?.additional_guests.map((guest) => ({
       name: guest.name || "",
       document: guest.document || "",
+      document_type: guest.document_type || "",
       age: guest.age || 0,
       is_child: guest.is_child || false,
     })) || []
@@ -486,8 +474,14 @@ const ReservationModal = ({
     const formData = new FormData();
   
     // Append updated reservation data
-    formData.append("checkin", new Date(reservationData.checkin).toISOString());
-    formData.append("checkout", new Date(reservationData.checkout).toISOString());
+    if (reservationData.checkin != selectedReservation.checkin) {
+      formData.append("checkin", new Date(reservationData.checkin).toISOString());
+    }
+
+    if (reservationData.checkout != selectedReservation.checkout) {
+      formData.append("checkout", new Date(reservationData.checkout).toISOString());
+    }
+    
     formData.append("observations", reservationData.observations);
     formData.append("guest_name", reservationData.guest_name);
     formData.append("guest_document", reservationData.guest_document);
@@ -543,6 +537,36 @@ const ReservationModal = ({
   };
 
   const handleSaveCheckin = async () => {
+    // Validate required fields
+    const requiredFields = [
+      { field: reservationData.guest_name, label: "Nome do hóspede" },
+      { field: reservationData.guest_document, label: "Documento do hóspede" },
+      { field: reservationData.document_type, label: "Tipo de documento" },
+      { field: reservationData.guest_phone, label: "Contato do hóspede" },
+      { field: reservationData.checkin, label: "Data de entrada" },
+      { field: reservationData.checkout, label: "Data de saída" },
+    ];
+  
+    const requiredAddressFields = [
+      { field: address.endereco, label: "Endereço" },
+      { field: address.bairro, label: "Bairro" },
+      { field: address.cep, label: "CEP" },
+      { field: address.cidade, label: "Cidade" },
+      { field: address.estado, label: "Estado" },
+      { field: address.pais, label: "País" },
+    ];
+  
+    const missingFields = requiredFields.filter((item) => !item.field);
+    const missingAddressFields = requiredAddressFields.filter((item) => !item.field);
+  
+    if (missingFields.length > 0 || missingAddressFields.length > 0) {
+      const missingFieldLabels = [...missingFields, ...missingAddressFields]
+        .map((item) => item.label)
+        .join(", ");
+      alert(`Os seguintes campos são obrigatórios: ${missingFieldLabels}`);
+      return;
+    }
+  
     const confirmMessage = reservationData.checkin_at
       ? "Você tem certeza que deseja atualizar as informações?"
       : "Você tem certeza que deseja fazer o checkin?";
@@ -558,7 +582,7 @@ const ReservationModal = ({
       : new Date().toISOString();
   
     const hasChildren = additionalGuests.some((guest) => guest.is_child);
-
+  
     if (hasChildren && reservationData.additional_photos.length === 0) {
       alert("Você deve adicionar pelo menos uma foto se houver crianças na reserva.");
       setIsSubmitting(false);
@@ -569,9 +593,10 @@ const ReservationModal = ({
     formData.append("observations", reservationData.observations);
     formData.append("guest_name", reservationData.guest_name);
     formData.append("guest_document", reservationData.guest_document);
+    formData.append("document_type", reservationData.document_type);
     formData.append("guest_phone", reservationData.guest_phone || "");
-    formData.append("guests_qty", reservationData.guests_qty); // Updated to use calculated total
-    formData.append("has_children", hasChildren); // Dynamically set
+    formData.append("guests_qty", reservationData.guests_qty);
+    formData.append("has_children", hasChildren);
     formData.append("checkin_at", formattedCheckinAt);
   
     // Append Address information
@@ -584,23 +609,20 @@ const ReservationModal = ({
   
     // Append Additional Guests
     formData.append("additional_guests", JSON.stringify(additionalGuests));
-    
-    console.log(reservationData.additional_photos)
+  
+    console.log(reservationData.additional_photos);
     const photos = reservationData.additional_photos.map(async (photoUrl, index) => {
-      console.log(photoUrl, index)
-      const response = await fetch(photoUrl); // Fetch the blob from the URL
-      const blob = await response.blob(); // Convert response to Blob
-      return new File([blob], `photo-${index}.jpg`, { type: blob.type }); // Convert Blob to File
+      const response = await fetch(photoUrl);
+      const blob = await response.blob();
+      return new File([blob], `photo-${index}.jpg`, { type: blob.type });
     });
   
-    // Wait for all photos to be processed
     const photoFiles = await Promise.all(photos);
   
-    // Append each photo to FormData
     photoFiles.forEach((file) => {
       formData.append("additional_photos", file);
     });
-
+  
     try {
       const response = await api.patch(
         `/api/reservations/${selectedReservation.id}/`,
@@ -619,7 +641,6 @@ const ReservationModal = ({
         closeModal();
         sessionStorage.setItem("reopenModalId", selectedReservation.id);
       } else {
-        console.error("Unexpected response status:", response.status);
         alert("Falha ao salvar as informações. Tente novamente.");
       }
     } catch (error) {
@@ -627,11 +648,7 @@ const ReservationModal = ({
   
       if (error.response) {
         console.error("Response data:", error.response.data);
-        alert(
-          `Erro no servidor: ${error.response.status}. Mensagem: ${
-            error.response.data.detail || "Erro desconhecido"
-          }`
-        );
+        alert(`Erro no servidor: ${error.response.status}. Mensagem: ${error.response.data.detail || "Erro desconhecido"}`);
       } else if (error.request) {
         console.error("Request data:", error.request);
         alert("Erro na comunicação com o servidor. Verifique sua conexão.");
@@ -641,7 +658,7 @@ const ReservationModal = ({
       }
     } finally {
       setIsSubmitting(false);
-      setIsEditing(false)
+      setIsEditing(false);
     }
   };
   
@@ -746,35 +763,111 @@ const ReservationModal = ({
     closeModal();
   };
 
-  const openBase64Pdf = (base64String, fileName = "reservation.pdf") => {
-    try {
-      // Decode the base64 string
-      const byteCharacters = atob(base64String);
-      const byteNumbers = Array.from(byteCharacters, char => char.charCodeAt(0));
-      const byteArray = new Uint8Array(byteNumbers);
+  const generateDocumentPdf = () => {
+    const {
+      id,
+      guest_name,
+      guest_document,
+      guest_phone,
+      checkin,
+      checkout,
+      observations,
+      address,
+      vehicle_plate,
+      additional_guests,
+      apartment,
+      apartment_owner,
+    } = reservationData;
   
-      // Create a Blob from the byte array
-      const pdfBlob = new Blob([byteArray], { type: "application/pdf" });
+    const doc = new jsPDF();
   
-      // Generate a URL for the Blob
-      const pdfUrl = URL.createObjectURL(pdfBlob);
+    // Set document title
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Reserva #${selectedReservation.id}`, 105, 20, null, null, "center");
   
-      // Open the URL in a new tab
-      const newWindow = window.open(pdfUrl, "_blank");
-      if (!newWindow) {
-        // If the browser blocks the new tab, offer the file for download
-        const downloadLink = document.createElement("a");
-        downloadLink.href = pdfUrl;
-        downloadLink.download = fileName;
-        downloadLink.click();
-      }
-  
-      // Optional: Revoke the object URL after a delay to release memory
-      setTimeout(() => URL.revokeObjectURL(pdfUrl), 10000);
-    } catch (error) {
-      console.error("Erro ao abrir pdf:", error);
-      alert("Erro ao abrir pdf. Procure o suporte");
+    // Condominium and Apartment Information
+    doc.setFontSize(14);
+    doc.text("Condomínio", 10, 30);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Condomínio: ${selectedCondominium || "N/A"}`, 10, 40);
+    doc.text(`Apartamento: ${apartment || "N/A"}`, 10, 50);
+    if (apartment_owner) {
+      doc.text(`Proprietário: ${apartment_owner}`, 10, 60);
     }
+  
+    // Add a divider
+    doc.setDrawColor(200);
+    doc.setLineWidth(0.5);
+    doc.line(10, 65, 200, 65);
+  
+    // Add basic information
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Informações Gerais", 10, 75);
+  
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Hóspede: ${guest_name}`, 10, 85);
+    doc.text(`Documento: ${guest_document}`, 10, 95);
+    doc.text(`Contato: ${guest_phone || "N/A"}`, 10, 105);
+    doc.text(`Check-in: ${format(new Date(checkin), "dd/MM/yyyy")}`, 10, 115);
+    doc.text(`Check-out: ${format(new Date(checkout), "dd/MM/yyyy")}`, 10, 125);
+  
+    // Add observations
+    doc.setFont("helvetica", "bold");
+    doc.text("Observações", 10, 135);
+    doc.setFont("helvetica", "normal");
+    doc.text(observations || "Nenhuma observação.", 10, 145);
+  
+    // Add address
+    doc.setFont("helvetica", "bold");
+    doc.text("Endereço", 10, 155);
+    doc.setFont("helvetica", "normal");
+    doc.text(
+      `${address.endereco || "N/A"}, ${address.bairro || "N/A"}, ${address.cidade || "N/A"}, ${address.estado || "N/A"}, ${address.pais || "N/A"} (${address.cep || "N/A"})`,
+      10,
+      165
+    );
+  
+    // Add vehicle information
+    if (vehicle_plate) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Veículo", 10, 175);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Placa: ${vehicle_plate}`, 10, 185);
+    }
+  
+    // Add additional guests
+    if (additional_guests.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Hóspedes Adicionais", 10, 195);
+      additional_guests.forEach((guest, index) => {
+        doc.setFont("helvetica", "normal");
+        doc.text(
+          `${index + 1}. ${guest.name || "N/A"} - ${guest.document || "N/A"} (${
+            guest.is_child ? "Criança" : "Adulto"
+          })`,
+          10,
+          205 + index * 10
+        );
+      });
+    }
+  
+    // Footer
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "italic");
+    doc.text(
+      "Documento gerado automaticamente.",
+      105,
+      290,
+      null,
+      null,
+      "center"
+    );
+  
+    // Save the PDF
+    doc.save(`${selectedCondominium}_reserva_${selectedReservation.id}_${apartment}.pdf`);
   };
 
   const toggleEditing = () => {
@@ -793,19 +886,110 @@ const ReservationModal = ({
     ? isBefore(new Date(), reservationData.checkout) && isAfter(new Date(), reservationData.checkin)// Check if check-in is before checkout
     : false;
 
-  console.log(isCheckinToday, isCheckinPassed, canCheckin, reservationData.checkin)
-
   if (!selectedReservation) return null;
 
+  const handleCancelReservation = async () => {
+    const confirmCancel = window.confirm(
+      "Você tem certeza que deseja cancelar esta reserva? Esta ação não pode ser desfeita."
+    );
+    if (!confirmCancel) return;
+  
+    setIsSubmitting(true);
+  
+    const token = localStorage.getItem("accessToken");
+    const formData = new FormData();
+    formData.append("active", false);
+  
+    try {
+      const response = await axios.patch(
+        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        alert("Reserva cancelada com sucesso!");
+        fetchReservations(1, "right", false); // Refresh reservations
+        closeModal(); // Close the modal
+      } else {
+        alert("Falha ao cancelar a reserva. Tente novamente.");
+      }
+    } catch (error) {
+      console.error("Erro ao cancelar a reserva:", error);
+      alert("Erro ao cancelar a reserva. Verifique sua conexão ou tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+
+  const handleReactivateReservation = async () => {
+    const confirmReactivate = window.confirm(
+      "Você tem certeza que deseja reativar esta reserva?"
+    );
+    if (!confirmReactivate) return;
+  
+    setIsSubmitting(true);
+  
+    const token = localStorage.getItem("accessToken");
+    const formData = new FormData();
+    formData.append("active", true);
+  
+    try {
+      const response = await axios.patch(
+        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+  
+      if (response.status === 200) {
+        alert("Reserva reativada com sucesso!");
+        fetchReservations(1, "right", false); // Refresh reservations
+        closeModal(); // Close the modal
+      } else {
+        alert("Falha ao reativar a reserva. Tente novamente.");
+      }
+    } catch (error) {
+      console.error("Erro ao reativar a reserva:", error);
+      alert("Erro ao reativar a reserva. Verifique sua conexão ou tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  console.log(selectedReservation.active)
   return (
     <ModalOverlay onClick={closeModal1}>
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
+      <ModalContainer onClick={(e) => e.stopPropagation()} className="modal-container">
         <div style={{ display: 'flex', alignContent: 'center', alignItems: 'center' }}>
-          <div><strong style={{ fontSize: '20px' }}>#{selectedReservation.id} - Apto {reservationData.apartment}</strong> {reservationData.apartment_owner != '' && (<>({reservationData.apartment_owner})</>)} </div>
-          
+          <div style={{ display: "flex", gap: "10px", alignItems: "center", margin: '1px 0px' }}>
+            <a onClick={generateDocumentPdf} style={{ color: "white", padding: "10px", borderRadius: "5px", cursor: "pointer" }}>
+              <img
+                  src="/download-pdf.png"
+                  alt="PDF Reserva"
+                  style={{ width: "30px", height: "auto", cursor: "pointer" }}
+                />
+            </a>
+          </div>
+          <div><strong style={{ fontSize: '20px' }}>#{selectedReservation.id} - Apto {reservationData.apartment}</strong></div>
+          {!selectedReservation.active && (
+            <Badge active={selectedReservation.active}>
+              {selectedReservation.active ? "Ativo" : "Cancelado"}
+            </Badge>
+          )}
           <CloseButton onClick={closeModal1}>&times;</CloseButton>
         </div>
-        <div style={{ marginBottom: "10px" }}>
+        <div>
           {isLogsOpen && (
             <LogsModalOverlay onClick={() => setIsLogsOpen(false)}>
               <LogsModalContainer onClick={(e) => e.stopPropagation()}>
@@ -815,23 +999,11 @@ const ReservationModal = ({
               </LogsModalContainer>
             </LogsModalOverlay>
           )}
-          <div style={{ display: "flex", gap: "10px", alignItems: "center", margin: '15px 0px' }}>
-            {/* <a onClick={() => openBase64Pdf(reservationData.reservation_file, `${selectedReservation.apartment}_${selectedReservation.id}reservation.pdf`)}>
-              <img
-                src="/download-pdf.png"
-                alt="PDF Reserva"
-                style={{ width: "30px", height: "auto", cursor: "pointer" }}
-              />
-            </a> */}
-            <strong style={{ fontSize: '18px' }}>
-              {format(new Date(reservationData.checkin), 'dd/MM/yyyy', { locale: ptBR })} - {format(new Date(reservationData.checkout), 'dd/MM/yyyy', { locale: ptBR })}
-            </strong>
-          </div>
         </div>
-        
-        {profile?.user_type === 'owner' && (
+
+        {profile?.user_type === 'owner' || profile?.user_type === 'admin' ? (
           <>
-            <Row style={{ alignItems: "center", gap: "20px" }}>
+            <Row style={{ alignItems: "center", marginBottom: '1px' }}>
               <Column>
                 <FieldLabel>Data de Entrada:</FieldLabel>
                 <FieldValue>
@@ -856,17 +1028,33 @@ const ReservationModal = ({
                   />
                 </FieldValue>
               </Column>
-              <Column style={{ display: 'flex', flexDirection: 'row', justifyContent: 'end'}}>
-                <RedButton 
-                  onClick={handleDeleteReservation}
-                  style={{ marginTop: '30px', backgroundColor: !isEditing ? 'grey' : '#dc3545'}}
-                  disabled={!isEditing}
-                >
-                  Excluir Reserva
-                </RedButton>
-              </Column>
             </Row>
           </>
+        ) : (
+          <Row style={{ alignItems: "center", gap: "2px" }}>
+              <Column>
+                <FieldLabel>Data de Entrada:</FieldLabel>
+                <FieldValue>
+                  <DatePicker
+                    selected={selectedReservation.checkin}
+                    dateFormat="dd/MM/yyyy"
+                    disabled={true}
+                     className="custom-date-picker"
+                  />
+                </FieldValue>
+              </Column>
+              <Column>
+                <FieldLabel>Data de Saída:</FieldLabel>
+                <FieldValue>
+                  <DatePicker
+                    selected={selectedReservation.checkout}
+                    dateFormat="dd/MM/yyyy"
+                    disabled={true}
+                     className="custom-date-picker"
+                  />
+                </FieldValue>
+              </Column>
+            </Row>
         )}
 
         {/* Guest Information */}
@@ -897,32 +1085,6 @@ const ReservationModal = ({
           </Column>
 
           <Column>
-            <FieldLabel>Acompanhantes (Previsão):</FieldLabel>
-            <FieldValue>
-              <EditableInput
-                type="text"
-                value={reservationData.guests_qty}
-                onChange={(e) => handleChange("guests_qty", e.target.value)}
-                disabled={true}
-                
-              />
-              {/* <StyledSelect
-                name="guests_qty"
-                value={reservationData.guests_qty}
-                onChange={handleChange}
-                disabled={true} // Disable if no apartment is selected
-                style={{ backgroundColor: '#f1f1f1' }}
-              >
-                {Array.from({ length: maxGuests }, (_, i) => (
-                  <option key={i} value={i}>{i}</option>
-                ))}
-              </StyledSelect> */}
-            </FieldValue>
-          </Column>
-        </Row>
-
-        <Row>
-          <Column>
             <FieldLabel>Tipo de Documento:</FieldLabel>
             <FieldValue>
               <StyledSelect
@@ -937,6 +1099,7 @@ const ReservationModal = ({
               </StyledSelect>
             </FieldValue>
           </Column>
+          
           <Column>
             <FieldLabel>Documento:</FieldLabel>
             <FieldValue>
@@ -945,6 +1108,18 @@ const ReservationModal = ({
                 value={reservationData.guest_document}
                 onChange={(e) => handleChange("guest_document", e.target.value)}
                 disabled={!isEditing} 
+              />
+            </FieldValue>
+          </Column>
+          
+          <Column>
+            <FieldLabel>Acompanhantes:</FieldLabel>
+            <FieldValue>
+              <EditableInput
+                type="text"
+                value={reservationData.guests_qty}
+                onChange={(e) => handleChange("guests_qty", e.target.value)}
+                disabled={true}
               />
             </FieldValue>
           </Column>
@@ -1014,8 +1189,8 @@ const ReservationModal = ({
               />
             </FieldValue>
           </Column>
-        </Row>
-        <Row>
+        {/* </Row>
+        <Row> */}
           <Column>
             <FieldLabel>Cidade:</FieldLabel>
             <FieldValue>
@@ -1061,7 +1236,7 @@ const ReservationModal = ({
                 disabled={!isEditing}
                 style={{
                   width: "100%",
-                  height: "100px",
+                  height: "50px",
                   padding: "10px",
                   fontSize: "14px",
                   border: "1px solid #ccc",
@@ -1152,7 +1327,7 @@ const ReservationModal = ({
                   <StyledCheckbox
                     checked={guest.is_child}
                     onClick={() =>
-                      updateGuestDetails(index, "is_child", !guest.isChild)
+                      updateGuestDetails(index, "is_child", !guest.is_child)
                     }
                     disabled={!isEditing} 
                   />
@@ -1218,13 +1393,13 @@ const ReservationModal = ({
                   }
                   handleSaveCheckin();
               }}
-              disabled={isSubmitting || (!isCheckinToday && !canCheckin && !isCheckinPassed)}
+              disabled={isSubmitting || (!isCheckinToday && !canCheckin)}
               style={{
                   backgroundColor: 
                       isCheckinToday ? '#28a745' // Green for today
                       : canCheckin ? '#dc3545' // Red for past check-ins
                       : 'grey',   // Grey if not allowed
-                  cursor: isSubmitting || (!isCheckinToday && !canCheckin && !isCheckinPassed) ? 'not-allowed' : 'pointer',
+                  cursor: isSubmitting || (!isCheckinToday && !canCheckin) ? 'not-allowed' : 'pointer',
               }}
           >
               {isSubmitting  ? "Enviando..."
@@ -1235,7 +1410,32 @@ const ReservationModal = ({
           </GreenButton>
           )}
           <LogsButton onClick={fetchLogs}>Auditoria</LogsButton> 
-          <RedButton onClick={closeModal1}>Cancelar</RedButton>
+          
+          {profile?.user_type === "owner" || profile?.user_type === "admin" ? (
+            !selectedReservation.active ? (
+              <GreenButton 
+                onClick={handleReactivateReservation} 
+                disabled={isSubmitting}
+                style={{
+                  backgroundColor: isSubmitting ? "grey" : "#28a745", // Green for active
+                  cursor: isSubmitting ? "not-allowed" : "pointer",
+                }}
+              >
+                {isSubmitting ? "Processando..." : "Reativar Reserva"}
+              </GreenButton>
+            ) : (
+              <RedButton 
+                onClick={handleCancelReservation} 
+                disabled={isSubmitting || !selectedReservation.active} 
+                style={{
+                  backgroundColor: !selectedReservation.active ? "grey" : "#dc3545", // Grey while submitting
+                  cursor: !selectedReservation.active ? "not-allowed" : "pointer",  // Disabled cursor during submission
+                }}
+              >
+                {!selectedReservation.active ? "Cancelado" : "Cancelar Reserva"}
+              </RedButton>
+            )
+          ) : null}
         </div>
       </ModalContainer>
     </ModalOverlay>

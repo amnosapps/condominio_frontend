@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import styled from 'styled-components';
 import api from '../services/api';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 // Styled Components for Login Form
 const Container = styled.div`
@@ -87,6 +88,25 @@ const Label = styled.label`
     }
 `;
 
+const PasswordContainer = styled.div`
+    display: flex;
+    align-items: center;
+    position: relative;
+`;
+
+const EyeIcon = styled.div`
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #F46600;
+
+    &:hover {
+        color: #E35144;
+    }
+`;
+
 const Input = styled.input`
     width: 100%;
     padding: 0.75rem;
@@ -164,6 +184,8 @@ const ErrorMessage = styled.p`
 function Login({ onLoginSuccess }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
@@ -223,12 +245,17 @@ function Login({ onLoginSuccess }) {
                     </InputGroup>
                     <InputGroup>
                         <Label>Senha:</Label>
-                        <Input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
+                        <PasswordContainer>
+                            <Input
+                                type={showPassword ? "text" : "password"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            <EyeIcon onClick={() => setShowPassword((prev) => !prev)}>
+                                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                            </EyeIcon>
+                        </PasswordContainer>
                     </InputGroup>
                     {error && <ErrorMessage>{error}</ErrorMessage>}
                     <Button type="submit">Entrar</Button>

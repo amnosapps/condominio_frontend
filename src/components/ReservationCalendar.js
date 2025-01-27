@@ -36,7 +36,7 @@ const CalendarContainer = styled.div`
   height: 100%;
   margin: auto;
   font-family: 'Roboto', Arial, sans-serif;
-  background-color: #ffffff;
+  background-color: #F5F5F5;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -341,7 +341,7 @@ const Tooltip = styled.div`
   position: absolute;
   background-color: rgba(0, 0, 0, 0.8);
   color: white;
-  padding: 8px;
+  padding: 10px 20px;
   font-size: 0.75rem;
   border-radius: 4px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -352,6 +352,10 @@ const Tooltip = styled.div`
   pointer-events: none;
   z-index: 1000;
   white-space: nowrap;
+
+  > div {
+    margin-bottom: 10px;
+  }
 `;
 
 const FilterContainer = styled.div`
@@ -479,7 +483,7 @@ const spin = keyframes`
   }
 `;
 
-const LoadingSpinner = styled.div`
+export const LoadingSpinner = styled.div`
   position: fixed;
   top: 50%;
   left: 50%;
@@ -516,15 +520,15 @@ const monthNames = [
 ];
 
 // Main component
-const ReservationCalendar = ({ condominium }) => {
+const ReservationCalendar = ({ profile }) => {
   const params = useParams();
-  const selectedCondominium = condominium || params.condominium;
+  const selectedCondominium = params.condominium;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loadingNavigation, setLoadingNavigation] = useState(false);
 
   const [viewType, setViewType] = useState("15");
-  const [currentStartDate, setCurrentStartDate] = useState(subDays(new Date(), 1));
+  const [currentStartDate, setCurrentStartDate] = useState(new Date());
   const [apartments, setApartments] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -541,8 +545,6 @@ const ReservationCalendar = ({ condominium }) => {
   const handleMouseLeave = () => {
     setHoveredReservation(null);
   };
-
-  const [profile, setProfile] = useState(null);
 
   const [guestNameFilter, setGuestNameFilter] = useState("");
   const [startDateFilter, setStartDateFilter] = useState("");
@@ -563,18 +565,6 @@ const ReservationCalendar = ({ condominium }) => {
   const scrollableRef = useRef(null);
 
   const [currentPage, setCurrentPage] = useState(1); // For horizontal pagination
-
-  const fetchUserProfile = async () => {
-    const token = localStorage.getItem('accessToken');
-    try {
-        const response = await api.get(`/api/profile/`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        setProfile(response.data);
-    } catch (error) {
-        console.error('Error fetching user profile:', error);
-    }
-};
 
   const fetchApartments = async () => {
     const token = localStorage.getItem("accessToken");
@@ -637,9 +627,10 @@ const ReservationCalendar = ({ condominium }) => {
         guest_document: reservation.guest_document,
         guest_phone: reservation.guest_phone || "",
         guests_qty: reservation.guests_qty,
-        apartment: reservation.apt_number,
+        apt_number: reservation.apt_number,
         apartment_owner: reservation.apt_owner_name,
         photos: reservation.photo,
+        active: reservation.active,
         additional_photos: reservation.additional_photos_urls || [],
         checkin: reservation.checkin ? parseISO(reservation.checkin) : null,
         checkout: reservation.checkout ? parseISO(reservation.checkout) : null,
@@ -671,10 +662,8 @@ const ReservationCalendar = ({ condominium }) => {
     }
   };
   
-  console.log(reservations)
-
   const loadData = async () => {
-    await Promise.all([fetchApartments(), fetchReservations(currentPage), fetchUserProfile()]);
+    await Promise.all([fetchApartments(), fetchReservations(currentPage)]);
     setLoading(false);
   };
 
@@ -761,15 +750,18 @@ const ReservationCalendar = ({ condominium }) => {
 
   const handlePrev = async () => {
     const newStartDate = addDays(currentStartDate, -parseInt(viewType, 10));
+    
+    if (isBefore(newStartDate, startOfDay(new Date()))) {
+      return; // Exit if the new start date is in the past
+    }
+  
     setCurrentStartDate(newStartDate);
   
-    // Clear current reservations to avoid duplicates
     setReservations([]);
   
-    // Fetch reservations for the new date range
     await fetchReservations(currentPage, "left", false);
-  };
-    
+  }
+
   const handleNext = async () => {
     const newStartDate = addDays(currentStartDate, parseInt(viewType, 10));
     setCurrentStartDate(newStartDate);
@@ -797,7 +789,7 @@ const ReservationCalendar = ({ condominium }) => {
 
   const getReservationBars = (apartment, day) => {
     const roomReservations = filteredReservations
-      .filter((reservation) => reservation.apartment === apartment)
+      .filter((reservation) => reservation.apt_number === apartment)
       .filter(
         (reservation) =>
           reservation.checkin <= endOfDay(day) &&
@@ -855,25 +847,6 @@ const ReservationCalendar = ({ condominium }) => {
     return bars;
   };
   
-
-  const updateReservationTime = async (type) => {
-    if (!selectedReservation) return;
-
-    const timestamp = new Date().toISOString();
-    const updateData = type === "checkin" ? { checkin_at: timestamp } : { checkout_at: timestamp };
-
-    try {
-      await api.patch(
-        `/api/reservations/${selectedReservation.id}/`,
-        updateData,
-        { headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` } }
-      );
-      setSelectedReservation({ ...selectedReservation, ...updateData });
-    } catch (error) {
-      console.error("Error updating reservation:", error);
-    }
-  };
-
   const generateYearRange = () => {
     const currentYear = new Date().getFullYear();
     const startYear = currentYear - 5; // Adjust range as needed
@@ -885,6 +858,11 @@ const ReservationCalendar = ({ condominium }) => {
   const handleYearChange = (event) => {
     const selectedYear = parseInt(event.target.value, 10);
     const newStartDate = new Date(selectedYear, currentStartDate.getMonth(), 1); // Keep current month
+
+    if (isBefore(newStartDate, startOfDay(new Date()))) {
+      return; // Exit if the new start date is in the past
+    }
+
     setCurrentStartDate(newStartDate);
   };
 
@@ -914,7 +892,7 @@ const ReservationCalendar = ({ condominium }) => {
     setStartDateFilter("");
     setEndDateFilter("");
     setSelectedDateRange({ startDate: null, endDate: null });
-    setCurrentStartDate(subDays(new Date(), 1)); // Reset to today's date
+    setCurrentStartDate(new Date()); // Reset to today's date
     setCurrentPage(1)
     fetchReservations(1, "right", false)
   };
@@ -925,9 +903,16 @@ const ReservationCalendar = ({ condominium }) => {
 
   const handleDateRangeChange = (dates) => {
     const [start, end] = dates;
+  
     setSelectedDateRange({ startDate: start, endDate: end });
+  
+    if (start) {
+      setCurrentStartDate(start); // Align calendar's start date with the selected range
+      fetchReservations(1, "right", false)
+    }
+  
     if (start && end) {
-      setShowDatePicker(false); // Close the DatePicker after selection
+      setShowDatePicker(false); // Close the DatePicker
     }
   };
 
@@ -936,8 +921,6 @@ const ReservationCalendar = ({ condominium }) => {
   };
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
-
-  console.log(reservations.length)
 
   return (
     <CalendarWrapper>
@@ -981,10 +964,20 @@ const ReservationCalendar = ({ condominium }) => {
                 inline
                 dateFormat="dd/MM/yyyy"
                 locale="pt-BR"
+                minDate={new Date()} // Restrict selection to today and future dates
               />
             )}
           </DatePickerContainer>
-          <button style={{ marginRight: '100px' }} onClick={handlePrev}>{"<"}</button>
+          {!isBefore(addDays(currentStartDate, -parseInt(viewType, 10)), startOfDay(new Date())) && (
+            <button 
+              style={{ marginRight: '100px' }} 
+              onClick={handlePrev} 
+              disabled={isBefore(addDays(currentStartDate, -parseInt(viewType, 10)), startOfDay(new Date()))}
+            > 
+              {"<"}
+            </button>
+          )}
+         
           {selectedDateRange.startDate && selectedDateRange.endDate ? (
             <span style={{ cursor: 'pointer' }} onClick={toggleDatePicker}>{`${format(selectedDateRange.startDate, "dd MMM yyyy", { locale: ptBR  })} - ${format(selectedDateRange.endDate, "dd MMM yyyy", { locale: ptBR  })}`}</span>
           ) : (
@@ -995,14 +988,23 @@ const ReservationCalendar = ({ condominium }) => {
         <div style={{ display: "flex", gap: "10px" }}>
           <select onChange={handleMonthChange} value={currentStartDate.getMonth()}>
             {monthNames.map((month, index) => (
-              <option key={month} value={index}>
+              <option key={month} value={index}
+                disabled={
+                  isBefore(
+                    new Date(currentStartDate.getFullYear(), index, 1), 
+                    startOfDay(new Date())
+                  )
+                }
+              >
                 {month}
               </option>
             ))}
           </select>
           <select onChange={handleYearChange} value={currentStartDate.getFullYear()}>
             {generateYearRange().map((year) => (
-              <option key={year} value={year}>
+              <option key={year} value={year}
+               disabled={year < new Date().getFullYear()}
+              >
                 {year}
               </option>
             ))}
@@ -1102,7 +1104,6 @@ const ReservationCalendar = ({ condominium }) => {
           <div><strong>Entrada:</strong> {format(hoveredReservation.checkin, 'dd/MM/yyyy')}</div>
           <div><strong>Saída:</strong> {format(hoveredReservation.checkout, 'dd/MM/yyyy')}</div>
           <div><strong>Acompanhantes:</strong> {hoveredReservation.guests_qty || 0}</div>
-          <div><strong>Contato:</strong> {hoveredReservation.guest_phone}</div>
         </Tooltip>
       )}
       
@@ -1121,6 +1122,7 @@ const ReservationCalendar = ({ condominium }) => {
             selectedApartment={selectedApartment}
             fetchReservations={fetchReservations}
             profile={profile}
+            selectedCondominium={selectedCondominium}
           />
         )}
       <RodapeCalendar />
