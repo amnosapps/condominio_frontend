@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import axios from 'axios';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import UserModal from '../../components/Users/UserModal';
+import api from '../../services/api';
 
 const Container = styled.div`
     max-width: 800px;
@@ -116,8 +117,8 @@ const UserManagement = () => {
     const fetchUsers = async () => {
         const token = localStorage.getItem('accessToken');
         try {
-            const response = await axios.get(
-                `${process.env.REACT_APP_API_URL}/api/users/`,
+            const response = await api.get(
+                `/api/users/`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
@@ -154,8 +155,8 @@ const UserManagement = () => {
                     ? 'residents'
                     : 'owners'; // Use the specific type endpoint
 
-            await axios.delete(
-                `${process.env.REACT_APP_API_URL}/api/${endpoint}/${userId}/`,
+            await api.delete(
+                `/api/${endpoint}/${userId}/`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
@@ -174,8 +175,8 @@ const UserManagement = () => {
 
             if (userData.id) {
                 // Update existing user
-                const response = await axios.put(
-                    `${process.env.REACT_APP_API_URL}/api/${endpoint}/${userData.id}/`,
+                const response = await api.put(
+                    `/api/${endpoint}/${userData.id}/`,
                     userData,
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
@@ -186,8 +187,8 @@ const UserManagement = () => {
                 );
             } else {
                 // Add new user
-                const response = await axios.post(
-                    `${process.env.REACT_APP_API_URL}/api/${endpoint}/`,
+                const response = await api.post(
+                    `/api/${endpoint}/`,
                     userData,
                     { headers: { Authorization: `Bearer ${token}` } }
                 );

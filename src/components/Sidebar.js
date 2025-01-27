@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
 import { FaCalendarAlt, FaChartLine, FaCity, FaCloudSun, FaCog, FaHome, FaKey, FaMoneyCheckAlt, FaPoll, FaUsers } from 'react-icons/fa';
+import api from '../services/api';
 
 const SidebarContainer = styled.div`
     background-color: #fff;
@@ -364,7 +365,7 @@ const Sidebar = ({ condominium }) => {
             }
 
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/profile/`, {
+                const response = await api.get(`/api/profile/`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setProfile(response.data);
@@ -380,7 +381,7 @@ const Sidebar = ({ condominium }) => {
         const fetchNotifications = async () => {
             const token = localStorage.getItem('accessToken');
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/notifications/`, {
+                const response = await api.get(`/api/notifications/`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setNotifications(response.data);
@@ -418,7 +419,7 @@ const Sidebar = ({ condominium }) => {
     const markNotificationAsRead = async (id) => {
         const token = localStorage.getItem('accessToken');
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/api/notifications/${id}/mark_as_read/`, null, {
+            await api.post(`/api/notifications/${id}/mark_as_read/`, null, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setNotifications((prev) =>
@@ -439,7 +440,7 @@ const Sidebar = ({ condominium }) => {
 
             await Promise.all(
                 unreadNotifications.map((notif) =>
-                    axios.post(`${process.env.REACT_APP_API_URL}/api/notifications/${notif.id}/mark_as_read/`, null, {
+                    api.post(`/api/notifications/${notif.id}/mark_as_read/`, null, {
                         headers: { Authorization: `Bearer ${token}` },
                     })
                 )

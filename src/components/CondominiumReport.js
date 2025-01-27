@@ -26,6 +26,7 @@ import {
   getMonth,
 } from "date-fns";
 import LoadingSpinner from "./utils/loader";
+import api from "../services/api";
 
 ChartJS.register(
   ArcElement,
@@ -241,8 +242,8 @@ function CondominiumReport({ condominium }) {
     const fetchReservations = async () => {
       const token = localStorage.getItem("accessToken");
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/reservations/`,
+        const response = await api.get(
+          `/api/reservations/`,
           {
             headers: { Authorization: `Bearer ${token}` },
             params: { condominium: selectedCondominium },
@@ -257,8 +258,8 @@ function CondominiumReport({ condominium }) {
     const fetchApartments = async () => {
       const token = localStorage.getItem("accessToken");
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/apartments/`,
+        const response = await api.get(
+          `/api/apartments/`,
           {
             headers: { Authorization: `Bearer ${token}` },
             params: { condominium: selectedCondominium },

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef   } from "react";
 import { useParams } from 'react-router-dom';
-import axios from "axios";
 import styled, { css, keyframes  } from "styled-components";
 import {
   format,
@@ -26,6 +25,7 @@ import { registerLocale } from "react-datepicker";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ReservationCreationModal from "./Reservation/ReservationCreation";
+import api from "../services/api";
 
 registerLocale("pt-BR", ptBR);
 
@@ -567,7 +567,7 @@ const ReservationCalendar = ({ condominium }) => {
   const fetchUserProfile = async () => {
     const token = localStorage.getItem('accessToken');
     try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/profile/`, {
+        const response = await api.get(`/api/profile/`, {
             headers: { Authorization: `Bearer ${token}` },
         });
         setProfile(response.data);
@@ -579,7 +579,7 @@ const ReservationCalendar = ({ condominium }) => {
   const fetchApartments = async () => {
     const token = localStorage.getItem("accessToken");
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/`, {
+      const response = await api.get(`/api/apartments/`, {
         headers: { Authorization: `Bearer ${token}` },
         params: { condominium: selectedCondominium },
       });
@@ -621,7 +621,7 @@ const ReservationCalendar = ({ condominium }) => {
   
     try {
       setLoadingNavigation(true);
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reservations/`, {
+      const response = await api.get(`/api/reservations/`, {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           condominium: selectedCondominium,
@@ -863,8 +863,8 @@ const ReservationCalendar = ({ condominium }) => {
     const updateData = type === "checkin" ? { checkin_at: timestamp } : { checkout_at: timestamp };
 
     try {
-      await axios.patch(
-        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
+      await api.patch(
+        `/api/reservations/${selectedReservation.id}/`,
         updateData,
         { headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` } }
       );

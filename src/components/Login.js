@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import styled from 'styled-components';
+import api from '../services/api';
 
 // Styled Components for Login Form
 const Container = styled.div`
@@ -172,7 +173,7 @@ function Login({ onLoginSuccess }) {
 
         try {
             // Authenticate user
-            const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/token/`, {
+            const response = await api.post(`/api/token/`, {
                 username,
                 password,
             });
@@ -182,7 +183,7 @@ function Login({ onLoginSuccess }) {
             localStorage.setItem('refreshToken', response.data.refresh);
 
             // Fetch user profile
-            const profileResponse = await axios.get(`${process.env.REACT_APP_API_URL}/api/profile/`, {
+            const profileResponse = await api.get(`/api/profile/`, {
                 headers: { Authorization: `Bearer ${response.data.access}` },
             });
 

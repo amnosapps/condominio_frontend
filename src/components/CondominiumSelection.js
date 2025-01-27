@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import styled from 'styled-components';
+import api from '../services/api';
 
 // Styled components
 const Container = styled.div`
@@ -180,7 +181,7 @@ const CondominiumSelection = ({ condominiums: initialCondominiums = [], onSelect
             }
 
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/profile/`, {
+                const response = api.get(`/api/profile/`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 

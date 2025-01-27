@@ -7,6 +7,7 @@ import Modal from './Apartment/Modal';
 import styled from 'styled-components';
 import CreateApartmentModal from './Apartment/CreateApartmentModal';
 import LoadingSpinner from './utils/loader';
+import api from '../services/api';
 
 const ApartmentListContainer = styled.div`
     margin-top: 100px;
@@ -223,7 +224,7 @@ function ApartmentList({ condominium }) {
     const fetchUserProfile = async () => {
         const token = localStorage.getItem('accessToken');
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/profile/`, {
+            const response = await api.get(`/api/profile/`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setProfile(response.data);
@@ -236,7 +237,7 @@ function ApartmentList({ condominium }) {
         const token = localStorage.getItem('accessToken');
         try {
             await fetchUserProfile();
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/apartments/`, {
+            const response = await api.get(`/api/apartments/`, {
                 headers: { Authorization: `Bearer ${token}` },
                 params: { condominium: selectedCondominium },
             });

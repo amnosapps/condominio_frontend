@@ -13,6 +13,7 @@ import Dashboard from './pages/Services/Dashboard';
 import HomePage from './pages/Home/HomePage';
 import Soon from './pages/Soon'
 import UserManagement from './pages/User/User';
+import api from './services/api';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('accessToken'));
@@ -30,7 +31,7 @@ function App() {
             }
 
             try {
-                const profileResponse = await axios.get(`${process.env.REACT_APP_API_URL}/api/profile/`, {
+                const profileResponse = await api.get(`/api/profile/`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 

@@ -5,6 +5,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { registerLocale } from "react-datepicker";
 import ptBR from "date-fns/locale/pt-BR";
 import axios from "axios";
+import api from "../../services/api";
 
 registerLocale("pt-BR", ptBR);
 
@@ -280,7 +281,7 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments }) {
 
       multipartData.append("additional_guests", JSON.stringify(additionalGuests));
 
-      await axios.post(`${process.env.REACT_APP_API_URL}/api/reservations/`, multipartData, {
+      await api.post(`/api/reservations/`, multipartData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",

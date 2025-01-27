@@ -10,6 +10,7 @@ import { FaArrowAltCircleRight, FaCheck, FaEdit, FaPlus } from "react-icons/fa";
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import api from "../services/api";
 
 // Styled Components
 const ModalOverlay = styled.div`
@@ -408,8 +409,8 @@ const ReservationModal = ({
   const fetchLogs = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/logs/`, // Replace with your actual logs endpoint
+      const response = await api.get(
+        `/api/logs/`, // Replace with your actual logs endpoint
         {
           headers: { Authorization: `Bearer ${token}` },
           params: { object_id: selectedReservation.id, model_name: "Reservation" },
@@ -516,8 +517,8 @@ const ReservationModal = ({
     });
 
     try {
-      const response = await axios.patch(
-        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
+      const response = await api.patch(
+        `/api/reservations/${selectedReservation.id}/`,
         formData,
         {
           headers: {
@@ -601,8 +602,8 @@ const ReservationModal = ({
     });
 
     try {
-      const response = await axios.patch(
-        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
+      const response = await api.patch(
+        `/api/reservations/${selectedReservation.id}/`,
         formData,
         {
           headers: {
@@ -657,7 +658,7 @@ const ReservationModal = ({
   
     axios
       .patch(
-        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
+        `/api/reservations/${selectedReservation.id}/`,
         formData,
         {
           headers: {
@@ -709,8 +710,8 @@ const ReservationModal = ({
     const token = localStorage.getItem("accessToken");
 
     try {
-      await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/reservations/${selectedReservation.id}/`,
+      await api.delete(
+        `/api/reservations/${selectedReservation.id}/`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

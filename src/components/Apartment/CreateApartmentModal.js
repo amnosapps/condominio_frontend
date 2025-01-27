@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import axios from "axios";
+import api from "../../services/api";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -135,8 +136,8 @@ function CreateApartmentModal({ isOpen, onClose, condominium, onApartmentCreated
     e.preventDefault();
     const token = localStorage.getItem("accessToken");
     try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/apartments/`,
+      const response = await api.post(
+        `/api/apartments/`,
         { ...formData, condominium, residents: [],  owner_details: null},
         { headers: { Authorization: `Bearer ${token}` } }
       );
