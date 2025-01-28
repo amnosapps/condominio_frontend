@@ -657,14 +657,15 @@ function Modal({ selectedApartment, profile, onClose }) {
         const checkoutDate = new Date(reservation.checkout);
     
         return (
-            checkinDate <= today && // Stay started before or today
-            checkoutDate >= today && // Stay hasn't ended
-            reservation.checkin_at && // Already checked in
-            !reservation.checkout_at // Not checked out
+            (checkinDate <= today || checkoutDate >= today) && // Stay hasn't ended
+            (reservation.checkin_at && 
+            !reservation.checkout_at)
         );
     })
 
-    console.log(apartmentDetails.last_reservations, filteredReservations, currentReservation)
+    console.log(apartmentDetails.last_reservations)
+    console.log(filteredReservations)
+    console.log(currentReservation)
 
     return (
         <>

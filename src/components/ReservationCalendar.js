@@ -593,9 +593,12 @@ const ReservationCalendar = ({ profile }) => {
     const startDate = addDays(
       currentStartDate,
       direction === "right" ? (page - 1) * parseInt(viewType, 10) : -(page * parseInt(viewType, 10))
-    );
+    )
+    startDate.setUTCHours(0, 0, 37, 401);
   
     const endDate = addDays(startDate, parseInt(viewType, 10));
+    endDate.setUTCHours(23, 59, 37, 401);
+
     const rangeKey = `${startDate.toISOString()}_${endDate.toISOString()}`;
   
     // Use cached data if available
@@ -608,6 +611,9 @@ const ReservationCalendar = ({ profile }) => {
       ]);
       return;
     }
+
+    const formattedStartDate = startDate.toISOString();
+    const formattedEndDate = endDate.toISOString();
   
     try {
       setLoadingNavigation(true);
@@ -615,8 +621,8 @@ const ReservationCalendar = ({ profile }) => {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           condominium: selectedCondominium,
-          start_date: startDate.toISOString(),
-          end_date: endDate.toISOString(),
+          start_date: formattedStartDate,
+          end_date: formattedEndDate,
         },
       });
   
@@ -801,6 +807,9 @@ const ReservationCalendar = ({ profile }) => {
     const bars = [];
   
     roomReservations.forEach((reservation) => {
+      if (reservation.id === 119) {
+        console.log(reservation)
+      }
       const startOffset = Math.max(
         0,
         ((reservation.checkin - startOfDay(day)) / (24 * 60 * 60 * 1000)) * 100
