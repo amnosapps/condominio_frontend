@@ -1094,7 +1094,6 @@ const ReservationModal = ({
               >
                 <option value="">Selecione</option>
                 <option value="cpf">CPF</option>
-                <option value="rg">RG</option>
                 <option value="passport">Passaporte</option>
               </StyledSelect>
             </FieldValue>
@@ -1278,7 +1277,6 @@ const ReservationModal = ({
                     >
                       <option value="">Tipo Documento</option>
                       <option value="cpf">CPF</option>
-                      <option value="rg">RG</option>
                       <option value="passport">Passaporte</option>
                     </StyledSelect>
                   </FieldValue>
