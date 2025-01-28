@@ -7,8 +7,8 @@ const ApartmentCardContainer = styled.div`
         status === 0
             ? '#36a2eb' // free
             : status === 1
-            ? '#ff6384' // occupied
-            : '#ffce56'}; // maintenance
+            ? '#FF9800' // occupied
+            : '#4F4F4F'}; // maintenance
     padding: 0.5rem;
     border: 1px solid #e3e7ed;
     border-radius: 8px;
