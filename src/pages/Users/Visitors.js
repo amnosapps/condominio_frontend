@@ -3,6 +3,8 @@ import styled from "styled-components";
 import { FaPhoneAlt, FaCalendarAlt, FaRegCalendarAlt } from "react-icons/fa";
 import VisitorCreationModal from "../../components/Users/Visitors/VisitorCreationModal";
 import VisitorEditModal from "../../components/Users/Visitors/VisitorEditModal";
+import axios from "axios";
+import { useParams } from "react-router-dom";
 
 // Styled Components
 const Container = styled.div`
@@ -103,7 +105,7 @@ const NoVisitorsMessage = styled.div`
 const Avatar = styled.div`
   width: 50px;
   height: 50px;
-  background-color: ${(props) => (props.color ? props.color : '#F46600')};
+  background-color: ${(props) => (props.color ? props.color : "#F46600")};
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -114,32 +116,10 @@ const Avatar = styled.div`
   margin-right: 15px;
 `;
 
-// Mock Data
-const mockVisitors = [
-  {
-    id: 1,
-    name: "John Doe",
-    visit_date: "2025-01-20",
-    unit_number: "101",
-    phone: "(555) 123-4567",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    visit_date: "2025-01-21",
-    unit_number: "102",
-    phone: "(555) 987-6543",
-  },
-  {
-    id: 3,
-    name: "Michael Johnson",
-    visit_date: "2025-01-22",
-    unit_number: "203",
-    phone: "(555) 456-7890",
-  },
-];
-
+// Main Component
 const VisitorsPage = ({ profile }) => {
+  const params = useParams();
+  const selectedCondominium = params.condominium;
   const [visitors, setVisitors] = useState([]);
   const [filteredVisitors, setFilteredVisitors] = useState([]);
   const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
@@ -147,10 +127,26 @@ const VisitorsPage = ({ profile }) => {
   const [selectedVisitor, setSelectedVisitor] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Fetch visitors from the API
+  const fetchVisitors = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/visitors/`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { condominium: selectedCondominium },
+        }
+      );
+      setVisitors(response.data);
+      setFilteredVisitors(response.data);
+    } catch (error) {
+      console.error("Error fetching visitors:", error);
+    }
+  };
+
   useEffect(() => {
-    // Use mock data for this example
-    setVisitors(mockVisitors);
-    setFilteredVisitors(mockVisitors);
+    fetchVisitors();
   }, []);
 
   const handleSearchChange = (e) => {
@@ -195,25 +191,24 @@ const VisitorsPage = ({ profile }) => {
       {filteredVisitors.length > 0 ? (
         <CardContainer>
           {filteredVisitors.map((visitor) => (
-            <VisitorCard key={visitor.id} onClick={() => handleVisitorClick(visitor)}>
+            <VisitorCard
+              key={visitor.id}
+              onClick={() => handleVisitorClick(visitor)}
+            >
               <div>
                 <Avatar>
-                    {visitor.avatar ? (
-                        <img src={visitor.avatar} alt={visitor.name} />
-                    ) : (
-                        visitor.name?.charAt(0).toUpperCase() || '?'
-                    )}
+                  {visitor.name?.charAt(0).toUpperCase() || "?"}
                 </Avatar>
                 <VisitorName>{visitor.name}</VisitorName>
                 <VisitorInfo>
                   <FaRegCalendarAlt />
-                  {new Date(visitor.visit_date).toLocaleDateString()}
+                  {new Date(visitor.entry).toLocaleString('pt-BR')}
                 </VisitorInfo>
                 <VisitorInfo>
                   <FaPhoneAlt />
-                  {visitor.phone}
+                  {visitor.phone || "N/A"}
                 </VisitorInfo>
-                <VisitorInfo>Unidade: {visitor.unit_number}</VisitorInfo>
+                <VisitorInfo>Unidade: {visitor.apartment_number}</VisitorInfo>
               </div>
             </VisitorCard>
           ))}
@@ -226,7 +221,8 @@ const VisitorsPage = ({ profile }) => {
       {isCreationModalOpen && (
         <VisitorCreationModal
           onClose={toggleCreationModal}
-          fetchVisitors={() => setVisitors(mockVisitors)} // Update with actual API call
+          fetchVisitors={fetchVisitors}
+          selectedCondominium={selectedCondominium}
         />
       )}
 
@@ -235,7 +231,8 @@ const VisitorsPage = ({ profile }) => {
         <VisitorEditModal
           visitor={selectedVisitor}
           onClose={toggleEditModal}
-          fetchVisitors={() => setVisitors(mockVisitors)} // Update with actual API call
+          fetchVisitors={fetchVisitors}
+          selectedCondominium={selectedCondominium}
         />
       )}
     </Container>
