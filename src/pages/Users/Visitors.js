@@ -42,6 +42,8 @@ const FiltersRow = styled.div`
   border-radius: 8px;
   margin-bottom: 20px;
   box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap;
+  gap: 10px;
 `;
 
 const SearchInput = styled.input`
@@ -50,6 +52,13 @@ const SearchInput = styled.input`
   border-radius: 4px;
   font-size: 14px;
   width: 300px;
+`;
+
+const DateInput = styled.input`
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
 `;
 
 const CardContainer = styled.div`
@@ -62,7 +71,7 @@ const CardContainer = styled.div`
 const VisitorCard = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center content */
+  align-items: center;
   justify-content: space-between;
   width: 200px;
   background: #fff;
@@ -87,7 +96,7 @@ const ProfileImage = styled.img`
   object-fit: cover;
   border: 2px solid #f46600;
   display: block;
-  margin: 0 auto; /* Center image */
+  margin: 0 auto;
   margin-bottom: 25px;
 `;
 
@@ -95,7 +104,7 @@ const VisitorName = styled.h3`
   font-size: 18px;
   color: #333;
   margin-top: 10px;
-  text-align: center; /* Center visitor name */
+  text-align: center;
 `;
 
 const VisitorInfo = styled.p`
@@ -104,8 +113,8 @@ const VisitorInfo = styled.p`
   display: flex;
   align-items: center;
   gap: 8px;
-  justify-content: start; /* Center info */
-  
+  justify-content: start;
+
   svg {
     color: #f46600;
   }
@@ -129,6 +138,13 @@ const VisitorsPage = ({ profile }) => {
   const [selectedVisitor, setSelectedVisitor] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Date Filter - Default: Last Week to Today
+  const today = new Date().toISOString().split("T")[0];
+  const lastWeek = new Date();
+  lastWeek.setDate(lastWeek.getDate() - 7);
+  const [startDate, setStartDate] = useState(lastWeek.toISOString().split("T")[0]);
+  const [endDate, setEndDate] = useState(today);
+
   // Fetch visitors from the API
   const fetchVisitors = async () => {
     try {
@@ -140,8 +156,24 @@ const VisitorsPage = ({ profile }) => {
           params: { condominium: selectedCondominium },
         }
       );
-      setVisitors(response.data);
-      setFilteredVisitors(response.data);
+
+      let visitorsData = response.data;
+
+      // Filter by date range
+      visitorsData = visitorsData.filter(visitor => {
+        const entryDate = new Date(visitor.entry).toISOString().split("T")[0];
+        return entryDate >= startDate && entryDate <= endDate;
+      });
+
+      // Sort visitors: First, those who have entered but not exited
+      visitorsData.sort((a, b) => {
+        if (!a.exit && b.exit) return -1;
+        if (a.exit && !b.exit) return 1;
+        return new Date(b.entry) - new Date(a.entry);
+      });
+
+      setVisitors(visitorsData);
+      setFilteredVisitors(visitorsData);
     } catch (error) {
       console.error("Error fetching visitors:", error);
     }
@@ -149,7 +181,7 @@ const VisitorsPage = ({ profile }) => {
 
   useEffect(() => {
     fetchVisitors();
-  }, []);
+  }, [startDate, endDate]);
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
@@ -166,12 +198,11 @@ const VisitorsPage = ({ profile }) => {
   };
 
   const handleVisitorClick = (visitor) => {
-      setSelectedVisitor(visitor);
-      setIsEditModalOpen(true);
+    setSelectedVisitor(visitor);
+    setIsEditModalOpen(true);
   };
 
   const toggleCreationModal = () => setIsCreationModalOpen(!isCreationModalOpen);
-
   const toggleEditModal = () => {
     setSelectedVisitor(null);
     setIsEditModalOpen(false);
@@ -185,6 +216,16 @@ const VisitorsPage = ({ profile }) => {
           placeholder="Buscar Visitante"
           value={searchTerm}
           onChange={handleSearchChange}
+        />
+        <DateInput
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+        />
+        <DateInput
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
         />
         <CreateButton onClick={toggleCreationModal}>+ Visitante</CreateButton>
       </FiltersRow>
@@ -227,28 +268,10 @@ const VisitorsPage = ({ profile }) => {
             </VisitorCard>
           ))}
         </CardContainer>
-      ) : (
-        <NoVisitorsMessage>Nenhum visitante encontrado.</NoVisitorsMessage>
-      )}
+      ) : <NoVisitorsMessage>Nenhum visitante encontrado.</NoVisitorsMessage>}
 
-      {/* Visitor Creation Modal */}
-      {isCreationModalOpen && (
-        <VisitorCreationModal
-          onClose={toggleCreationModal}
-          fetchVisitors={fetchVisitors}
-          selectedCondominium={selectedCondominium}
-        />
-      )}
-
-      {/* Visitor Edit Modal */}
-      {isEditModalOpen && (
-        <VisitorEditModal
-          visitor={selectedVisitor}
-          onClose={toggleEditModal}
-          fetchVisitors={fetchVisitors}
-          selectedCondominium={selectedCondominium}
-        />
-      )}
+      {isCreationModalOpen && <VisitorCreationModal onClose={toggleCreationModal} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />}
+      {isEditModalOpen && <VisitorEditModal visitor={selectedVisitor} onClose={toggleEditModal} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />}
     </Container>
   );
 };
