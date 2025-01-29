@@ -62,14 +62,17 @@ const CardContainer = styled.div`
 const VisitorCard = styled.div`
   display: flex;
   flex-direction: column;
+  align-items: center; /* Center content */
   justify-content: space-between;
   width: 200px;
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 15px 25px;
+  padding: 15px;
   cursor: pointer;
   transition: transform 0.3s, box-shadow 0.3s;
+  opacity: ${(props) => (props.isExited ? "0.6" : "1")};
+  filter: ${(props) => (props.isExited ? "grayscale(100%)" : "none")};
 
   &:hover {
     transform: translateY(-5px);
@@ -77,19 +80,32 @@ const VisitorCard = styled.div`
   }
 `;
 
+const ProfileImage = styled.img`
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f46600;
+  display: block;
+  margin: 0 auto; /* Center image */
+  margin-bottom: 25px;
+`;
+
 const VisitorName = styled.h3`
   font-size: 18px;
   color: #333;
-  margin-bottom: 5px;
+  margin-top: 10px;
+  text-align: center; /* Center visitor name */
 `;
 
 const VisitorInfo = styled.p`
-  font-size: 14px;
+  font-size: 15px;
   color: #555;
   display: flex;
   align-items: center;
   gap: 8px;
-
+  justify-content: start; /* Center info */
+  
   svg {
     color: #f46600;
   }
@@ -100,20 +116,6 @@ const NoVisitorsMessage = styled.div`
   font-size: 16px;
   color: #777;
   text-align: center;
-`;
-
-const Avatar = styled.div`
-  width: 50px;
-  height: 50px;
-  background-color: ${(props) => (props.color ? props.color : "#F46600")};
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  font-size: 18px;
-  font-weight: bold;
-  margin-right: 15px;
 `;
 
 // Main Component
@@ -164,8 +166,8 @@ const VisitorsPage = ({ profile }) => {
   };
 
   const handleVisitorClick = (visitor) => {
-    setSelectedVisitor(visitor);
-    setIsEditModalOpen(true);
+      setSelectedVisitor(visitor);
+      setIsEditModalOpen(true);
   };
 
   const toggleCreationModal = () => setIsCreationModalOpen(!isCreationModalOpen);
@@ -193,22 +195,34 @@ const VisitorsPage = ({ profile }) => {
           {filteredVisitors.map((visitor) => (
             <VisitorCard
               key={visitor.id}
+              isExited={!!visitor.exit} // If exit exists, the card will be faded.
               onClick={() => handleVisitorClick(visitor)}
             >
               <div>
-                <Avatar>
-                  {visitor.name?.charAt(0).toUpperCase() || "?"}
-                </Avatar>
+                {visitor.image_base64 ? (
+                  <ProfileImage src={visitor.image_base64} alt="Profile" />
+                ) : (
+                  <ProfileImage
+                    src="https://placehold.co/100x100.png"
+                    alt="Escolha uma imagem"
+                  />
+                )}
                 <VisitorName>{visitor.name}</VisitorName>
                 <VisitorInfo>
                   <FaRegCalendarAlt />
-                  {new Date(visitor.entry).toLocaleString('pt-BR')}
+                  {new Date(visitor.entry).toLocaleString("pt-BR")}
                 </VisitorInfo>
+                {visitor.exit && (
+                  <VisitorInfo>
+                    <FaCalendarAlt style={{ color: "red" }} />
+                    {new Date(visitor.exit).toLocaleString("pt-BR")}
+                  </VisitorInfo>
+                )}
                 <VisitorInfo>
                   <FaPhoneAlt />
                   {visitor.phone || "N/A"}
                 </VisitorInfo>
-                <VisitorInfo>Unidade: {visitor.apartment_number}</VisitorInfo>
+                <VisitorInfo>Unidade: <strong>{visitor.apartment_number}</strong></VisitorInfo>
               </div>
             </VisitorCard>
           ))}

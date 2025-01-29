@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import axios from "axios";
-import { FaCamera } from "react-icons/fa";
+import { FaCamera, FaFileImage } from "react-icons/fa";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -21,8 +21,21 @@ const ModalContent = styled.div`
   padding: 20px;
   border-radius: 8px;
   width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   position: relative;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
 `;
 
 const ModalHeader = styled.div`
@@ -52,6 +65,7 @@ const ModalHeader = styled.div`
 
 const ProfileImageContainer = styled.div`
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   margin-bottom: 20px;
@@ -66,19 +80,25 @@ const ProfileImage = styled.img`
   border: 2px solid #f46600;
 `;
 
+const UploadContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+`;
+
+
 const UploadIcon = styled.div`
-  position: absolute;
-  bottom: -10px;
-  right: 20px;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #f46600;
   color: white;
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 
   &:hover {
@@ -88,6 +108,14 @@ const UploadIcon = styled.div`
   input {
     display: none;
   }
+`;
+
+const Video = styled.video`
+  display: ${({ show }) => (show ? "block" : "none")};
+  width: 100%;
+  max-height: 300px;
+  border-radius: 10px;
+  margin-bottom: 10px;
 `;
 
 const Input = styled.input`
@@ -123,6 +151,16 @@ const Button = styled.button`
   }
 `;
 
+const CaptureButton = styled(Button)`
+  background: #f46600;
+  margin-top: 1px;
+  margin-bottom: 20px;
+
+  &:hover {
+    background: #e05a00;
+  }
+`;
+
 const VisitorCreationModal = ({ onClose, fetchVisitors, selectedCondominium }) => {
   const [name, setName] = useState("");
   const [unit, setUnit] = useState("");
@@ -130,7 +168,11 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, selectedCondominium }) =
   const [phone, setPhone] = useState("");
   const [image, setImage] = useState(null);
   const [apartments, setApartments] = useState([]);
+  const [showCamera, setShowCamera] = useState(false);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
+  
 
   useEffect(() => {
     const fetchApartments = async () => {
@@ -162,6 +204,39 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, selectedCondominium }) =
 
     if (file) {
       reader.readAsDataURL(file);
+    }
+  };
+
+  const startCamera = async () => {
+    setShowCamera(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
+    } catch (error) {
+      console.error("Error accessing camera:", error);
+      alert("Erro ao acessar a câmera.");
+    }
+  };
+
+  const captureImage = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+    
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    context.drawImage(videoRef.current, 0, 0);
+    
+    const imageData = canvas.toDataURL("image/png");
+    setImage(imageData);
+    
+    // Stop the camera stream and close camera view
+    setShowCamera(false);
+    if (videoRef.current.srcObject) {
+      videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
     }
   };
 
@@ -221,16 +296,19 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, selectedCondominium }) =
               alt="Escolha uma imagem"
             />
           )}
-          <UploadIcon onClick={triggerFileInput}>
-            <FaCamera />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              ref={fileInputRef}
-            />
-          </UploadIcon>
+          <UploadContainer>
+            <UploadIcon onClick={triggerFileInput}>
+              <FaFileImage />
+              <input type="file" accept="image/*" onChange={handleImageUpload} ref={fileInputRef} />
+            </UploadIcon>
+            <UploadIcon onClick={startCamera}>
+              <FaCamera />
+            </UploadIcon>
+          </UploadContainer>
         </ProfileImageContainer>
+        {showCamera && <Video ref={videoRef} autoPlay show />}
+        {showCamera && <CaptureButton onClick={captureImage}>Capturar Foto</CaptureButton>}
+        <canvas ref={canvasRef} style={{ display: "none" }} />
         <Input
           type="text"
           placeholder="Nome do Visitante"
@@ -259,6 +337,7 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, selectedCondominium }) =
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
         />
+        
         <Button onClick={handleCreateVisitor}>Registrar Entrada</Button>
       </ModalContent>
     </ModalOverlay>
