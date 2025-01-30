@@ -422,7 +422,7 @@ const ReservationsPage = ({ profile }) => {
               <th>ID</th>
               <th>Hóspede</th>
               <th>Estadia</th>
-              <th>Acompanhantes</th>
+              <th>Ocupantes</th>
               <th>Status</th>
             </tr>
           </TableHeader>
@@ -449,7 +449,7 @@ const ReservationsPage = ({ profile }) => {
                         <span>{new Date(reservation.checkout).toLocaleDateString()}</span>
                     </div>
                 </td>
-                <td>{reservation.guests_qty || 0}</td>
+                <td>{(reservation.guests_qty || 0) + 1}</td>
                 <td>
                   <Badge
                     status={
