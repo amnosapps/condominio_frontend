@@ -335,6 +335,10 @@ const ReservationBar = styled.div`
   &:hover {
     opacity: 0.7
   }
+
+  > strong {
+    font-size: 14px;
+  }
 `;
 
 const Tooltip = styled.div`
@@ -1057,7 +1061,12 @@ const ReservationCalendar = ({ profile }) => {
                           onMouseLeave={handleMouseLeave}
                           onClick={() => handleReservationClick(bar, apartment)}
                         >
-                          <strong>{bar.guest_name}</strong>
+                          <strong>
+                            {bar.guest_name && bar.guest_name.split(" ").length > 1
+                            ? `${bar.guest_name.split(" ")[0]} ${bar.guest_name.split(" ")[1][0]}.`
+                            : bar.guest_name}
+
+                          </strong>
                         </ReservationBar>
                     ))}
 

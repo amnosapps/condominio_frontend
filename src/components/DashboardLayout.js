@@ -7,6 +7,7 @@ const LayoutContainer = styled.div`
     display: flex;
     height: 100vh;
     width: 100vw;
+    
 
     @media (max-width: 768px) {
         flex-direction: column;
@@ -25,10 +26,11 @@ const LayoutContainer = styled.div`
 `;
 
 const MainContent = styled.main`
-    margin-left: 19rem;
+    margin-left: 20rem;
     padding: 2rem;
     flex: 1;
     background-color: #f7f9fc;
+    overflow-x: auto;
 
     @media (max-width: 768px) {
         margin-left: 0;
