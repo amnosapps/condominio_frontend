@@ -673,7 +673,7 @@ const ReservationModal = ({
     formData.append("checkout_at", new Date().toISOString());
     console.log("FormData:", formData);
   
-    axios
+    api
       .patch(
         `/api/reservations/${selectedReservation.id}/`,
         formData,

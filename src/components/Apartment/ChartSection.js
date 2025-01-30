@@ -115,7 +115,7 @@ function ChartSection({ apartments, onChartClick }) {
             >
                 <TittleDoughnut>Entradas</TittleDoughnut>
                 <Doughnut
-                    data={createDonutData(checkinsToday.length, 'Check-ins Hoje', '#63c967')}
+                    data={createDonutData(checkinsToday.length, 'Check-ins Hoje', '#539e56')}
                     plugins={[centerTextPlugin]}
                     options={{
                         plugins: {
@@ -189,7 +189,7 @@ function ChartSection({ apartments, onChartClick }) {
             >
                 <TittleDoughnut>Manutenção</TittleDoughnut>
                 <Doughnut
-                    data={createDonutData(statusCounts.maintenance, 'Manutenção', '#4F4F4F')}
+                    data={createDonutData(statusCounts.maintenance, 'Manutenção', '#7c7c7c')}
                     plugins={[centerTextPlugin]}
                     options={{
                         plugins: {

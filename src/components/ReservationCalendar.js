@@ -299,7 +299,7 @@ const ReservationBar = styled.div`
   background-color: ${(props) => {
     // checkin proximo (reserva futura)
     if (!props.checkinAt && isToday(props.checkin)) {
-      return '#63c967'; // Green for future reservation
+      return '#539e56'; // Green for future reservation
     }
 
     // checkin pendente
@@ -322,7 +322,7 @@ const ReservationBar = styled.div`
       return '#9E9E9E'; // Grey if checked in and checked out
     }
 
-    return '#63c967'; // futuras reservas
+    return '#539e56'; // futuras reservas
   }};
   color: white;
   padding: 5px 8px;
