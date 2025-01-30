@@ -75,7 +75,7 @@ const SidebarContainer = styled.div`
 const statusColors = {
     Disponível: '#36a2eb', // Blue for available
     Ocupado: '#ff6384',    // Red for occupied
-    Manutenção: '#ffce56', // Yellow for maintenance
+    Manutenção: '#D3D3D3', // Gray for maintenance
 };
 
 // Circle for Status Indicator

@@ -115,7 +115,7 @@ function ChartSection({ apartments, onChartClick }) {
             >
                 <TittleDoughnut>Entradas</TittleDoughnut>
                 <Doughnut
-                    data={createDonutData(checkinsToday.length, 'Check-ins Hoje', '#8e44ad')}
+                    data={createDonutData(checkinsToday.length, 'Check-ins Hoje', '#539e56')}
                     plugins={[centerTextPlugin]}
                     options={{
                         plugins: {
@@ -132,7 +132,7 @@ function ChartSection({ apartments, onChartClick }) {
             >
                 <TittleDoughnut>Saídas</TittleDoughnut>
                 <Doughnut
-                    data={createDonutData(checkoutsToday.length, 'Check-outs Hoje', '#e67e22')}
+                    data={createDonutData(checkoutsToday.length, 'Check-outs Hoje', '#D32F2F')}
                     plugins={[centerTextPlugin]}
                     options={{
                         plugins: {
@@ -149,7 +149,7 @@ function ChartSection({ apartments, onChartClick }) {
             >
                 <TittleDoughnut>Ocupados</TittleDoughnut>
                 <Doughnut
-                    data={createDonutData(statusCounts.occupied, 'Ocupados', '#ff6384')}
+                    data={createDonutData(statusCounts.occupied, 'Ocupados', '#FF9800')}
                     plugins={[centerTextPlugin]}
                     options={{
                         plugins: {
@@ -189,7 +189,7 @@ function ChartSection({ apartments, onChartClick }) {
             >
                 <TittleDoughnut>Manutenção</TittleDoughnut>
                 <Doughnut
-                    data={createDonutData(statusCounts.maintenance, 'Manutenção', '#ffce56')}
+                    data={createDonutData(statusCounts.maintenance, 'Manutenção', '#7c7c7c')}
                     plugins={[centerTextPlugin]}
                     options={{
                         plugins: {
@@ -211,7 +211,7 @@ function ChartSection({ apartments, onChartClick }) {
             >
                 <TittleDoughnut>Temporada</TittleDoughnut>
                 <Doughnut
-                    data={createDonutData(typeCounts.temporada, 'Temporada', '#4caf50')}
+                    data={createDonutData(typeCounts.temporada, 'Temporada', '#FFEB3B')}
                     plugins={[centerTextPlugin]}
                     options={{
                         plugins: {
@@ -231,7 +231,7 @@ function ChartSection({ apartments, onChartClick }) {
             >
                 <TittleDoughnut>Moradia</TittleDoughnut>
                 <Doughnut
-                    data={createDonutData(typeCounts.moradia, 'Moradia', '#ff9800')}
+                    data={createDonutData(typeCounts.moradia, 'Moradia', '#8e44ad')}
                     plugins={[centerTextPlugin]}
                     options={{
                         plugins: {
