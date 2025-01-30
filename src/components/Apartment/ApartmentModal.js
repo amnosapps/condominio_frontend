@@ -467,17 +467,17 @@ function Modal({ selectedApartment, profile, onClose }) {
     const handleAddOwner = async () => {
         const token = localStorage.getItem('accessToken');
 
-        if (!ownerToAdd.name || !ownerToAdd.email || !ownerToAdd.phone || !ownerToAdd.username || !ownerToAdd.password) {
+        if (!ownerToAdd.name || !ownerToAdd.email || !ownerToAdd.phone) {
             alert('Preencha todos os campos do proprietário.');
             return;
         }
 
         const newOwner = {
             name: ownerToAdd.name,
-            user: {
-                username: ownerToAdd.username,
-                password: ownerToAdd.password,
-            },
+            // user: {
+            //     username: ownerToAdd.username,
+            //     password: ownerToAdd.password,
+            // },
             condominiums: [selectedApartment.condominium], // Assuming the ID of the condominium is stored here
             apartment: selectedApartment.id, // Assuming the ID of the condominium is stored here
             phone: ownerToAdd.phone,
@@ -815,7 +815,7 @@ function Modal({ selectedApartment, profile, onClose }) {
                                                 />
 
                                                 <h4 style={{ marginBottom: '-6px' }}>Acesso do residente</h4>
-                                                <ModalInput
+                                                {/* <ModalInput
                                                     type="text"
                                                     placeholder="username"
                                                     value={residentToAdd.username}
@@ -836,7 +836,7 @@ function Modal({ selectedApartment, profile, onClose }) {
                                                             password: e.target.value,
                                                         }))
                                                     }
-                                                />
+                                                /> */}
 
                                                 <SaveButton onClick={handleAddResident}>
                                                     Adicionar Residente
