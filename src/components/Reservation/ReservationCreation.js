@@ -278,6 +278,7 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments, fetc
       multipartData.append("guests_qty", formData.guests_qty);
       multipartData.append("checkin", checkinDate.toISOString());
       multipartData.append("checkout", checkoutDate.toISOString());
+      multipartData.append("active", true);
 
       multipartData.append("additional_guests", JSON.stringify(additionalGuests));
 
