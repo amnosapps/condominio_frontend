@@ -419,6 +419,7 @@ const ReservationsPage = ({ profile }) => {
         <Table>
           <TableHeader>
             <tr>
+              <th>Apto</th>
               <th>ID</th>
               <th>Hóspede</th>
               <th>Estadia</th>
@@ -429,6 +430,8 @@ const ReservationsPage = ({ profile }) => {
           <TableBody>
             {filteredReservations.map((reservation) => (
               <ReservationRow key={reservation.id} onClick={() => handleReservationClick(reservation)}>
+                
+                <td>{reservation.apt_number}</td>
                 <td>{reservation.id}</td>
                 
                 <td>
