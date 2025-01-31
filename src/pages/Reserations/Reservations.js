@@ -225,7 +225,7 @@ const ReservationsPage = ({ profile }) => {
   const [selectedReservation, setSelectedReservation] = useState(null);
   const [apartments, setApartments] = useState([]);
   const [FilteredApartments, setFilteredApartments] = useState([]);
-  const [filterType, setFilterType] = useState("Temporada");
+  const [filterType, setFilterType] = useState("Todos");
 
   const [searchTerm, setSearchTerm] = useState("");
   
@@ -260,29 +260,28 @@ const ReservationsPage = ({ profile }) => {
 
   const applyFilter = (filterType, data = reservations) => {
     let filtered;
+  
     if (filterType === "Current") {
-      filtered = data.filter(
-        (res) => res.checkin_at && !res.checkout_at
-      );
+      filtered = data.filter((res) => res.checkin_at && !res.checkout_at);
+    } else if (filterType === "Finalizada") {
+      filtered = data.filter((res) => res.checkin_at && res.checkout_at);
     } else if (filterType === "All") {
       filtered = data;
     } else if (filterType === "Future") {
-      filtered = data.filter(
-        (res) => !res.checkin_at && !res.checkout_at
-      );
+      filtered = data.filter((res) => !res.checkin_at && !res.checkout_at);
     } else if (filterType === "Canceled") {
-      filtered = data.filter(
-        (res) => !res.active
+      filtered = data.filter((res) => !res.active);
+    }
+  
+    // Apply search term filter for both guest name and apto (Apartment Number)
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (res) =>
+          res.guest_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          res.apt_number.toString().includes(searchTerm)
       );
     }
-
-     // Apply search term filter
-     if (searchTerm) {
-      filtered = filtered.filter((res) =>
-        res.guest_name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
+  
     setFilteredReservations(filtered);
     setActiveTab(filterType);
   };
@@ -291,13 +290,22 @@ const ReservationsPage = ({ profile }) => {
     const value = e.target.value;
     setSearchTerm(value);
   
-    if (value.trim() === "") {
-      // If the search term is empty, reset the search filter
-      applyFilter(activeTab); // Reapply the current active tab filter without search
-    } else {
-      // Otherwise, apply the filter with the updated search term
-      applyFilter(activeTab);
+    let filtered = reservations;
+  
+    if (value.trim() !== "") {
+      filtered = reservations.filter((res) => {
+        if (filterType === "name") {
+          return res.guest_name.toLowerCase().includes(value.toLowerCase());
+        } else if (filterType === "apartment") {
+          return res.apt_number.toString().includes(value);
+        } else if (filterType === "reservation") {
+          return res.id.toString().includes(value);
+        }
+        return false;
+      });
     }
+  
+    setFilteredReservations(filtered);
   };
 
   const handleDateRangeChange = (dates) => {
@@ -346,6 +354,12 @@ const ReservationsPage = ({ profile }) => {
           <StatValue color="#1e88e5">{reservations.length}</StatValue> {/* Medium Blue for contrast */}
           <StatLabel>Total</StatLabel>
         </StatCard>
+        <StatCard bgColor="#e3f2fd"> {/* Soft Light Blue for "Total" */}
+          <StatValue color="#1e88e5">
+            {reservations.filter((res) => res.checkin_at && res.checkout_at).length}
+          </StatValue> {/* Medium Blue for contrast */}
+          <StatLabel>Finalizadas</StatLabel>
+        </StatCard>
         <StatCard bgColor="#e8f5e9"> {/* Soft Light Green for "Em Curso" */}
           <StatValue color="#43a047">
             {reservations.filter((res) => res.checkin_at && !res.checkout_at).length}
@@ -376,6 +390,9 @@ const ReservationsPage = ({ profile }) => {
             <Tab active={activeTab === "All"} onClick={() => applyFilter("All")}>
                 Todas Reservas
             </Tab>
+            <Tab active={activeTab === "Finalizada"} onClick={() => applyFilter("Finalizada")}>
+              Finalizadas
+            </Tab>
             <Tab active={activeTab === "Current"} onClick={() => applyFilter("Current")}>
                 Em Curso
             </Tab>
@@ -387,15 +404,40 @@ const ReservationsPage = ({ profile }) => {
             </Tab>
         </div>
         <div>
-          <SearchInput
-            placeholder="Buscar Reserva / Hóspede"
-            value={searchTerm}
-            onChange={handleSearchChange} // Handle search input
-          />
-          <CreateButton onClick={toggleModal}>
-            + Reserva
-          </CreateButton>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <select
+              style={{
+                padding: "8px",
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+                fontSize: "14px",
+                backgroundColor: "#fff",
+                cursor: "pointer",
+              }}
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+            >
+              <option value="name">Nome</option>
+              <option value="apartment">Apto</option>
+              <option value="reservation">Reserva</option>
+            </select>
+
+            <SearchInput
+              placeholder={
+                filterType === "name"
+                  ? "Buscar Hóspede"
+                  : filterType === "apartment"
+                  ? "Buscar Apto"
+                  : "Buscar Reserva"
+              }
+              value={searchTerm}
+              onChange={handleSearchChange}
+            />
+          </div>
         </div>
+        <CreateButton onClick={toggleModal}>
+          + Reserva
+        </CreateButton>
       </FiltersRow>
 
       {/* Date Picker */}
@@ -420,7 +462,7 @@ const ReservationsPage = ({ profile }) => {
           <TableHeader>
             <tr>
               <th>Apto</th>
-              <th>ID</th>
+              <th>Reserva</th>
               <th>Hóspede</th>
               <th>Estadia</th>
               <th>Ocupantes</th>
@@ -432,7 +474,7 @@ const ReservationsPage = ({ profile }) => {
               <ReservationRow key={reservation.id} onClick={() => handleReservationClick(reservation)}>
                 
                 <td>{reservation.apt_number}</td>
-                <td>{reservation.id}</td>
+                <td>#{reservation.id}</td>
                 
                 <td>
                   <ProfileCell>
@@ -447,9 +489,9 @@ const ReservationsPage = ({ profile }) => {
                 </td>
                 <td>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                        <span>{new Date(reservation.checkin).toLocaleDateString()}</span>
+                        <span>{new Date(reservation.checkin).toLocaleDateString("pt-BR")}</span>
                         <div style={{ flexGrow: 1, height: '1px', backgroundColor: '#ccc' }}></div>
-                        <span>{new Date(reservation.checkout).toLocaleDateString()}</span>
+                        <span>{new Date(reservation.checkout).toLocaleDateString("pt-BR")}</span>
                     </div>
                 </td>
                 <td>{(reservation.guests_qty || 0) + 1}</td>
