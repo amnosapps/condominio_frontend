@@ -419,16 +419,19 @@ const ReservationsPage = ({ profile }) => {
         <Table>
           <TableHeader>
             <tr>
+              <th>Apto</th>
               <th>ID</th>
               <th>Hóspede</th>
               <th>Estadia</th>
-              <th>Acompanhantes</th>
+              <th>Ocupantes</th>
               <th>Status</th>
             </tr>
           </TableHeader>
           <TableBody>
             {filteredReservations.map((reservation) => (
               <ReservationRow key={reservation.id} onClick={() => handleReservationClick(reservation)}>
+                
+                <td>{reservation.apt_number}</td>
                 <td>{reservation.id}</td>
                 
                 <td>
@@ -449,7 +452,7 @@ const ReservationsPage = ({ profile }) => {
                         <span>{new Date(reservation.checkout).toLocaleDateString()}</span>
                     </div>
                 </td>
-                <td>{reservation.guests_qty || 0}</td>
+                <td>{(reservation.guests_qty || 0) + 1}</td>
                 <td>
                   <Badge
                     status={

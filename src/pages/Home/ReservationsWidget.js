@@ -203,7 +203,7 @@ const ReservationsWidget = ({
                   </Dates>
                   {isToday(checkinDate) && <Label isToday>Hoje</Label>}
                   {isPast(checkinDate) && !isToday(checkinDate) && (
-                    <Label>Pendente</Label>
+                    <Label>Noshow</Label>
                   )}
                 </ReservationDetails>
                 <ChevronIcon>➔</ChevronIcon>
