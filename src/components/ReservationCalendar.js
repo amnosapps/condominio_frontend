@@ -813,6 +813,7 @@ const ReservationCalendar = ({ profile }) => {
           reservation.checkin <= endOfDay(day) &&
           reservation.checkout >= startOfDay(day)
       )
+      .filter((reservation) => reservation.active && !reservation.checkout_at) 
       .sort((a, b) => a.checkin - b.checkin);
   
     const occupiedSlots = [];
@@ -995,7 +996,7 @@ const ReservationCalendar = ({ profile }) => {
                 inline
                 dateFormat="dd/MM/yyyy"
                 locale="pt-BR"
-                minDate={new Date()} // Restrict selection to today and future dates
+                // minDate={new Date()} // Restrict selection to today and future dates
               />
             )}
           </DatePickerContainer>

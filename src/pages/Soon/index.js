@@ -66,13 +66,15 @@ function ConstructionPage() {
 
   return (
     <ConstructionPageContainer>
-      <iframe src="https://igoove.com.br/" width="100%" height="800px"></iframe>
-      {/* <AnimatedIcon>
+      {/* <iframe src="https://igoove.com.br/" width="100%" height="800px"
+        allow="camera; microphone"
+      ></iframe> */}
+      <AnimatedIcon>
         🚧
       </AnimatedIcon>
       <Message>Funcionalidade em construção</Message>
       <SubMessage>Estamos trabalhando duro para liberar mais uma funcionalidade incrível. Aguarde!</SubMessage>
-      <BackButton onClick={handleBack}>Voltar</BackButton> */}
+      <BackButton onClick={handleBack}>Voltar</BackButton>
     </ConstructionPageContainer>
   );
 }
