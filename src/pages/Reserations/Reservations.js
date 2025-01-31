@@ -7,6 +7,8 @@ import { FaRegCalendarAlt } from "react-icons/fa";
 import ReservationModal from "../../components/ReservationModal";
 import ReservationCreationModal from "../../components/Reservation/ReservationCreation";
 
+import { MdWarning } from "react-icons/md"; // Warning icon for alerts
+
 import {
   format,
 } from "date-fns";
@@ -208,6 +210,37 @@ const DatePickerContainer = styled.div`
   }
 `;
 
+const AlertContainer = styled.div`
+  background: #ffebee; /* Light red background */
+  border-left: 5px solid #d32f2f; /* Dark red border */
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const AlertItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #d32f2f;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const WarningIcon = styled(MdWarning)`
+  color: #d32f2f;
+  font-size: 20px;
+`;
+
+
 // Main Component
 const ReservationsPage = ({ profile }) => {
   const params = useParams();
@@ -228,6 +261,8 @@ const ReservationsPage = ({ profile }) => {
   const [filterType, setFilterType] = useState("Todos");
 
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [pendingActions, setPendingActions] = useState([]);
   
   const handleReservationClick = (reservation) => {
     setSelectedReservation(reservation);
@@ -240,22 +275,52 @@ const ReservationsPage = ({ profile }) => {
   const fetchReservations = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await api.get(
-        `/api/reservations/`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          params: {
-            condominium: selectedCondominium,
-            start_date: selectedDateRange.startDate.toISOString(),
-            end_date: selectedDateRange.endDate.toISOString(),
-          },
-        }
-      );
-      setReservations(response.data);
-      applyFilter("All", response.data); // Apply initial filter
+      const response = await api.get(`/api/reservations/`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: {
+          condominium: selectedCondominium,
+          start_date: selectedDateRange.startDate.toISOString(),
+          end_date: selectedDateRange.endDate.toISOString(),
+        },
+      });
+  
+      identifyPendingActions(response.data);
+  
+      const updatedReservations = response.data.map((res) => {
+        const pending = pendingActions.find((p) => p.id === res.id);
+        return pending ? { ...res, pendingStatus: pending.pendingStatus } : res;
+      });
+  
+      setReservations(updatedReservations);
+      applyFilter("All", updatedReservations);
     } catch (error) {
       console.error("Error fetching reservations:", error);
     }
+  };
+
+  const identifyPendingActions = (data) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to midnight for comparison
+  
+    const noExitReservations = data
+      .filter((res) =>
+        new Date(res.checkout) <= today && 
+        !res.checkout_at &&
+        res.checkin_at && res.active
+      )
+      .map((res) => ({ ...res, pendingStatus: "NoExit" })); // Mark as NoExit
+  
+    const noShowReservations = data
+      .filter((res) =>
+        new Date(res.checkin) < today && 
+        !res.checkin_at && 
+        res.active
+      )
+      .map((res) => ({ ...res, pendingStatus: "NoShow" })); // Mark as NoShow
+  
+    const pending = [...noExitReservations, ...noShowReservations];
+  
+    setPendingActions(pending);
   };
 
   const applyFilter = (filterType, data = reservations) => {
@@ -271,6 +336,8 @@ const ReservationsPage = ({ profile }) => {
       filtered = data.filter((res) => !res.checkin_at && !res.checkout_at);
     } else if (filterType === "Canceled") {
       filtered = data.filter((res) => !res.active);
+    } else if (filterType === "Pending") {
+      filtered = pendingActions; // Use pending reservations
     }
   
     // Apply search term filter for both guest name and apto (Apartment Number)
@@ -348,7 +415,6 @@ const ReservationsPage = ({ profile }) => {
   return (
     <Container>
       {/* Header */}
-
       <StatsContainer>
         <StatCard bgColor="#e3f2fd"> {/* Soft Light Blue for "Total" */}
           <StatValue color="#1e88e5">{reservations.length}</StatValue> {/* Medium Blue for contrast */}
@@ -389,6 +455,9 @@ const ReservationsPage = ({ profile }) => {
             </Tab>
             <Tab active={activeTab === "All"} onClick={() => applyFilter("All")}>
                 Todas Reservas
+            </Tab>
+            <Tab active={activeTab === "Pending"} onClick={() => applyFilter("Pending")}>
+              Pendentes {pendingActions.length > 0 && `(${pendingActions.length})`}
             </Tab>
             <Tab active={activeTab === "Finalizada"} onClick={() => applyFilter("Finalizada")}>
               Finalizadas
@@ -496,25 +565,40 @@ const ReservationsPage = ({ profile }) => {
                 </td>
                 <td>{(reservation.guests_qty || 0) + 1}</td>
                 <td>
-                  <Badge
-                    status={
-                      !reservation.active
-                        ? "Canceled"
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    {/* Show Pending Badge for NoShow or NoExit */}
+                    {reservation.pendingStatus === "NoExit" && (
+                      <Badge status="Canceled" style={{ background: "#d32f2f" }}>
+                        NoExit
+                      </Badge>
+                    )}
+                    {reservation.pendingStatus === "NoShow" && (
+                      <Badge status="Canceled" style={{ background: "#f57c00" }}>
+                        NoShow
+                      </Badge>
+                    )}
+
+                    <Badge
+                      status={
+                        !reservation.active
+                          ? "Canceled"
+                          : reservation.checkin_at && !reservation.checkout_at
+                          ? "In Progress"
+                          : reservation.checkin_at && reservation.checkout_at
+                          ? "Completed"
+                          : "Pending"
+                      }
+                    >
+                      {!reservation.active
+                        ? "Cancelada"
                         : reservation.checkin_at && !reservation.checkout_at
-                        ? "In Progress"
+                        ? "Em Curso"
                         : reservation.checkin_at && reservation.checkout_at
-                        ? "Completed"
-                        : "Pending"
-                    }
-                  >
-                    {!reservation.active
-                      ? "Cancelada"
-                      : reservation.checkin_at && !reservation.checkout_at
-                      ? "Em Curso"
-                      : reservation.checkin_at && reservation.checkout_at
-                      ? "Finalizada"
-                      : "Prevista"}
-                  </Badge>
+                        ? "Finalizada"
+                        : "Prevista"}
+                    </Badge>
+                    
+                  </div>
                 </td>
               </ReservationRow>
             ))}
