@@ -367,7 +367,7 @@ const SidebarToggleButton = styled.button`
     margin-right: 20px;
 `;
 
-function Modal({ selectedApartment, profile, onClose }) {
+function Modal({ selectedApartment, profile, onClose, fetchApartments }) {
     const [residentToAdd, setResidentToAdd] = useState({ name: '', email: '', phone: '' });
     const [ownerToAdd, setOwnerToAdd] = useState({ name: '', email: '', phone: '', username: '', password: '' });
     const [ownerDetails, setOwnerDetails] = useState({
@@ -459,6 +459,7 @@ function Modal({ selectedApartment, profile, onClose }) {
 
             // Update the local residents state
             setResidents((prev) => prev.filter((resident) => resident.id !== residentId));
+            fetchApartments()
         } catch (error) {
             alert('Erro ao remover residente.');
         }
@@ -496,6 +497,7 @@ function Modal({ selectedApartment, profile, onClose }) {
             // Update the owner details
             setOwnerDetails(response.data);
             setOwnerToAdd({ name: '', email: '', phone: '', username: '', password: '' });
+            fetchApartments()
         } catch (error) {
             console.error('Erro ao adicionar proprietário:', error.response || error);
             alert('Erro ao adicionar proprietário.');
@@ -596,6 +598,7 @@ function Modal({ selectedApartment, profile, onClose }) {
             );
             alert('Tipo do apartamento atualizado com sucesso.');
             fetchApartmentDetails(selectedApartment.id); // Refresh the apartment details
+            fetchApartments()
         } catch (error) {
             console.error('Erro ao atualizar o tipo do apartamento:', error.response || error);
             alert('Erro ao atualizar o tipo do apartamento.');
@@ -628,6 +631,7 @@ function Modal({ selectedApartment, profile, onClose }) {
             );
             alert('Status do apartamento atualizado com sucesso.');
             fetchApartmentDetails(selectedApartment.id); // Refresh the apartment details
+            fetchApartments()
         } catch (error) {
             console.error('Erro ao atualizar o status do apartamento:', error.response || error);
             alert('Erro ao atualizar o status do apartamento.');
@@ -662,10 +666,6 @@ function Modal({ selectedApartment, profile, onClose }) {
             !reservation.checkout_at)
         );
     })
-
-    console.log(apartmentDetails.last_reservations)
-    console.log(filteredReservations)
-    console.log(currentReservation)
 
     return (
         <>

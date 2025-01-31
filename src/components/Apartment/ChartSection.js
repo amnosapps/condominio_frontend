@@ -62,12 +62,12 @@ function ChartSection({ apartments, onChartClick }) {
                     const checkoutDate = reservation.checkout ? parseISO(reservation.checkout) : null;
     
                     // Check if checkinDate falls within today
-                    if (checkinDate && isWithinInterval(checkinDate, { start: todayStart, end: todayEnd })) {
+                    if (checkinDate && isWithinInterval(checkinDate, { start: todayStart, end: todayEnd }) && !reservation.checkin_at) {
                         checkinsToday.push(apartment);
                     }
     
                     // Check if checkoutDate falls within today
-                    if (checkoutDate && isWithinInterval(checkoutDate, { start: todayStart, end: todayEnd })) {
+                    if (checkoutDate && isWithinInterval(checkoutDate, { start: todayStart, end: todayEnd }) && reservation.checkin_at && !reservation.checkout_at) {
                         checkoutsToday.push(apartment);
                     }
                 });

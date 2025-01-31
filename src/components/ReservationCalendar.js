@@ -25,6 +25,7 @@ import { registerLocale } from "react-datepicker";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ReservationCreationModal from "./Reservation/ReservationCreation";
+import ApartamentModal from './Apartment/ApartmentModal';
 import api from "../services/api";
 
 registerLocale("pt-BR", ptBR);
@@ -233,6 +234,11 @@ const RoomLabel = styled.div`
   color: #666;
   border-right: 1px solid #e0e0e0;
   border-top: 1px solid #e0e0e0;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.7
+  }
 `;
 
 const OccupationRow = styled.div`
@@ -569,6 +575,8 @@ const ReservationCalendar = ({ profile }) => {
   const scrollableRef = useRef(null);
 
   const [currentPage, setCurrentPage] = useState(1); // For horizontal pagination
+
+  const [modalOpenApto, setModalOpenApto] = useState(false);
 
   const fetchApartments = async () => {
     const token = localStorage.getItem("accessToken");
@@ -935,6 +943,16 @@ const ReservationCalendar = ({ profile }) => {
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
+  const handleEditClick = (apartment) => {
+      setSelectedApartment(apartment);
+      setModalOpenApto(true);
+  };
+
+  const handleModalClose = () => {
+      setSelectedApartment(null);
+      setModalOpenApto(false);
+  };
+
   return (
     <CalendarWrapper>
       <FilterContainer>
@@ -1031,17 +1049,30 @@ const ReservationCalendar = ({ profile }) => {
           <ScrollableContainer ref={scrollableRef} onScroll={handleScroll}>
           {loadingNavigation && <LoadingSpinner />}
             <DaysRow daysInView={daysInView.length}>
-              <strong>Quarto</strong>
+              <strong>Apto</strong>
               {daysInView.map((day, dayIndex) => (
                 <CalendarDayCell key={dayIndex} isCurrentDay={isToday(day)} isWeekend={isWeekend(day)}>
                   <strong>{format(day, "EEE dd", { locale: ptBR }).slice(0, 3) + " " + format(day, "dd")}</strong>
                 </CalendarDayCell>
               ))}
             </DaysRow>
+
+            {modalOpenApto && (
+              <ApartamentModal
+                  selectedApartment={selectedApartment}
+                  profile={profile}
+                  onClose={handleModalClose}
+                  fetchApartments={fetchApartments}
+              />
+            )}
               
             {apartments.map(apartment => (
               <RoomRow key={apartment.id} daysInView={daysInView.length}>
-                <RoomLabel>{`Quarto ${apartment.number}`}</RoomLabel>
+                <RoomLabel
+                  onClick={() => handleEditClick(apartment)}
+                >
+                  {`Apto ${apartment.number}`}
+                </RoomLabel>
                 {daysInView.map((day, dayIndex) => (
                   <DayCell key={dayIndex}>
                     {getReservationBars(apartment.number, day).map((bar) => (
