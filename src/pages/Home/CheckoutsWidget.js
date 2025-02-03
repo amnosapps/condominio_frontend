@@ -163,37 +163,15 @@ const CheckoutsWidget = ({
     setSelectedReservation(null);
   };
 
-  // const isToday = (date) => {
-  //   const today = new Date();
-  //   return (
-  //     date.getFullYear() === today.getFullYear() &&
-  //     date.getMonth() === today.getMonth() &&
-  //     date.getDate() === today.getDate()
-  //   );
-  // };
-
-  const isCheckoutToday = (reservation) => { 
-    const checkoutDate = new Date(reservation.checkout); 
-    console.log(checkoutDate)
-    return (
-      reservation.checkin_at && // have checkin
-      isToday(checkoutDate) && // Checkout is today
-      !reservation.checkout_at // there is no checkout_at
-    );
-  };
-
-  // filters pending reservations
-  const checkoutsReservations = reservations?.filter(isCheckoutToday);
-  console.log(checkoutsReservations)
   return (
     <Widget>
       <Header>
         <WidgetTitle>Checkouts Pendentes</WidgetTitle>
         <OpenButton onClick={onOpen}>+ Nova Reserva</OpenButton>
       </Header>
-      {checkoutsReservations && checkoutsReservations.length > 0 ? (
+      {reservations && reservations.length > 0 ? (
         <ReservationList>
-          {checkoutsReservations.map((res) => {
+          {reservations.map((res) => {
             const checkinDate = new Date(res.checkin_at);
 
             return (

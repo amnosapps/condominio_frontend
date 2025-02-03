@@ -14,6 +14,10 @@ import NotificationsWidget from "./NotificationsWidget";
 import LineChart from "./LineChart";
 import api from "../../services/api";
 
+import {
+  isToday
+} from "date-fns"
+
 // Styled Components
 const Container = styled.div`
     display: flex;
@@ -212,6 +216,8 @@ const Dashboard = ({ profile }) => {
     const selectedCondominium = params.condominium;
 
     const [reservations, setReservations] = useState([]);
+    const [reservationsCheckin, setReservationsCheckin] = useState([]);
+    const [reservationsCheckout, setReservationsCheckout] = useState([]);
     const [visitors, setVisitors] = useState([]);
     const [apartments, setApartments] = useState([]);
     const [notifications, setNotifications] = useState([]);
@@ -260,7 +266,20 @@ const Dashboard = ({ profile }) => {
                 return dateA - dateB; // Sort ascending (nearest date first)
             });
 
-        setReservations(filteredReservations);
+        const isCheckoutToday = (reservation) => { 
+          const checkoutDate = new Date(reservation.checkout); 
+          return (
+            reservation.checkin_at && // have checkin
+            isToday(checkoutDate) && // Checkout is today
+            !reservation.checkout_at // there is no checkout_at
+          );
+        };
+
+        const checkoutsReservations = reservations?.filter(isCheckoutToday);
+          
+        setReservations(response.data);
+        setReservationsCheckin(filteredReservations);
+        setReservationsCheckout(checkoutsReservations);
     } catch (error) {
         console.error("Error fetching reservations:", error);
     } finally {
@@ -342,14 +361,14 @@ const Dashboard = ({ profile }) => {
                     <ReservationsWidget 
                         fetchReservations={fetchReservations}
                         selectedCondominium={selectedCondominium}
-                        reservations={reservations} onOpen={toggleModal} 
+                        reservations={reservationsCheckin} onOpen={toggleModal} 
                     />
                     <VisitorsWidget visitors={visitors} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />
 
                     <CheckoutsWidget 
                         fetchReservations={fetchReservations}
                         selectedCondominium={selectedCondominium}
-                        reservations={reservations} onOpen={toggleModal} 
+                        reservations={reservationsCheckout} onOpen={toggleModal} 
                     />
                 
                 </div>
