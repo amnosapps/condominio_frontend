@@ -652,7 +652,7 @@ function Modal({ selectedApartment, profile, onClose, fetchApartments }) {
     const closeReservationModal = () => setSelectedReservation(null);
 
     const filteredReservations = apartmentDetails?.last_reservations.filter((reservation) => {
-        return !reservation.checkin_at && !reservation.checkout_at;
+        return reservation.active && (!reservation.checkin_at && !reservation.checkout_at);
     });
 
     const currentReservation = apartmentDetails?.last_reservations.find((reservation) => {
