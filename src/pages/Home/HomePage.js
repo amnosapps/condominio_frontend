@@ -252,7 +252,7 @@ const Dashboard = ({ profile }) => {
 
         // Remove reservations with checkin_at and sort the rest by nearest check-in date
         const filteredReservations = response.data
-            .filter(reservation => !reservation.checkin_at) // Exclude reservations with checkin_at
+            .filter(reservation => !reservation.checkin_at && reservation.active) // Exclude reservations with checkin_at
             .sort((a, b) => {
                 const dateA = new Date(a.checkin);
                 const dateB = new Date(b.checkin);
