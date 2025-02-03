@@ -1066,10 +1066,10 @@ const ReservationCalendar = ({ profile }) => {
                   fetchApartments={fetchApartments}
               />
             )}
-              
-            {apartments.filter((apartment) => 
+              {/* {apartments.filter((apartment) => 
               daysInView.some((day) => getReservationBars(apartment.number, day).length > 0)
-            ).map(apartment => (
+            ) */}
+            {apartments.map(apartment => (
               <RoomRow key={apartment.id} daysInView={daysInView.length}>
                 <RoomLabel
                   onClick={() => handleEditClick(apartment)}

@@ -1113,6 +1113,7 @@ const ReservationModal = ({
                 disabled={!isEditing} 
               >
                 <option value="">Selecione</option>
+                <option value="rg">RG</option>
                 <option value="cpf">CPF</option>
                 <option value="passport">Passaporte</option>
               </StyledSelect>
@@ -1296,6 +1297,7 @@ const ReservationModal = ({
                       disabled={!isEditing} 
                     >
                       <option value="">Tipo Documento</option>
+                      <option value="rg">RG</option>
                       <option value="cpf">CPF</option>
                       <option value="passport">Passaporte</option>
                     </StyledSelect>
