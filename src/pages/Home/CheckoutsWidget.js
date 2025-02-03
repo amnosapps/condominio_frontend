@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import ReservationModal from "../../components/ReservationModal";
+import {
+  isToday
+} from "date-fns"
+
 
 // Styled Components for Reservations Widget
 const Widget = styled.div`
@@ -147,7 +151,7 @@ const CheckoutsWidget = ({
   onOpen,
   reservations,
   fetchReservations,
-  selectedCondominium,
+  selectedCondominium
 }) => {
   const [selectedReservation, setSelectedReservation] = useState(null);
 
@@ -159,17 +163,18 @@ const CheckoutsWidget = ({
     setSelectedReservation(null);
   };
 
-  const isToday = (date) => {
-    const today = new Date();
-    return (
-      date.getFullYear() === today.getFullYear() &&
-      date.getMonth() === today.getMonth() &&
-      date.getDate() === today.getDate()
-    );
-  };
+  // const isToday = (date) => {
+  //   const today = new Date();
+  //   return (
+  //     date.getFullYear() === today.getFullYear() &&
+  //     date.getMonth() === today.getMonth() &&
+  //     date.getDate() === today.getDate()
+  //   );
+  // };
 
-  const isPending = (reservation) => {
-    const checkoutDate = new Date(reservation.checkout);
+  const isCheckoutToday = (reservation) => { 
+    const checkoutDate = new Date(reservation.checkout); 
+    console.log(checkoutDate)
     return (
       reservation.checkin_at && // have checkin
       isToday(checkoutDate) && // Checkout is today
@@ -177,22 +182,18 @@ const CheckoutsWidget = ({
     );
   };
 
-  useEffect(() => {
-    fetchReservations(); // 
-  }, [fetchReservations]);
-
   // filters pending reservations
-  const pendingReservations = reservations?.filter(isPending);
-
+  const checkoutsReservations = reservations?.filter(isCheckoutToday);
+  console.log(checkoutsReservations)
   return (
     <Widget>
       <Header>
         <WidgetTitle>Checkouts Pendentes</WidgetTitle>
         <OpenButton onClick={onOpen}>+ Nova Reserva</OpenButton>
       </Header>
-      {pendingReservations && pendingReservations.length > 0 ? (
+      {checkoutsReservations && checkoutsReservations.length > 0 ? (
         <ReservationList>
-          {pendingReservations.map((res) => {
+          {checkoutsReservations.map((res) => {
             const checkinDate = new Date(res.checkin_at);
 
             return (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import ReservationsWidget from './ReservationsWidget'
+import CheckoutsWidget from "./CheckoutsWidget";
 import { Line, Pie } from "react-chartjs-2";
 import "chart.js/auto";
 import VisitorsWidget from "./VisitorsWidget";
@@ -244,7 +245,7 @@ const Dashboard = ({ profile }) => {
                 headers: { Authorization: `Bearer ${token}` },
                 params: {
                     condominium: selectedCondominium, // Replace with actual value
-                    start_date: new Date().toISOString(),
+                    start_date: new Date(new Date().setDate(new Date().getDate() - 7)).toISOString(),
                     end_date: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
                 },
             }
@@ -344,6 +345,12 @@ const Dashboard = ({ profile }) => {
                         reservations={reservations} onOpen={toggleModal} 
                     />
                     <VisitorsWidget visitors={visitors} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />
+
+                    <CheckoutsWidget 
+                        fetchReservations={fetchReservations}
+                        selectedCondominium={selectedCondominium}
+                        reservations={reservations} onOpen={toggleModal} 
+                    />
                 
                 </div>
                 
