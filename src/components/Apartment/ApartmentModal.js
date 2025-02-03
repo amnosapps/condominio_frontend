@@ -898,7 +898,7 @@ function Modal({ selectedApartment, profile, onClose, fetchApartments }) {
                                                             locale: ptBR,
                                                         })}
                                                     </span>
-                                                    <span><strong>Hóspedes:</strong> {reservation.guest_qty + 1 || 1}</span>
+                                                    <span><strong>Hóspedes:</strong> {reservation.guests_qty + 1 || 1}</span>
                                                 </ReservationCard>
                                             )})}
                                         </ReservationGrid>

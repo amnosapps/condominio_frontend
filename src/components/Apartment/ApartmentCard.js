@@ -74,7 +74,6 @@ function ApartmentCard({ apartment, onClick }) {
     const today = new Date();
 
     const isReservationActive = (reservation) => {
-        console.log(reservation)
         const checkin = new Date(reservation.checkin);
         const checkout = new Date(reservation.checkout);
         return reservation.active && (today >= checkin && today <= checkout);
@@ -83,7 +82,7 @@ function ApartmentCard({ apartment, onClick }) {
     const activeReservation = apartment?.last_reservations?.find(isReservationActive);
 
     const guestCount = activeReservation
-        ? (activeReservation?.additional_guests?.length || 0) + 1
+        ? (activeReservation?.guests_qty || 0) + 1
         : 0;
 
     return (
