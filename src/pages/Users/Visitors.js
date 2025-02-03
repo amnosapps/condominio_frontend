@@ -3,6 +3,8 @@ import styled from "styled-components";
 import { FaPhoneAlt, FaCalendarAlt, FaRegCalendarAlt } from "react-icons/fa";
 import VisitorCreationModal from "../../components/Users/Visitors/VisitorCreationModal";
 import VisitorEditModal from "../../components/Users/Visitors/VisitorEditModal";
+import axios from "axios";
+import { useParams } from "react-router-dom";
 
 // Styled Components
 const Container = styled.div`
@@ -40,6 +42,8 @@ const FiltersRow = styled.div`
   border-radius: 8px;
   margin-bottom: 20px;
   box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap;
+  gap: 10px;
 `;
 
 const SearchInput = styled.input`
@@ -48,6 +52,13 @@ const SearchInput = styled.input`
   border-radius: 4px;
   font-size: 14px;
   width: 300px;
+`;
+
+const DateInput = styled.input`
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
 `;
 
 const CardContainer = styled.div`
@@ -60,14 +71,17 @@ const CardContainer = styled.div`
 const VisitorCard = styled.div`
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: space-between;
   width: 200px;
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 15px 25px;
+  padding: 15px;
   cursor: pointer;
   transition: transform 0.3s, box-shadow 0.3s;
+  opacity: ${(props) => (props.isExited ? "0.6" : "1")};
+  filter: ${(props) => (props.isExited ? "grayscale(100%)" : "none")};
 
   &:hover {
     transform: translateY(-5px);
@@ -75,18 +89,31 @@ const VisitorCard = styled.div`
   }
 `;
 
+const ProfileImage = styled.img`
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f46600;
+  display: block;
+  margin: 0 auto;
+  margin-bottom: 25px;
+`;
+
 const VisitorName = styled.h3`
   font-size: 18px;
   color: #333;
-  margin-bottom: 5px;
+  margin-top: 10px;
+  text-align: center;
 `;
 
 const VisitorInfo = styled.p`
-  font-size: 14px;
+  font-size: 15px;
   color: #555;
   display: flex;
   align-items: center;
   gap: 8px;
+  justify-content: start;
 
   svg {
     color: #f46600;
@@ -100,46 +127,10 @@ const NoVisitorsMessage = styled.div`
   text-align: center;
 `;
 
-const Avatar = styled.div`
-  width: 50px;
-  height: 50px;
-  background-color: ${(props) => (props.color ? props.color : '#F46600')};
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  font-size: 18px;
-  font-weight: bold;
-  margin-right: 15px;
-`;
-
-// Mock Data
-const mockVisitors = [
-  {
-    id: 1,
-    name: "John Doe",
-    visit_date: "2025-01-20",
-    unit_number: "101",
-    phone: "(555) 123-4567",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    visit_date: "2025-01-21",
-    unit_number: "102",
-    phone: "(555) 987-6543",
-  },
-  {
-    id: 3,
-    name: "Michael Johnson",
-    visit_date: "2025-01-22",
-    unit_number: "203",
-    phone: "(555) 456-7890",
-  },
-];
-
+// Main Component
 const VisitorsPage = ({ profile }) => {
+  const params = useParams();
+  const selectedCondominium = params.condominium;
   const [visitors, setVisitors] = useState([]);
   const [filteredVisitors, setFilteredVisitors] = useState([]);
   const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
@@ -147,11 +138,50 @@ const VisitorsPage = ({ profile }) => {
   const [selectedVisitor, setSelectedVisitor] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Date Filter - Default: Last Week to Today
+  const today = new Date().toISOString().split("T")[0];
+  const lastWeek = new Date();
+  lastWeek.setDate(lastWeek.getDate() - 7);
+  const [startDate, setStartDate] = useState(lastWeek.toISOString().split("T")[0]);
+  const [endDate, setEndDate] = useState(today);
+
+  // Fetch visitors from the API
+  const fetchVisitors = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/visitors/`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { condominium: selectedCondominium },
+        }
+      );
+
+      let visitorsData = response.data;
+
+      // Filter by date range
+      visitorsData = visitorsData.filter(visitor => {
+        const entryDate = new Date(visitor.entry).toISOString().split("T")[0];
+        return entryDate >= startDate && entryDate <= endDate;
+      });
+
+      // Sort visitors: First, those who have entered but not exited
+      visitorsData.sort((a, b) => {
+        if (!a.exit && b.exit) return -1;
+        if (a.exit && !b.exit) return 1;
+        return new Date(b.entry) - new Date(a.entry);
+      });
+
+      setVisitors(visitorsData);
+      setFilteredVisitors(visitorsData);
+    } catch (error) {
+      console.error("Error fetching visitors:", error);
+    }
+  };
+
   useEffect(() => {
-    // Use mock data for this example
-    setVisitors(mockVisitors);
-    setFilteredVisitors(mockVisitors);
-  }, []);
+    fetchVisitors();
+  }, [startDate, endDate]);
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
@@ -173,7 +203,6 @@ const VisitorsPage = ({ profile }) => {
   };
 
   const toggleCreationModal = () => setIsCreationModalOpen(!isCreationModalOpen);
-
   const toggleEditModal = () => {
     setSelectedVisitor(null);
     setIsEditModalOpen(false);
@@ -188,6 +217,16 @@ const VisitorsPage = ({ profile }) => {
           value={searchTerm}
           onChange={handleSearchChange}
         />
+        <DateInput
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+        />
+        <DateInput
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+        />
         <CreateButton onClick={toggleCreationModal}>+ Visitante</CreateButton>
       </FiltersRow>
 
@@ -195,49 +234,44 @@ const VisitorsPage = ({ profile }) => {
       {filteredVisitors.length > 0 ? (
         <CardContainer>
           {filteredVisitors.map((visitor) => (
-            <VisitorCard key={visitor.id} onClick={() => handleVisitorClick(visitor)}>
+            <VisitorCard
+              key={visitor.id}
+              isExited={!!visitor.exit} // If exit exists, the card will be faded.
+              onClick={() => handleVisitorClick(visitor)}
+            >
               <div>
-                <Avatar>
-                    {visitor.avatar ? (
-                        <img src={visitor.avatar} alt={visitor.name} />
-                    ) : (
-                        visitor.name?.charAt(0).toUpperCase() || '?'
-                    )}
-                </Avatar>
+                {visitor.image_base64 ? (
+                  <ProfileImage src={visitor.image_base64} alt="Profile" />
+                ) : (
+                  <ProfileImage
+                    src="https://placehold.co/100x100.png"
+                    alt="Escolha uma imagem"
+                  />
+                )}
                 <VisitorName>{visitor.name}</VisitorName>
                 <VisitorInfo>
                   <FaRegCalendarAlt />
-                  {new Date(visitor.visit_date).toLocaleDateString()}
+                  {new Date(visitor.entry).toLocaleString("pt-BR")}
                 </VisitorInfo>
+                {visitor.exit && (
+                  <VisitorInfo>
+                    <FaCalendarAlt style={{ color: "red" }} />
+                    {new Date(visitor.exit).toLocaleString("pt-BR")}
+                  </VisitorInfo>
+                )}
                 <VisitorInfo>
                   <FaPhoneAlt />
-                  {visitor.phone}
+                  {visitor.phone || "N/A"}
                 </VisitorInfo>
-                <VisitorInfo>Unidade: {visitor.unit_number}</VisitorInfo>
+                <VisitorInfo>Unidade: <strong>{visitor.apartment_number}</strong></VisitorInfo>
               </div>
             </VisitorCard>
           ))}
         </CardContainer>
-      ) : (
-        <NoVisitorsMessage>Nenhum visitante encontrado.</NoVisitorsMessage>
-      )}
+      ) : <NoVisitorsMessage>Nenhum visitante encontrado.</NoVisitorsMessage>}
 
-      {/* Visitor Creation Modal */}
-      {isCreationModalOpen && (
-        <VisitorCreationModal
-          onClose={toggleCreationModal}
-          fetchVisitors={() => setVisitors(mockVisitors)} // Update with actual API call
-        />
-      )}
-
-      {/* Visitor Edit Modal */}
-      {isEditModalOpen && (
-        <VisitorEditModal
-          visitor={selectedVisitor}
-          onClose={toggleEditModal}
-          fetchVisitors={() => setVisitors(mockVisitors)} // Update with actual API call
-        />
-      )}
+      {isCreationModalOpen && <VisitorCreationModal onClose={toggleCreationModal} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />}
+      {isEditModalOpen && <VisitorEditModal visitor={selectedVisitor} onClose={toggleEditModal} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />}
     </Container>
   );
 };

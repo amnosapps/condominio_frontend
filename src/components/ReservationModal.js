@@ -377,15 +377,24 @@ const ReservationModal = ({
     selectedReservation?.vehicle_plate || ""
   );
   
-  const [additionalGuests, setAdditionalGuests] = useState(
-    selectedReservation?.additional_guests.map((guest) => ({
-      name: guest.name || "",
-      document: guest.document || "",
-      document_type: guest.document_type || "",
-      age: guest.age || 0,
-      is_child: guest.is_child || false,
-    })) || []
-  );
+  const [additionalGuests, setAdditionalGuests] = useState(() => {
+    const qty = selectedReservation?.guests_qty ? selectedReservation.guests_qty : 0; 
+    return selectedReservation?.additional_guests.length > 0 
+      ? selectedReservation.additional_guests.map((guest) => ({
+          name: guest.name || "",
+          document: guest.document || "",
+          document_type: guest.document_type || "",
+          age: guest.age || 0,
+          is_child: guest.is_child || false,
+        }))
+      : Array.from({ length: qty }, () => ({
+          name: "",
+          document: "",
+          document_type: "",
+          age: 0,
+          is_child: false,
+        }));
+  });
 
   const [maxGuests, setMaxGuests] = useState(selectedApartment ? selectedApartment.max_occupation : 1);
   

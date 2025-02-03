@@ -83,7 +83,7 @@ const OwnerDetailsSection = ({ ownerDetails, ownerToAdd, setOwnerToAdd, handleAd
                         value={ownerToAdd.phone}
                         onChange={(e) => setOwnerToAdd((prev) => ({ ...prev, phone: e.target.value }))}
                     />
-                    <ModalInput
+                    {/* <ModalInput
                         type="text"
                         placeholder="Username"
                         value={ownerToAdd.username}
@@ -99,7 +99,7 @@ const OwnerDetailsSection = ({ ownerDetails, ownerToAdd, setOwnerToAdd, handleAd
                         <EyeIcon onClick={() => setShowPassword((prev) => !prev)}>
                             {showPassword ? <FaEyeSlash /> : <FaEye />}
                         </EyeIcon>
-                    </PasswordContainer>
+                    </PasswordContainer> */}
                     <SaveButton onClick={handleAddOwner}>Adicionar Proprietário</SaveButton>
                 </>
             ) : (

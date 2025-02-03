@@ -18,8 +18,19 @@ const SidebarContainer = styled.div`
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     align-items: center;
     z-index: 100;
-    overflow-x: hidden;
+    overflow-y: auto;
     transition: all 0.3s ease;
+
+    &::-webkit-scrollbar {
+        width: 3px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: #b3b3b3;
+    }
 
     @media (max-width: 768px) {
         width: ${(props) => (props.isOpen ? '300px' : '0')};
@@ -675,7 +686,7 @@ const Sidebar = ({ profile }) => {
                             <ProfileInfo>
                                 <UserName>Olá, {profile.name || "Usuário Desconhecido"}!</UserName>
                                 <StyledSelect value={selectedCondominium} onChange={handleCondominiumChange}>
-                                    {condominiums.map((condo) => (
+                                    {condominiums?.map((condo) => (
                                         <option key={condo} value={condo}>
                                             {condo}
                                         </option>

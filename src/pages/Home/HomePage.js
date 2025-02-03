@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import ReservationsWidget from './ReservationsWidget'
-import CheckoutsWidget from "./CheckoutsWidget";
 import { Line, Pie } from "react-chartjs-2";
 import "chart.js/auto";
 import VisitorsWidget from "./VisitorsWidget";
@@ -212,6 +211,7 @@ const Dashboard = ({ profile }) => {
     const selectedCondominium = params.condominium;
 
     const [reservations, setReservations] = useState([]);
+    const [visitors, setVisitors] = useState([]);
     const [apartments, setApartments] = useState([]);
     const [notifications, setNotifications] = useState([]);
     const [FilteredApartments, setFilteredApartments] = useState([]);
@@ -267,6 +267,23 @@ const Dashboard = ({ profile }) => {
     }
   };
 
+  const fetchVisitors = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/visitors/`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { condominium: selectedCondominium },
+        }
+      );
+
+      setVisitors(response.data);
+    } catch (error) {
+      console.error("Error fetching visitors:", error);
+    }
+  };
+
   const fetchApartments = async () => {
     const token = localStorage.getItem("accessToken");
     try {
@@ -275,7 +292,6 @@ const Dashboard = ({ profile }) => {
         params: { condominium: selectedCondominium },
       });
 
-      
       const filteredApartments = response.data.filter((apartment) =>
         filterType === "Todos" ? true : apartment.type_name === filterType
     );
@@ -291,6 +307,7 @@ const Dashboard = ({ profile }) => {
     fetchReservations();
     fetchApartments()
     fetchNotifications()
+    fetchVisitors()
   }, []);
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
@@ -326,14 +343,7 @@ const Dashboard = ({ profile }) => {
                         selectedCondominium={selectedCondominium}
                         reservations={reservations} onOpen={toggleModal} 
                     />
-
-                    <CheckoutsWidget
-                        fetchReservations={fetchReservations}
-                        selectedCondominium={selectedCondominium}
-                        reservations={reservations} 
-                        onOpen={toggleModal} 
-                    />
-                    <VisitorsWidget visitors={MOCK_VISITORS} />
+                    <VisitorsWidget visitors={visitors} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />
                 
                 </div>
                 

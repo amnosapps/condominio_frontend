@@ -336,6 +336,7 @@ function ApartmentList({ profile }) {
                             selectedApartment={selectedApartment}
                             profile={profile}
                             onClose={handleModalClose}
+                            fetchApartments={fetchApartments}
                         />
                     )}
                 </>
