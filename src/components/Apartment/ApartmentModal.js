@@ -871,7 +871,7 @@ function Modal({ selectedApartment, profile, onClose, fetchApartments }) {
                                 )}
                                 {filteredReservations.length > 0 ? (
                                     <>
-                                        <h3>Próximas Reservas</h3>
+                                        <h3>Próximas Chegadas</h3>
                                         <ReservationGrid>
                                             {filteredReservations.map((reservation) => {
                                                 if (currentReservation?.id === reservation.id) {
