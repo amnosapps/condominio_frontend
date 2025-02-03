@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import ReservationsWidget from './ReservationsWidget'
+import CheckoutsWidget from "./CheckoutsWidget";
 import { Line, Pie } from "react-chartjs-2";
 import "chart.js/auto";
 import VisitorsWidget from "./VisitorsWidget";
@@ -324,6 +325,13 @@ const Dashboard = ({ profile }) => {
                         fetchReservations={fetchReservations}
                         selectedCondominium={selectedCondominium}
                         reservations={reservations} onOpen={toggleModal} 
+                    />
+
+                    <CheckoutsWidget
+                        fetchReservations={fetchReservations}
+                        selectedCondominium={selectedCondominium}
+                        reservations={reservations} 
+                        onOpen={toggleModal} 
                     />
                     <VisitorsWidget visitors={MOCK_VISITORS} />
                 
