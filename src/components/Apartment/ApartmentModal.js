@@ -75,7 +75,7 @@ const SidebarContainer = styled.div`
 const statusColors = {
     Disponível: '#36a2eb', // Blue for available
     Ocupado: '#ff6384',    // Red for occupied
-    Manutenção: '#ffce56', // Yellow for maintenance
+    Manutenção: '#D3D3D3', // Gray for maintenance
 };
 
 // Circle for Status Indicator
@@ -367,7 +367,7 @@ const SidebarToggleButton = styled.button`
     margin-right: 20px;
 `;
 
-function Modal({ selectedApartment, profile, onClose }) {
+function Modal({ selectedApartment, profile, onClose, fetchApartments }) {
     const [residentToAdd, setResidentToAdd] = useState({ name: '', email: '', phone: '' });
     const [ownerToAdd, setOwnerToAdd] = useState({ name: '', email: '', phone: '', username: '', password: '' });
     const [ownerDetails, setOwnerDetails] = useState({
@@ -459,6 +459,7 @@ function Modal({ selectedApartment, profile, onClose }) {
 
             // Update the local residents state
             setResidents((prev) => prev.filter((resident) => resident.id !== residentId));
+            fetchApartments()
         } catch (error) {
             alert('Erro ao remover residente.');
         }
@@ -467,17 +468,17 @@ function Modal({ selectedApartment, profile, onClose }) {
     const handleAddOwner = async () => {
         const token = localStorage.getItem('accessToken');
 
-        if (!ownerToAdd.name || !ownerToAdd.email || !ownerToAdd.phone || !ownerToAdd.username || !ownerToAdd.password) {
+        if (!ownerToAdd.name || !ownerToAdd.email || !ownerToAdd.phone) {
             alert('Preencha todos os campos do proprietário.');
             return;
         }
 
         const newOwner = {
             name: ownerToAdd.name,
-            user: {
-                username: ownerToAdd.username,
-                password: ownerToAdd.password,
-            },
+            // user: {
+            //     username: ownerToAdd.username,
+            //     password: ownerToAdd.password,
+            // },
             condominiums: [selectedApartment.condominium], // Assuming the ID of the condominium is stored here
             apartment: selectedApartment.id, // Assuming the ID of the condominium is stored here
             phone: ownerToAdd.phone,
@@ -496,6 +497,7 @@ function Modal({ selectedApartment, profile, onClose }) {
             // Update the owner details
             setOwnerDetails(response.data);
             setOwnerToAdd({ name: '', email: '', phone: '', username: '', password: '' });
+            fetchApartments()
         } catch (error) {
             console.error('Erro ao adicionar proprietário:', error.response || error);
             alert('Erro ao adicionar proprietário.');
@@ -596,6 +598,7 @@ function Modal({ selectedApartment, profile, onClose }) {
             );
             alert('Tipo do apartamento atualizado com sucesso.');
             fetchApartmentDetails(selectedApartment.id); // Refresh the apartment details
+            fetchApartments()
         } catch (error) {
             console.error('Erro ao atualizar o tipo do apartamento:', error.response || error);
             alert('Erro ao atualizar o tipo do apartamento.');
@@ -628,6 +631,7 @@ function Modal({ selectedApartment, profile, onClose }) {
             );
             alert('Status do apartamento atualizado com sucesso.');
             fetchApartmentDetails(selectedApartment.id); // Refresh the apartment details
+            fetchApartments()
         } catch (error) {
             console.error('Erro ao atualizar o status do apartamento:', error.response || error);
             alert('Erro ao atualizar o status do apartamento.');
@@ -657,14 +661,11 @@ function Modal({ selectedApartment, profile, onClose }) {
         const checkoutDate = new Date(reservation.checkout);
     
         return (
-            checkinDate <= today && // Stay started before or today
-            checkoutDate >= today && // Stay hasn't ended
-            reservation.checkin_at && // Already checked in
-            !reservation.checkout_at // Not checked out
+            (checkinDate <= today || checkoutDate >= today) && // Stay hasn't ended
+            (reservation.checkin_at && 
+            !reservation.checkout_at)
         );
     })
-
-    console.log(apartmentDetails.last_reservations, filteredReservations, currentReservation)
 
     return (
         <>
@@ -814,7 +815,7 @@ function Modal({ selectedApartment, profile, onClose }) {
                                                 />
 
                                                 <h4 style={{ marginBottom: '-6px' }}>Acesso do residente</h4>
-                                                <ModalInput
+                                                {/* <ModalInput
                                                     type="text"
                                                     placeholder="username"
                                                     value={residentToAdd.username}
@@ -835,7 +836,7 @@ function Modal({ selectedApartment, profile, onClose }) {
                                                             password: e.target.value,
                                                         }))
                                                     }
-                                                />
+                                                /> */}
 
                                                 <SaveButton onClick={handleAddResident}>
                                                     Adicionar Residente

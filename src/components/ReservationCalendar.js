@@ -25,6 +25,7 @@ import { registerLocale } from "react-datepicker";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ReservationCreationModal from "./Reservation/ReservationCreation";
+import ApartamentModal from './Apartment/ApartmentModal';
 import api from "../services/api";
 
 registerLocale("pt-BR", ptBR);
@@ -233,6 +234,11 @@ const RoomLabel = styled.div`
   color: #666;
   border-right: 1px solid #e0e0e0;
   border-top: 1px solid #e0e0e0;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.7
+  }
 `;
 
 const OccupationRow = styled.div`
@@ -297,9 +303,9 @@ const ReservationBar = styled.div`
   position: absolute;
   left: ${(props) => `calc(${props.startOffset}% + 5px)`}; 
   background-color: ${(props) => {
-    // checkin proximo
+    // checkin proximo (reserva futura)
     if (!props.checkinAt && isToday(props.checkin)) {
-      return '#FFA500'; // Orange for today (pending)
+      return '#539e56'; // Green for future reservation
     }
 
     // checkin pendente
@@ -307,14 +313,14 @@ const ReservationBar = styled.div`
       return '#FF5722'; // Red for expired (no check-in)
     }
 
-    // reserva vigente
+    // reserva vigente (hospedagem em curso)
     else if (props.checkinAt && !props.checkoutAt && isBefore(new Date(), props.checkout)) {
-      return '#4CAF50'; // Green for past check-ins (confirmed)
+      return '#FF9800'; // Orange for current reservations (confirmed)
     }
 
-    // checkout pendente
+    // checkout pendente (hospedagem em curso)
     else if (props.checkinAt && !props.checkoutAt && isAfter(new Date(), props.checkout)) {
-      return '#000'; // Black if checked in and no checkout yet
+      return '#000'; // black for ongoing stay
     }
 
     // reserva encerrada
@@ -322,7 +328,7 @@ const ReservationBar = styled.div`
       return '#9E9E9E'; // Grey if checked in and checked out
     }
 
-    return '#FFC107'; // futuras reservas
+    return '#539e56'; // futuras reservas
   }};
   color: white;
   padding: 5px 8px;
@@ -334,6 +340,10 @@ const ReservationBar = styled.div`
 
   &:hover {
     opacity: 0.7
+  }
+
+  > strong {
+    font-size: 14px;
   }
 `;
 
@@ -566,6 +576,8 @@ const ReservationCalendar = ({ profile }) => {
 
   const [currentPage, setCurrentPage] = useState(1); // For horizontal pagination
 
+  const [modalOpenApto, setModalOpenApto] = useState(false);
+
   const fetchApartments = async () => {
     const token = localStorage.getItem("accessToken");
     try {
@@ -593,9 +605,12 @@ const ReservationCalendar = ({ profile }) => {
     const startDate = addDays(
       currentStartDate,
       direction === "right" ? (page - 1) * parseInt(viewType, 10) : -(page * parseInt(viewType, 10))
-    );
+    )
+    startDate.setUTCHours(0, 0, 37, 401);
   
     const endDate = addDays(startDate, parseInt(viewType, 10));
+    endDate.setUTCHours(23, 59, 37, 401);
+
     const rangeKey = `${startDate.toISOString()}_${endDate.toISOString()}`;
   
     // Use cached data if available
@@ -608,6 +623,9 @@ const ReservationCalendar = ({ profile }) => {
       ]);
       return;
     }
+
+    const formattedStartDate = startDate.toISOString();
+    const formattedEndDate = endDate.toISOString();
   
     try {
       setLoadingNavigation(true);
@@ -615,8 +633,8 @@ const ReservationCalendar = ({ profile }) => {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           condominium: selectedCondominium,
-          start_date: startDate.toISOString(),
-          end_date: endDate.toISOString(),
+          start_date: formattedStartDate,
+          end_date: formattedEndDate,
         },
       });
   
@@ -795,12 +813,16 @@ const ReservationCalendar = ({ profile }) => {
           reservation.checkin <= endOfDay(day) &&
           reservation.checkout >= startOfDay(day)
       )
+      .filter((reservation) => reservation.active && !reservation.checkout_at) 
       .sort((a, b) => a.checkin - b.checkin);
   
     const occupiedSlots = [];
     const bars = [];
   
     roomReservations.forEach((reservation) => {
+      if (reservation.id === 119) {
+        console.log(reservation)
+      }
       const startOffset = Math.max(
         0,
         ((reservation.checkin - startOfDay(day)) / (24 * 60 * 60 * 1000)) * 100
@@ -922,6 +944,16 @@ const ReservationCalendar = ({ profile }) => {
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
+  const handleEditClick = (apartment) => {
+      setSelectedApartment(apartment);
+      setModalOpenApto(true);
+  };
+
+  const handleModalClose = () => {
+      setSelectedApartment(null);
+      setModalOpenApto(false);
+  };
+
   return (
     <CalendarWrapper>
       <FilterContainer>
@@ -964,7 +996,7 @@ const ReservationCalendar = ({ profile }) => {
                 inline
                 dateFormat="dd/MM/yyyy"
                 locale="pt-BR"
-                minDate={new Date()} // Restrict selection to today and future dates
+                // minDate={new Date()} // Restrict selection to today and future dates
               />
             )}
           </DatePickerContainer>
@@ -1018,17 +1050,30 @@ const ReservationCalendar = ({ profile }) => {
           <ScrollableContainer ref={scrollableRef} onScroll={handleScroll}>
           {loadingNavigation && <LoadingSpinner />}
             <DaysRow daysInView={daysInView.length}>
-              <strong>Quarto</strong>
+              <strong>Apto</strong>
               {daysInView.map((day, dayIndex) => (
                 <CalendarDayCell key={dayIndex} isCurrentDay={isToday(day)} isWeekend={isWeekend(day)}>
                   <strong>{format(day, "EEE dd", { locale: ptBR }).slice(0, 3) + " " + format(day, "dd")}</strong>
                 </CalendarDayCell>
               ))}
             </DaysRow>
+
+            {modalOpenApto && (
+              <ApartamentModal
+                  selectedApartment={selectedApartment}
+                  profile={profile}
+                  onClose={handleModalClose}
+                  fetchApartments={fetchApartments}
+              />
+            )}
               
             {apartments.map(apartment => (
               <RoomRow key={apartment.id} daysInView={daysInView.length}>
-                <RoomLabel>{`Quarto ${apartment.number}`}</RoomLabel>
+                <RoomLabel
+                  onClick={() => handleEditClick(apartment)}
+                >
+                  {`Apto ${apartment.number}`}
+                </RoomLabel>
                 {daysInView.map((day, dayIndex) => (
                   <DayCell key={dayIndex}>
                     {getReservationBars(apartment.number, day).map((bar) => (
@@ -1048,7 +1093,12 @@ const ReservationCalendar = ({ profile }) => {
                           onMouseLeave={handleMouseLeave}
                           onClick={() => handleReservationClick(bar, apartment)}
                         >
-                          <strong>{bar.guest_name}</strong>
+                          <strong>
+                            {bar.guest_name && bar.guest_name.split(" ").length > 1
+                            ? `${bar.guest_name.split(" ")[0]} ${bar.guest_name.split(" ")[1][0]}.`
+                            : bar.guest_name}
+
+                          </strong>
                         </ReservationBar>
                     ))}
 

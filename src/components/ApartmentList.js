@@ -281,10 +281,10 @@ function ApartmentList({ profile }) {
     });
 
     const clearFilters = (currentFilter = '') => {
-        if (currentFilter !== 'search') setSearch('');
-        if (currentFilter !== 'type') setTypeFilter('');
-        if (currentFilter !== 'status') setStatusFilter('');
-        if (currentFilter !== 'custom') setFilter(null);
+        setSearch('');
+        setTypeFilter('');
+        setStatusFilter('');
+        setFilter(null);
     };
 
     const handleApartmentCreated = (newApartment) => {
@@ -336,6 +336,7 @@ function ApartmentList({ profile }) {
                             selectedApartment={selectedApartment}
                             profile={profile}
                             onClose={handleModalClose}
+                            fetchApartments={fetchApartments}
                         />
                     )}
                 </>
