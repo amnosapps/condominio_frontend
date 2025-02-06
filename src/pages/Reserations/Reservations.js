@@ -557,12 +557,22 @@ const ReservationsPage = ({ profile }) => {
                   </ProfileCell>
                 </td>
                 <td>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                        <span>{new Date(reservation.checkin).toLocaleDateString("pt-BR")}</span>
-                        <div style={{ flexGrow: 1, height: '1px', backgroundColor: '#ccc' }}></div>
-                        <span>{new Date(reservation.checkout).toLocaleDateString("pt-BR")}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                      {reservation.checkin_at && reservation.checkout_at ? ( 
+                        <>
+                          <span>{new Date(reservation.checkin_at).toLocaleDateString("pt-BR")}</span>
+                          <div style={{ flexGrow: 1, height: '1px', backgroundColor: '#ccc' }}></div>
+                          <span>{new Date(reservation.checkout_at).toLocaleDateString("pt-BR")}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>{new Date(reservation.checkin).toLocaleDateString("pt-BR")}</span>
+                          <div style={{ flexGrow: 1, height: '1px', backgroundColor: '#ccc' }}></div>
+                          <span>{new Date(reservation.checkout).toLocaleDateString("pt-BR")}</span>
+                        </>
+                      )}
                     </div>
-                </td>
+                </td> 
                 <td>{(reservation.guests_qty || 0) + 1}</td>
                 <td>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>

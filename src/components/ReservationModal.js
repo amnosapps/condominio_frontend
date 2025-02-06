@@ -552,8 +552,8 @@ const ReservationModal = ({
       { field: reservationData.guest_document, label: "Documento do hóspede" },
       { field: reservationData.document_type, label: "Tipo de documento" },
       { field: reservationData.guest_phone, label: "Contato do hóspede" },
-      { field: reservationData.checkin, label: "Data de entrada" },
-      { field: reservationData.checkout, label: "Data de saída" },
+      { field: reservationData.checkin, label: "Checkin"},
+      { field: reservationData.checkout, label: "Checkout" },
     ];
   
     const requiredAddressFields = [
@@ -1034,37 +1034,91 @@ const ReservationModal = ({
 
         {profile?.user_type === 'owner' || profile?.user_type === 'admin' ? (
           <>
-            <Row style={{ alignItems: "center", marginBottom: '1px' }}>
-              <Column>
-                <FieldLabel>Data de Entrada:</FieldLabel>
-                <FieldValue>
-                  <DatePicker
-                    selected={reservationData.checkin}
-                    onChange={(date) => handleDateChange("checkin", date)}
-                    dateFormat="dd/MM/yyyy"
-                    disabled={!isEditing}
-                     className="custom-date-picker"
-                  />
-                </FieldValue>
-              </Column>
-              <Column>
-                <FieldLabel>Data de Saída:</FieldLabel>
-                <FieldValue>
-                  <DatePicker
-                    selected={reservationData.checkout}
-                    onChange={(date) => handleDateChange("checkout", date)}
-                    dateFormat="dd/MM/yyyy"
-                    disabled={!isEditing}
-                     className="custom-date-picker"
-                  />
-                </FieldValue>
-              </Column>
-            </Row>
+        <Row style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "10px",
+        }}>
+        <Column style={{ flex: 1 }}>
+          <FieldLabel>Checkin:</FieldLabel>
+          <FieldValue>
+            <DatePicker
+              selected={reservationData.checkin}
+              onChange={(date) => handleDateChange("checkin", date)}
+              dateFormat="dd/MM/yyyy"
+              disabled={!isEditing}
+              className="custom-date-picker"
+            />
+          </FieldValue>
+        </Column>
+
+        <Column style={{ flex: 1 }}>
+          <FieldLabel>Checkout:</FieldLabel>
+          <FieldValue>
+            <DatePicker
+              selected={reservationData.checkout}
+              onChange={(date) => handleDateChange("checkout", date)}
+              dateFormat="dd/MM/yyyy"
+              disabled={!isEditing}
+              className="custom-date-picker"
+            />
+          </FieldValue>
+        </Column>
+
+        <Column style={{ flex: 2, textAlign: "center" }}>
+          <FieldLabel
+            style={{
+              display: "block",
+              textAlign: "center",
+              fontWeight: "bold",
+            }}
+          >
+            Estadia do Hóspede:
+          </FieldLabel>
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              justifyContent: "center",
+            }}
+          >
+            <FieldValue>
+              <DatePicker
+                selected={reservationData.checkin_at}
+                onChange={(date) => handleDateChange("checkin_at", date)}
+                dateFormat="dd/MM/yyyy HH:mm"
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={15}
+                disabled={!isEditing}
+                className="custom-date-picker"
+              />
+            </FieldValue>
+
+            <FieldValue>
+              <DatePicker
+                selected={reservationData.checkout_at}
+                onChange={(date) => handleDateChange("checkout_at", date)}
+                dateFormat="dd/MM/yyyy HH:mm"
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={15}
+                disabled={!isEditing}
+                className="custom-date-picker"
+              />
+            </FieldValue>
+          </div>
+        </Column>
+      </Row>
+
+
+
           </>
         ) : (
           <Row style={{ alignItems: "center", gap: "2px" }}>
               <Column>
-                <FieldLabel>Data de Entrada:</FieldLabel>
+                <FieldLabel>Checkin:</FieldLabel>
                 <FieldValue>
                   <DatePicker
                     selected={selectedReservation.checkin}
@@ -1075,7 +1129,7 @@ const ReservationModal = ({
                 </FieldValue>
               </Column>
               <Column>
-                <FieldLabel>Data de Saída:</FieldLabel>
+                <FieldLabel>Checkout:</FieldLabel>
                 <FieldValue>
                   <DatePicker
                     selected={selectedReservation.checkout}
