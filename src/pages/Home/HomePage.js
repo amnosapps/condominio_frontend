@@ -363,22 +363,23 @@ const Dashboard = ({ profile }) => {
                         selectedCondominium={selectedCondominium}
                         reservations={reservationsCheckin} onOpen={toggleModal} 
                     />
-                    <VisitorsWidget visitors={visitors} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />
 
                     <CheckoutsWidget 
                         fetchReservations={fetchReservations}
                         selectedCondominium={selectedCondominium}
                         reservations={reservationsCheckout} onOpen={toggleModal} 
                     />
+
+                    <VisitorsWidget visitors={visitors} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />
                 
                 </div>
                 
-                <Widget>
+                {/* <Widget>
                     <WidgetTitle>Ocupação Semana</WidgetTitle>
                     <ChartContainer>
                         <LineChart reservations={reservations} />
                     </ChartContainer>
-                </Widget>
+                </Widget> */}
             </Column>
 
             <Column>

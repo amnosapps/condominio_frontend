@@ -17,6 +17,7 @@ import api from './services/api';
 import UserManagement from './pages/Users/User';
 import ReservationsPage from './pages/Reserations/Reservations';
 import VisitorsPage from './pages/Users/Visitors';
+import GuestForm from './pages/Guest/GuestForm';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('accessToken'));
@@ -129,6 +130,13 @@ function App() {
                         ) : (
                             <Navigate to="/login" />
                         )
+                    }
+                />
+
+                <Route
+                    path="/guest-form/:reservationId"
+                    element={
+                        <GuestForm />
                     }
                 />
 

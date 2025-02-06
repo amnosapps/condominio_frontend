@@ -4,12 +4,13 @@ import styled from "styled-components";
 
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { QRCodeCanvas } from "qrcode.react";
 
 import { format, isSameDay, isBefore, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import PhotoCapture from "./PhotoCapture";
 import LogsListComponent from "./Logs/LogsVizualization";
-import { FaArrowAltCircleRight, FaCheck, FaEdit, FaPlus } from "react-icons/fa";
+import { FaArrowAltCircleRight, FaCheck, FaEdit, FaPlus, FaQrcode } from "react-icons/fa";
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -56,9 +57,9 @@ const ModalContainer = styled.div`
 `;
 
 const CloseButton = styled.button`
-  position: absolute;
+  /* position: relative; */
   /* top: 10px; */
-  right: 500px;
+  /* right: 500px; */
   background: none;
   border: none;
   font-size: 40px;
@@ -330,6 +331,38 @@ const Badge = styled.span`
   background-color: ${(props) => (props.active ? "#28a745" : "#dc3545")};
 `;
 
+const QrCodeModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+`;
+
+const QrCodeModalContainer = styled.div`
+  background-color: white;
+  width: 300px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  text-align: center;
+`;
+
+const CloseQrCodeButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+`;
+
 const ReservationModal = ({
   closeModal,
   selectedReservation,
@@ -402,6 +435,8 @@ const ReservationModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [isEditing, setIsEditing] = useState(false);
+
+  const [isQrCodeOpen, setIsQrCodeOpen] = useState(false);
 
   const fetchLogs = async () => {
     try {
@@ -772,6 +807,10 @@ const ReservationModal = ({
     closeModal();
   };
 
+  const toggleQrCodeModal = () => {
+    setIsQrCodeOpen(!isQrCodeOpen);
+  };
+
   const generateDocumentPdf = () => {
     const {
       id,
@@ -980,8 +1019,11 @@ const ReservationModal = ({
   return (
     <ModalOverlay onClick={closeModal1}>
       <ModalContainer onClick={(e) => e.stopPropagation()} className="modal-container">
-        <div style={{ display: 'flex', alignContent: 'center', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignContent: 'center', alignItems: 'center', justifyContent: "space-between" }}>
           <div style={{ display: "flex", gap: "10px", alignItems: "center", margin: '1px 0px' }}>
+            <GreenButton onClick={toggleQrCodeModal}>
+              <FaQrcode width={40} />
+            </GreenButton>
             <a onClick={generateDocumentPdf} style={{ color: "white", padding: "10px", borderRadius: "5px", cursor: "pointer" }}>
               <img
                   src="/download-pdf.png"
@@ -989,13 +1031,13 @@ const ReservationModal = ({
                   style={{ width: "30px", height: "auto", cursor: "pointer" }}
                 />
             </a>
+            <div><strong style={{ fontSize: '20px' }}>#{selectedReservation.id} - Apto {reservationData.apartment}</strong></div>
+            {!selectedReservation.active && (
+              <Badge active={selectedReservation.active}>
+                {selectedReservation.active ? "Ativo" : "Cancelado"}
+              </Badge>
+            )}
           </div>
-          <div><strong style={{ fontSize: '20px' }}>#{selectedReservation.id} - Apto {reservationData.apartment}</strong></div>
-          {!selectedReservation.active && (
-            <Badge active={selectedReservation.active}>
-              {selectedReservation.active ? "Ativo" : "Cancelado"}
-            </Badge>
-          )}
           <CloseButton onClick={closeModal1}>&times;</CloseButton>
         </div>
         <div>
@@ -1416,8 +1458,9 @@ const ReservationModal = ({
               <FaCheck style={{ marginLeft: '7px' }} />
           </GreenButton>
           )}
+
           <LogsButton onClick={fetchLogs}>Auditoria</LogsButton> 
-          
+
           {profile?.user_type === "owner" || profile?.user_type === "admin" ? (
             !selectedReservation.active ? (
               <GreenButton 
@@ -1444,6 +1487,16 @@ const ReservationModal = ({
             )
           ) : null}
         </div>
+
+        {isQrCodeOpen && (
+          <QrCodeModalOverlay onClick={toggleQrCodeModal}>
+            <QrCodeModalContainer onClick={(e) => e.stopPropagation()}>
+              <CloseQrCodeButton onClick={toggleQrCodeModal}>×</CloseQrCodeButton>
+              <h3>Abrir Pré-Checkin</h3>
+              <QRCodeCanvas value={`${window.location.origin}/guest-form/${selectedReservation.id}`} size={200} />
+            </QrCodeModalContainer>
+          </QrCodeModalOverlay>
+        )}
       </ModalContainer>
     </ModalOverlay>
   );
