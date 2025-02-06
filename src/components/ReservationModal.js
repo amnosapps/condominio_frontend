@@ -780,6 +780,8 @@ const ReservationModal = ({
       guest_phone,
       checkin,
       checkout,
+      checkin_at,
+      checkout_at,
       observations,
       address,
       vehicle_plate,
@@ -794,7 +796,7 @@ const ReservationModal = ({
     doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
     doc.text(`Reserva #${selectedReservation.id}`, 105, 20, null, null, "center");
-  
+
     // Condominium and Apartment Information
     doc.setFontSize(14);
     doc.text("Condomínio", 10, 30);
@@ -804,17 +806,17 @@ const ReservationModal = ({
     if (apartment_owner) {
       doc.text(`Proprietário: ${apartment_owner}`, 10, 60);
     }
-  
+
     // Add a divider
     doc.setDrawColor(200);
     doc.setLineWidth(0.5);
     doc.line(10, 65, 200, 65);
-  
+
     // Add basic information
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
     doc.text("Informações Gerais", 10, 75);
-  
+
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
     doc.text(`Hóspede: ${guest_name}`, 10, 85);
@@ -822,47 +824,66 @@ const ReservationModal = ({
     doc.text(`Contato: ${guest_phone || "N/A"}`, 10, 105);
     doc.text(`Check-in: ${format(new Date(checkin), "dd/MM/yyyy")}`, 10, 115);
     doc.text(`Check-out: ${format(new Date(checkout), "dd/MM/yyyy")}`, 10, 125);
-  
+
+    // Add a divider before hosting information
+    doc.setDrawColor(200);
+    doc.setLineWidth(0.5);
+    doc.line(10, 135, 200, 135);
+
+    // Add hosting information
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Informações da hospedagem", 10, 145);
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Entrada do hóspede: ${checkin_at ? format(new Date(checkin_at), "dd/MM/yyyy HH:mm") : "N/A"}`, 10, 155);
+    doc.text(`Saída do hóspede: ${checkout_at ? format(new Date(checkout_at), "dd/MM/yyyy HH:mm") : "N/A"}`, 10, 165);
+    
+
+    // Add a divider before observations
+    doc.setDrawColor(200);
+    doc.setLineWidth(0.5);
+    doc.line(10, 175, 200, 175);
+
     // Add observations
     doc.setFont("helvetica", "bold");
-    doc.text("Observações", 10, 135);
+    doc.text("Observações", 10, 185);
     doc.setFont("helvetica", "normal");
-    doc.text(observations || "Nenhuma observação.", 10, 145);
-  
+    doc.text(observations || "Nenhuma observação.", 10, 195);
+
     // Add address
     doc.setFont("helvetica", "bold");
-    doc.text("Endereço", 10, 155);
+    doc.text("Endereço", 10, 205);
     doc.setFont("helvetica", "normal");
     doc.text(
       `${address.endereco || "N/A"}, ${address.bairro || "N/A"}, ${address.cidade || "N/A"}, ${address.estado || "N/A"}, ${address.pais || "N/A"} (${address.cep || "N/A"})`,
       10,
-      165
+      215
     );
-  
+
     // Add vehicle information
     if (vehicle_plate) {
       doc.setFont("helvetica", "bold");
-      doc.text("Veículo", 10, 175);
+      doc.text("Veículo", 10, 225);
       doc.setFont("helvetica", "normal");
-      doc.text(`Placa: ${vehicle_plate}`, 10, 185);
+      doc.text(`Placa: ${vehicle_plate}`, 10, 235);
     }
-  
+
     // Add additional guests
     if (additional_guests.length > 0) {
       doc.setFont("helvetica", "bold");
-      doc.text("Hóspedes Adicionais", 10, 195);
+      doc.text("Hóspedes Adicionais", 10, 245);
       additional_guests.forEach((guest, index) => {
         doc.setFont("helvetica", "normal");
         doc.text(
-          `${index + 1}. ${guest.name || "N/A"} - ${guest.document || "N/A"} (${
-            guest.is_child ? "Criança" : "Adulto"
-          })`,
+          `${index + 1}. ${guest.name || "N/A"} - ${guest.document || "N/A"} (${guest.is_child ? "Criança" : "Adulto"})`,
           10,
-          205 + index * 10
+          255 + index * 10
         );
       });
     }
-  
+
     // Footer
     doc.setFontSize(10);
     doc.setFont("helvetica", "italic");
@@ -874,6 +895,7 @@ const ReservationModal = ({
       null,
       "center"
     );
+
   
     // Save the PDF
     doc.save(`${selectedCondominium}_reserva_${selectedReservation.id}_${apartment}.pdf`);
