@@ -143,7 +143,7 @@ const Label = styled.span`
   align-self: flex-start;
 
   color: ${(props) => (props.isToday ? "white" : "#fff")};
-  background-color: ${(props) => (props.isToday ? "#4caf50" : "#ffa500")};
+  background-color: ${(props) => (props.isToday ? "#4caf50" : "#000")};
 `;
 
 // checkoutsWidget Component
@@ -172,7 +172,8 @@ const CheckoutsWidget = ({
       {reservations && reservations.length > 0 ? (
         <ReservationList>
           {reservations.map((res) => {
-            const checkinDate = new Date(res.checkin_at);
+            const checkinDate = new Date(res.checkin);
+            const checkoutDate = new Date(res.checkin_at);
 
             return (
               <ReservationItem
@@ -192,8 +193,8 @@ const CheckoutsWidget = ({
                     {checkinDate.toLocaleDateString("pt-BR")} -{" "}
                     {new Date(res.checkout).toLocaleDateString("pt-BR")}
                   </Dates>
-                  {isToday(checkinDate) && <Label isToday>Hoje</Label>}
-                  {!isToday(checkinDate) && <Label>Pendente</Label>}
+                  {isToday(checkoutDate) && <Label isToday>Hoje</Label>}
+                  {!isToday(checkoutDate) && <Label>Pendente</Label>}
                 </ReservationDetails>
                 <ChevronIcon>➔</ChevronIcon>
               </ReservationItem>

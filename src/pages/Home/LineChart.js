@@ -8,7 +8,7 @@ const normalizeDate = (date) => {
 };
 
 // Generate Line Chart Data
-const generateLineChartData = (reservations) => {
+const generateLineChartData = (reservations, visitors) => {
   const currentDate = new Date(); // Get current date
   const weekDates = Array(7)
     .fill(null)
@@ -44,8 +44,14 @@ const generateLineChartData = (reservations) => {
       );
   };
 
-  // Generate guests data using the function
+  // Function to count total visitors for a specific day
+  const getTotalVisitorsForDay = (day) => {
+    return visitors.length;
+  };
+
+  // Generate data for guests and visitors
   const guestsData = weekDates.map((date) => getTotalGuestsForDay(date));
+  const visitorsData = weekDates.map((date) => getTotalVisitorsForDay(date));
 
   return {
     labels,
@@ -59,13 +65,22 @@ const generateLineChartData = (reservations) => {
         pointRadius: 4,
         pointBackgroundColor: "#2196F3",
       },
+      {
+        label: "Visitantes",
+        data: visitorsData,
+        borderColor: "#4CAF50",
+        backgroundColor: "rgba(76, 175, 80, 0.2)",
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: "#4CAF50",
+      },
     ],
   };
 };
 
 // LineChart Component
-const LineChart = ({ reservations }) => {
-  const lineChartData = generateLineChartData(reservations);
+const LineChart = ({ reservations, visitors }) => {
+  const lineChartData = generateLineChartData(reservations, visitors);
 
   return (
     <Line

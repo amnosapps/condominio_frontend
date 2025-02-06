@@ -15,14 +15,15 @@ import LineChart from "./LineChart";
 import api from "../../services/api";
 
 import {
-  isToday
+  isToday,
+  isPast
 } from "date-fns"
 
 // Styled Components
 const Container = styled.div`
     display: flex;
     justify-content: start;
-    padding: 4px 10px;
+    padding: 1px 1px;
     padding-bottom: 20px;
     background-color: #f9f9f9;
     max-width: 100%;
@@ -47,17 +48,19 @@ const ChartContainer = styled.div`
 
 const DashboardGrid = styled.div`
     display: grid;
-    grid-template-columns: 3fr 1fr;
-    gap: 20px;
+    grid-template-columns: 2fr 1fr;
+    gap: 10px;
+    width: 100%;
+    max-width: 1400px;
 
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
         grid-template-columns: 1fr;
     }
 `;
 
 const Column = styled.div`
-    display: grid;
-    grid-template-rows: auto;
+    display: flex;
+    flex-direction: column;
     gap: 10px;
 `;
 
@@ -266,16 +269,16 @@ const Dashboard = ({ profile }) => {
                 return dateA - dateB; // Sort ascending (nearest date first)
             });
 
-        const isCheckoutToday = (reservation) => { 
+        const isCheckoutTodayOrPassed = (reservation) => { 
           const checkoutDate = new Date(reservation.checkout); 
           return (
-            reservation.checkin_at && // have checkin
-            isToday(checkoutDate) && // Checkout is today
-            !reservation.checkout_at // there is no checkout_at
+            reservation.checkin_at && // Has check-in
+            (isToday(checkoutDate) || isPast(checkoutDate)) && // Checkout is today or in the past
+            !reservation.checkout_at // Hasn't checked out yet
           );
         };
 
-        const checkoutsReservations = reservations?.filter(isCheckoutToday);
+        const checkoutsReservations = reservations?.filter(isCheckoutTodayOrPassed);
           
         setReservations(response.data);
         setReservationsCheckin(filteredReservations);
@@ -351,11 +354,10 @@ const Dashboard = ({ profile }) => {
 
                 <div
                     style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "20px",
-                    alignItems: "stretch",
-                    }}
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                      gap: "10px",
+                  }}
                 >
                     
                     <ReservationsWidget 
@@ -370,19 +372,20 @@ const Dashboard = ({ profile }) => {
                         reservations={reservationsCheckout} onOpen={toggleModal} 
                     />
 
-                    <VisitorsWidget visitors={visitors} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />
+                    
                 
                 </div>
                 
-                {/* <Widget>
+                <Widget>
                     <WidgetTitle>Ocupação Semana</WidgetTitle>
                     <ChartContainer>
-                        <LineChart reservations={reservations} />
+                        <LineChart reservations={reservations} visitors={visitors} residents={[]} />
                     </ChartContainer>
-                </Widget> */}
+                </Widget>
             </Column>
 
             <Column>
+            <VisitorsWidget visitors={visitors} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />
             <Widget>
                 <WidgetTitle>Atalhos</WidgetTitle>
                     <ShortcutList>
@@ -404,10 +407,10 @@ const Dashboard = ({ profile }) => {
                         ))}
                     </ShortcutList>
             </Widget>
+            
+            <ApartmentOccupation apartments={apartments} />
 
             <NotificationsWidget notifications={notifications} setNotifications={setNotifications} />
-
-            <ApartmentOccupation apartments={apartments} />
 
             </Column>
         </DashboardGrid>
