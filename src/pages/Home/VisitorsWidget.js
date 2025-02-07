@@ -9,6 +9,7 @@ const Widget = styled.div`
   border-radius: 12px;
   padding: 20px;
   max-height: 260px;
+  min-height: 260px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
 

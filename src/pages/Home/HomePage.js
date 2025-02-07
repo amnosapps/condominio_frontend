@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import ReservationsWidget from './ReservationsWidget'
+import CheckoutsWidget from "./CheckoutsWidget";
 import { Line, Pie } from "react-chartjs-2";
 import "chart.js/auto";
 import VisitorsWidget from "./VisitorsWidget";
@@ -13,11 +14,16 @@ import NotificationsWidget from "./NotificationsWidget";
 import LineChart from "./LineChart";
 import api from "../../services/api";
 
+import {
+  isToday,
+  isPast
+} from "date-fns"
+
 // Styled Components
 const Container = styled.div`
     display: flex;
     justify-content: start;
-    padding: 4px 10px;
+    padding: 1px 1px;
     padding-bottom: 20px;
     background-color: #f9f9f9;
     max-width: 100%;
@@ -42,17 +48,19 @@ const ChartContainer = styled.div`
 
 const DashboardGrid = styled.div`
     display: grid;
-    grid-template-columns: 3fr 1fr;
-    gap: 20px;
+    grid-template-columns: 2fr 1fr;
+    gap: 10px;
+    width: 100%;
+    max-width: 1400px;
 
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
         grid-template-columns: 1fr;
     }
 `;
 
 const Column = styled.div`
-    display: grid;
-    grid-template-rows: auto;
+    display: flex;
+    flex-direction: column;
     gap: 10px;
 `;
 
@@ -211,6 +219,8 @@ const Dashboard = ({ profile }) => {
     const selectedCondominium = params.condominium;
 
     const [reservations, setReservations] = useState([]);
+    const [reservationsCheckin, setReservationsCheckin] = useState([]);
+    const [reservationsCheckout, setReservationsCheckout] = useState([]);
     const [visitors, setVisitors] = useState([]);
     const [apartments, setApartments] = useState([]);
     const [notifications, setNotifications] = useState([]);
@@ -244,7 +254,7 @@ const Dashboard = ({ profile }) => {
                 headers: { Authorization: `Bearer ${token}` },
                 params: {
                     condominium: selectedCondominium, // Replace with actual value
-                    start_date: new Date().toISOString(),
+                    start_date: new Date(new Date().setDate(new Date().getDate() - 7)).toISOString(),
                     end_date: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
                 },
             }
@@ -259,7 +269,20 @@ const Dashboard = ({ profile }) => {
                 return dateA - dateB; // Sort ascending (nearest date first)
             });
 
-        setReservations(filteredReservations);
+        const isCheckoutTodayOrPassed = (reservation) => { 
+          const checkoutDate = new Date(reservation.checkout); 
+          return (
+            reservation.checkin_at && // Has check-in
+            (isToday(checkoutDate) || isPast(checkoutDate)) && // Checkout is today or in the past
+            !reservation.checkout_at // Hasn't checked out yet
+          );
+        };
+
+        const checkoutsReservations = reservations?.filter(isCheckoutTodayOrPassed);
+          
+        setReservations(response.data);
+        setReservationsCheckin(filteredReservations);
+        setReservationsCheckout(checkoutsReservations);
     } catch (error) {
         console.error("Error fetching reservations:", error);
     } finally {
@@ -331,31 +354,38 @@ const Dashboard = ({ profile }) => {
 
                 <div
                     style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "20px",
-                    alignItems: "stretch",
-                    }}
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+                      gap: "10px",
+                  }}
                 >
                     
                     <ReservationsWidget 
                         fetchReservations={fetchReservations}
                         selectedCondominium={selectedCondominium}
-                        reservations={reservations} onOpen={toggleModal} 
+                        reservations={reservationsCheckin} onOpen={toggleModal} 
                     />
-                    <VisitorsWidget visitors={visitors} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />
+
+                    <CheckoutsWidget 
+                        fetchReservations={fetchReservations}
+                        selectedCondominium={selectedCondominium}
+                        reservations={reservationsCheckout} onOpen={toggleModal} 
+                    />
+
+                    
                 
                 </div>
                 
                 <Widget>
                     <WidgetTitle>Ocupação Semana</WidgetTitle>
                     <ChartContainer>
-                        <LineChart reservations={reservations} />
+                        <LineChart reservations={reservations} visitors={visitors} residents={[]} />
                     </ChartContainer>
                 </Widget>
             </Column>
 
             <Column>
+            <VisitorsWidget visitors={visitors} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />
             <Widget>
                 <WidgetTitle>Atalhos</WidgetTitle>
                     <ShortcutList>
@@ -377,10 +407,10 @@ const Dashboard = ({ profile }) => {
                         ))}
                     </ShortcutList>
             </Widget>
+            
+            <ApartmentOccupation apartments={apartments} />
 
             <NotificationsWidget notifications={notifications} setNotifications={setNotifications} />
-
-            <ApartmentOccupation apartments={apartments} />
 
             </Column>
         </DashboardGrid>

@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import ReservationModal from "../../components/ReservationModal";
+import {
+  isToday
+} from "date-fns"
+
 
 // Styled Components for Reservations Widget
 const Widget = styled.div`
@@ -90,7 +94,7 @@ const ReservationItem = styled.div`
     transform: translateY(-3px);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     background-color: rgba(0, 123, 255, 0.1);
-    border-color: #007bff; /* Blue border on hover */
+    border-color: #007bff;
   }
 `;
 
@@ -139,15 +143,15 @@ const Label = styled.span`
   align-self: flex-start;
 
   color: ${(props) => (props.isToday ? "white" : "#fff")};
-  background-color: ${(props) => (props.isToday ? "#4caf50" : "#ffa500")}; /* Green for today, orange for pending */
+  background-color: ${(props) => (props.isToday ? "#4caf50" : "#000")};
 `;
 
-// ReservationsWidget Component
-const ReservationsWidget = ({
+// checkoutsWidget Component
+const CheckoutsWidget = ({
   onOpen,
   reservations,
   fetchReservations,
-  selectedCondominium,
+  selectedCondominium
 }) => {
   const [selectedReservation, setSelectedReservation] = useState(null);
 
@@ -159,29 +163,17 @@ const ReservationsWidget = ({
     setSelectedReservation(null);
   };
 
-  const isToday = (date) => {
-    const today = new Date();
-    return (
-      date.getFullYear() === today.getFullYear() &&
-      date.getMonth() === today.getMonth() &&
-      date.getDate() === today.getDate()
-    );
-  };
-
-  const isPast = (date) => {
-    return new Date(date) < new Date();
-  };
-
   return (
     <Widget>
       <Header>
-        <WidgetTitle>Checkins Próximos</WidgetTitle>
+        <WidgetTitle>Checkouts Pendentes</WidgetTitle>
         <OpenButton onClick={onOpen}>+ Nova Reserva</OpenButton>
       </Header>
       {reservations && reservations.length > 0 ? (
         <ReservationList>
-          {reservations?.map((res) => {
+          {reservations.map((res) => {
             const checkinDate = new Date(res.checkin);
+            const checkoutDate = new Date(res.checkin_at);
 
             return (
               <ReservationItem
@@ -201,10 +193,8 @@ const ReservationsWidget = ({
                     {checkinDate.toLocaleDateString("pt-BR")} -{" "}
                     {new Date(res.checkout).toLocaleDateString("pt-BR")}
                   </Dates>
-                  {isToday(checkinDate) && <Label isToday>Hoje</Label>}
-                  {isPast(checkinDate) && !isToday(checkinDate) && (
-                    <Label>Noshow</Label>
-                  )}
+                  {isToday(checkoutDate) && <Label isToday>Hoje</Label>}
+                  {!isToday(checkoutDate) && <Label>Pendente</Label>}
                 </ReservationDetails>
                 <ChevronIcon>➔</ChevronIcon>
               </ReservationItem>
@@ -212,9 +202,8 @@ const ReservationsWidget = ({
           })}
         </ReservationList>
       ) : (
-        <NoReservationsText>Nenhuma reserva disponível</NoReservationsText>
+        <NoReservationsText>Nenhuma reserva pendente</NoReservationsText>
       )}
-      
 
       {selectedReservation && (
         <ReservationModal
@@ -228,4 +217,4 @@ const ReservationsWidget = ({
   );
 };
 
-export default ReservationsWidget;
+export default CheckoutsWidget;

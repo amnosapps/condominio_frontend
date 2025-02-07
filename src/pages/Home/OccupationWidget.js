@@ -88,7 +88,7 @@ const ApartmentOccupation = ({ apartments }) => {
 
   return (
     <Widget>
-      <WidgetTitle>Apartmentos</WidgetTitle>
+      <WidgetTitle>Apartamentos</WidgetTitle>
       <ChartWrapper>
         <Pie
           data={pieData}
