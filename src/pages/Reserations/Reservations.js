@@ -367,7 +367,9 @@ const ReservationsPage = ({ profile }) => {
           return res.apt_number.toString().includes(value);
         } else if (filterType === "reservation") {
           return res.id.toString().includes(value);
-        }
+        } else if (filterType === "plate") {
+          return res.vehicle_plate?.toString().toLowerCase().includes(value.toLowerCase()) ?? false;
+        } 
         return false;
       });
     }
@@ -489,6 +491,7 @@ const ReservationsPage = ({ profile }) => {
               <option value="name">Nome</option>
               <option value="apartment">Apto</option>
               <option value="reservation">Reserva</option>
+              <option value="plate">Placa do Veículo</option>
             </select>
 
             <SearchInput
@@ -497,6 +500,8 @@ const ReservationsPage = ({ profile }) => {
                   ? "Buscar Hóspede"
                   : filterType === "apartment"
                   ? "Buscar Apto"
+                  : filterType === "plate"
+                  ? "Buscar Placa do Veículo"
                   : "Buscar Reserva"
               }
               value={searchTerm}
