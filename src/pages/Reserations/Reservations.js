@@ -251,7 +251,7 @@ const ReservationsPage = ({ profile }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDateRange, setSelectedDateRange] = useState({
-    startDate: new Date(),
+    startDate: new Date(new Date().setDate(new Date().getDate() - 7)),
     endDate: new Date(new Date().setDate(new Date().getDate() + 7)),
   });
 

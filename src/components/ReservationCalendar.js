@@ -713,7 +713,7 @@ const ReservationCalendar = ({ profile }) => {
         return normalized;
     }
 
-    var total_guests = reservations.filter((reservation) => 
+    var total_guests = reservations.filter((reservation) => reservation.active &&
       normalizeDate(day) >= normalizeDate(reservation.checkin) && 
       normalizeDate(day) <= normalizeDate(reservation.checkout))
     .reduce((totalGuests, reservation) => totalGuests + (reservation.guests_qty + 1),0);
@@ -1066,7 +1066,9 @@ const ReservationCalendar = ({ profile }) => {
                   fetchApartments={fetchApartments}
               />
             )}
-              
+              {/* {apartments.filter((apartment) => 
+              daysInView.some((day) => getReservationBars(apartment.number, day).length > 0)
+            ) */}
             {apartments.map(apartment => (
               <RoomRow key={apartment.id} daysInView={daysInView.length}>
                 <RoomLabel

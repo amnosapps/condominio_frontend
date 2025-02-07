@@ -652,7 +652,7 @@ function Modal({ selectedApartment, profile, onClose, fetchApartments }) {
     const closeReservationModal = () => setSelectedReservation(null);
 
     const filteredReservations = apartmentDetails?.last_reservations.filter((reservation) => {
-        return !reservation.checkin_at && !reservation.checkout_at;
+        return reservation.active && (!reservation.checkin_at && !reservation.checkout_at);
     });
 
     const currentReservation = apartmentDetails?.last_reservations.find((reservation) => {
@@ -871,7 +871,7 @@ function Modal({ selectedApartment, profile, onClose, fetchApartments }) {
                                 )}
                                 {filteredReservations.length > 0 ? (
                                     <>
-                                        <h3>Próximas Reservas</h3>
+                                        <h3>Próximas Chegadas</h3>
                                         <ReservationGrid>
                                             {filteredReservations.map((reservation) => {
                                                 if (currentReservation?.id === reservation.id) {
@@ -898,7 +898,7 @@ function Modal({ selectedApartment, profile, onClose, fetchApartments }) {
                                                             locale: ptBR,
                                                         })}
                                                     </span>
-                                                    <span><strong>Hóspedes:</strong> {reservation.guest_qty + 1 || 1}</span>
+                                                    <span><strong>Hóspedes:</strong> {reservation.guests_qty + 1 || 1}</span>
                                                 </ReservationCard>
                                             )})}
                                         </ReservationGrid>

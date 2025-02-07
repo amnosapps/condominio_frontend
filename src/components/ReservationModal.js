@@ -482,12 +482,24 @@ const ReservationModal = ({
   const addAdditionalGuest = () => {
     setAdditionalGuests((prev) => [
       ...prev,
-      { name: "", document: "", age: 0, is_child: false },
+      { name: "", document: "", document_type: "", age: 0, is_child: false },
     ]);
+  
+    // Update the guests_qty count
+    setReservationData((prev) => ({
+      ...prev,
+      guests_qty: prev.guests_qty + 1,
+    }));
   };
 
   const removeAdditionalGuest = (index) => {
     setAdditionalGuests((prev) => prev.filter((_, i) => i !== index));
+  
+    // Update the guests_qty count (ensure it doesn't go below zero)
+    setReservationData((prev) => ({
+      ...prev,
+      guests_qty: Math.max(prev.guests_qty - 1, 0),
+    }));
   };
 
   const updateGuestDetails = (index, field, value) => {
@@ -1015,7 +1027,6 @@ const ReservationModal = ({
     }
   };
   
-  console.log(selectedReservation.active)
   return (
     <ModalOverlay onClick={closeModal1}>
       <ModalContainer onClick={(e) => e.stopPropagation()} className="modal-container">
@@ -1144,6 +1155,7 @@ const ReservationModal = ({
                 disabled={!isEditing} 
               >
                 <option value="">Selecione</option>
+                <option value="rg">RG</option>
                 <option value="cpf">CPF</option>
                 <option value="passport">Passaporte</option>
               </StyledSelect>
@@ -1327,6 +1339,7 @@ const ReservationModal = ({
                       disabled={!isEditing} 
                     >
                       <option value="">Tipo Documento</option>
+                      <option value="rg">RG</option>
                       <option value="cpf">CPF</option>
                       <option value="passport">Passaporte</option>
                     </StyledSelect>
