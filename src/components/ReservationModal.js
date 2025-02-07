@@ -16,6 +16,9 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import api from "../services/api";
 
+import CryptoJS from "crypto-js";
+const SECRET_KEY = process.env.REACT_APP_QRCODE_SECRET || "your-secret-key";
+
 // Styled Components
 const ModalOverlay = styled.div`
   position: fixed;
@@ -362,6 +365,8 @@ const CloseQrCodeButton = styled.button`
   font-size: 20px;
   cursor: pointer;
 `;
+
+
 
 const ReservationModal = ({
   closeModal,
@@ -1026,6 +1031,10 @@ const ReservationModal = ({
       setIsSubmitting(false);
     }
   };
+
+  const encryptReservationId = (reservationId) => {
+    return CryptoJS.AES.encrypt(reservationId.toString(), SECRET_KEY).toString();
+  };
   
   return (
     <ModalOverlay onClick={closeModal1}>
@@ -1505,8 +1514,17 @@ const ReservationModal = ({
           <QrCodeModalOverlay onClick={toggleQrCodeModal}>
             <QrCodeModalContainer onClick={(e) => e.stopPropagation()}>
               <CloseQrCodeButton onClick={toggleQrCodeModal}>×</CloseQrCodeButton>
-              <h3>Abrir Pré-Checkin</h3>
-              <QRCodeCanvas value={`${window.location.origin}/guest-form/${selectedReservation.id}`} size={200} />
+              
+              <div
+                onClick={() => window.open(`${window.location.origin}/guest-form?token=${encodeURIComponent(encryptReservationId(selectedReservation.id))}`, '_blank')}
+                style={{ cursor: 'pointer', display: 'inline-block' }}
+              >
+                <h3>Abrir Pré-Checkin</h3>
+                <QRCodeCanvas
+                  value={`${window.location.origin}/guest-form?token=${encodeURIComponent(encryptReservationId(selectedReservation.id))}`}
+                  size={200}
+                />
+              </div>
             </QrCodeModalContainer>
           </QrCodeModalOverlay>
         )}

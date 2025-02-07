@@ -116,7 +116,7 @@ function App() {
             <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
-                
+                <Route path="/guest-form" element={<GuestForm />} />
 
                 {/* Condominium Selection */}
                 <Route
@@ -130,13 +130,6 @@ function App() {
                         ) : (
                             <Navigate to="/login" />
                         )
-                    }
-                />
-
-                <Route
-                    path="/guest-form/:reservationId"
-                    element={
-                        <GuestForm />
                     }
                 />
 

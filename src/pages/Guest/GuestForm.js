@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams  } from "react-router-dom";
 import styled from "styled-components";
-import api from "../../services/api";
+import CryptoJS from "crypto-js";
+import axios from "axios";
 import Webcam from "react-webcam";
 import { FaCamera, FaFileUpload, FaTrash } from "react-icons/fa";
+
+const API_URL = process.env.REACT_APP_API_URL;
+const SECRET_KEY = process.env.REACT_APP_QRCODE_SECRET || "your-secret-key";
 
 // Styled Components
 const Container = styled.div`
@@ -163,8 +167,22 @@ const WebcamCapture = styled(Webcam)`
   border-radius: 10px;
 `;
 
+
 const GuestForm = () => {
-  const { reservationId } = useParams();
+
+  const decryptReservationId = (token) => {
+    try {
+      const bytes = CryptoJS.AES.decrypt(decodeURIComponent(token), SECRET_KEY);
+      return bytes.toString(CryptoJS.enc.Utf8); // Convert back to string
+    } catch (error) {
+      console.error("Erro ao descriptografar token:", error);
+      return null;
+    }
+  };
+
+  const [searchParams] = useSearchParams();
+  const encryptedToken = searchParams.get("token"); // ✅ Extract token from URL
+  const reservationId = decryptReservationId(encryptedToken);
   const [reservation, setReservation] = useState(null);
   const [formData, setFormData] = useState({
     guest_name: "",
@@ -193,9 +211,15 @@ const GuestForm = () => {
 
   // Fetch reservation details when page loads
   useEffect(() => {
+    if (!reservationId) {
+      alert("Acesso inválido.");
+      window.location.href = "/"; // Redirect to home if token is invalid
+      return;
+    }
+
     const fetchReservation = async () => {
       try {
-        const response = await api.get(`/api/reservations/${reservationId}/`);
+        const response = await axios.get(`${API_URL}/api/reservations/${reservationId}/guest-access/`);
         setReservation(response.data);
         setFormData({
           guest_name: response.data.guest_name || "",
@@ -373,7 +397,7 @@ const GuestForm = () => {
       formDataPayload.append("additional_guests", JSON.stringify(guestsArray));
   
       // Send the formDataPayload to the API
-      await api.patch(`/api/reservations/${reservationId}/`, formDataPayload, {
+      await axios.post(`${API_URL}/api/reservations/${reservationId}/guest-update/`, formDataPayload, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
