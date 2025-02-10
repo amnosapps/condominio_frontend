@@ -284,16 +284,18 @@ const ReservationsPage = ({ profile }) => {
           end_date: selectedDateRange.endDate.toISOString(),
         },
       });
+
+      const fetchedReservations = response.data; 
   
-      identifyPendingActions(response.data);
+      const pending = identifyPendingActions(fetchedReservations);
   
-      const updatedReservations = response.data.map((res) => {
-        const pending = pendingActions.find((p) => p.id === res.id);
-        return pending ? { ...res, pendingStatus: pending.pendingStatus } : res;
+      const updatedReservations = fetchedReservations.map((res) => {
+        const pendingStatus = pending.find((p) => p.id === res.id)?.pendingStatus || null;
+        return { ...res, pendingStatus };
       });
   
       setReservations(updatedReservations);
-      applyFilter("All", updatedReservations);
+      applyFilter("All", updatedReservations); // Ensure filter is applied
     } catch (error) {
       console.error("Error fetching reservations:", error);
     }
@@ -322,6 +324,8 @@ const ReservationsPage = ({ profile }) => {
     const pending = [...noExitReservations, ...noShowReservations];
   
     setPendingActions(pending);
+
+    return pending
   };
 
   const applyFilter = (filterType, data = reservations) => {
@@ -610,7 +614,7 @@ const ReservationsPage = ({ profile }) => {
                           : "Pending";
 
                         // Show badge only if checkout date has NOT passed or status is "Completed"
-                        if (!checkoutDate || checkoutDate >= today || reservationStatus === "Completed" || reservationStatus === "Canceled") {
+                        if ((!checkoutDate || checkoutDate >= today) || reservationStatus === "Completed" || reservationStatus === "Canceled" || reservationStatus === "In Progress") {
                           return (
                             <Badge status={reservationStatus}>
                               {!reservation.active
