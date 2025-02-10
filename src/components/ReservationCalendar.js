@@ -643,6 +643,7 @@ const ReservationCalendar = ({ profile }) => {
         guest_name: reservation.guest_name,
         observations: reservation.observations,
         guest_document: reservation.guest_document,
+        document_type: reservation.document_type,
         guest_phone: reservation.guest_phone || "",
         guests_qty: reservation.guests_qty,
         apt_number: reservation.apt_number,

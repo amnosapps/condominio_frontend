@@ -254,7 +254,7 @@ const Dashboard = ({ profile }) => {
                 headers: { Authorization: `Bearer ${token}` },
                 params: {
                     condominium: selectedCondominium, // Replace with actual value
-                    start_date: new Date(new Date().setDate(new Date().getDate() - 7)).toISOString(),
+                    start_date: new Date(new Date().setDate(new Date().getDate() - 10)).toISOString(),
                     end_date: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
                 },
             }
@@ -271,6 +271,7 @@ const Dashboard = ({ profile }) => {
 
         const isCheckoutTodayOrPassed = (reservation) => { 
           const checkoutDate = new Date(reservation.checkout); 
+
           return (
             reservation.checkin_at && // Has check-in
             (isToday(checkoutDate) || isPast(checkoutDate)) && // Checkout is today or in the past
@@ -278,7 +279,7 @@ const Dashboard = ({ profile }) => {
           );
         };
 
-        const checkoutsReservations = reservations?.filter(isCheckoutTodayOrPassed);
+        const checkoutsReservations = response.data?.filter(isCheckoutTodayOrPassed);
           
         setReservations(response.data);
         setReservationsCheckin(filteredReservations);

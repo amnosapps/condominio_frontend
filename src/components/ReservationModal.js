@@ -1082,7 +1082,7 @@ const ReservationModal = ({
                     selected={reservationData.checkin}
                     onChange={(date) => handleDateChange("checkin", date)}
                     dateFormat="dd/MM/yyyy"
-                    disabled={!isEditing}
+                    disabled={!isEditing || reservationData.checkin_at}
                      className="custom-date-picker"
                   />
                 </FieldValue>
@@ -1094,7 +1094,7 @@ const ReservationModal = ({
                     selected={reservationData.checkout}
                     onChange={(date) => handleDateChange("checkout", date)}
                     dateFormat="dd/MM/yyyy"
-                    disabled={!isEditing}
+                    disabled={!isEditing || reservationData.checkin_at}
                      className="custom-date-picker"
                   />
                 </FieldValue>
@@ -1134,7 +1134,7 @@ const ReservationModal = ({
             <FieldLabel>Nome:</FieldLabel>
             <FieldValue>
               <EditableInput
-                disabled={!isEditing} 
+                disabled={!isEditing || reservationData.checkin_at} 
                 type="text"
                 value={reservationData.guest_name}
                 onChange={(e) => handleChange("guest_name", e.target.value)}
@@ -1150,7 +1150,7 @@ const ReservationModal = ({
                 value={reservationData.guest_phone || ""}
                 onChange={handlePhoneChange}
                 placeholder="88 88888-8888"
-                disabled={!isEditing} 
+                disabled={!isEditing || reservationData.checkin_at} 
               />
             </FieldValue>
           </Column>
@@ -1161,7 +1161,7 @@ const ReservationModal = ({
               <StyledSelect
                 value={reservationData.document_type || ""}
                 onChange={(e) => handleChange("document_type", e.target.value)}
-                disabled={!isEditing} 
+                disabled={!isEditing || reservationData.checkin_at} 
               >
                 <option value="">Selecione</option>
                 <option value="rg">RG</option>
@@ -1178,7 +1178,7 @@ const ReservationModal = ({
                 type="text"
                 value={reservationData.guest_document}
                 onChange={(e) => handleChange("guest_document", e.target.value)}
-                disabled={!isEditing} 
+                disabled={!isEditing || reservationData.checkin_at} 
               />
             </FieldValue>
           </Column>
@@ -1202,7 +1202,7 @@ const ReservationModal = ({
                   type="text"
                   value={vehiclePlate}
                   onChange={(e) => setVehiclePlate(e.target.value)}
-                  disabled={!isEditing} 
+                  disabled={!isEditing}
                 />
               </FieldValue>
             </Column>
@@ -1213,7 +1213,7 @@ const ReservationModal = ({
             <HiddenCheckbox
               checked={hasCar}
               onChange={handleHasCarChange}
-              disabled={!isEditing} 
+              disabled={!isEditing || reservationData.checkin_at}
             />
             <StyledCheckbox
               checked={hasCar}
@@ -1221,7 +1221,7 @@ const ReservationModal = ({
                 if (!isEditing) return; // Ignore clicks if disabled
                 handleHasCarChange({ target: { checked: !hasCar } });
               }}
-              disabled={!isEditing} 
+              disabled={!isEditing || reservationData.checkin_at}
             />
             <Label>Tem veículo?</Label>
           </CheckboxContainer>
@@ -1234,7 +1234,7 @@ const ReservationModal = ({
               type="text"
               value={address.endereco || ""}
               onChange={(e) => handleAddressChange("endereco", e.target.value)}
-              disabled={!isEditing} 
+              disabled={!isEditing || reservationData.checkin_at}
             />
             </FieldValue>
           </Column>
@@ -1245,7 +1245,7 @@ const ReservationModal = ({
                 type="text"
                 value={address.bairro || ""}
                 onChange={(e) => handleAddressChange("bairro", e.target.value)}
-                disabled={!isEditing} 
+                disabled={!isEditing || reservationData.checkin_at}
               />
             </FieldValue>
           </Column>
@@ -1256,7 +1256,7 @@ const ReservationModal = ({
                 type="text"
                 value={address.cep || ""}
                 onChange={(e) => handleAddressChange("cep", e.target.value)}
-                disabled={!isEditing} 
+                disabled={!isEditing || reservationData.checkin_at}
               />
             </FieldValue>
           </Column>
@@ -1269,7 +1269,7 @@ const ReservationModal = ({
                 type="text"
                 value={address.cidade || ""}
                 onChange={(e) => handleAddressChange("cidade", e.target.value)}
-                disabled={!isEditing} 
+                disabled={!isEditing || reservationData.checkin_at}
               />
             </FieldValue>
           </Column>
@@ -1280,7 +1280,7 @@ const ReservationModal = ({
                 type="text"
                 value={address.estado || ""}
                 onChange={(e) => handleAddressChange("estado", e.target.value)}
-                disabled={!isEditing} 
+                disabled={!isEditing || reservationData.checkin_at}
               />
             </FieldValue>
           </Column>
@@ -1291,7 +1291,7 @@ const ReservationModal = ({
                 type="text"
                 value={address.pais || ""}
                 onChange={(e) => handleAddressChange("pais", e.target.value)}
-                disabled={!isEditing} 
+                disabled={!isEditing || reservationData.checkin_at}
               />
             </FieldValue>
           </Column>
@@ -1424,10 +1424,10 @@ const ReservationModal = ({
         />
         <div style={{ display: "flex", justifyContent: "start", gap: "10px" }}>
           {!isEditing ? (
-            <GreenButton onClick={toggleEditing} disabled={reservationData.checkin_at}
+            <GreenButton onClick={toggleEditing} disabled={reservationData.checkout_at}
               style={{
-                  backgroundColor: reservationData.checkin_at? 'grey' : '#0056B3', // Grey if not today
-                  cursor: reservationData.checkin_at? 'not-allowed' : 'pointer',   // Change cursor style
+                  backgroundColor: reservationData.checkout_at? 'grey' : '#0056B3', // Grey if not today
+                  cursor: reservationData.checkout_at? 'not-allowed' : 'pointer',   // Change cursor style
               }}
             >
               {"Editar"}
