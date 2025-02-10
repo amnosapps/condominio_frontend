@@ -368,7 +368,9 @@ const ReservationsPage = ({ profile }) => {
           return res.apt_number.toString().includes(value);
         } else if (filterType === "reservation") {
           return res.id.toString().includes(value);
-        }
+        } else if (filterType === "plate") {
+          return res.vehicle_plate?.toString().toLowerCase().includes(value.toLowerCase()) ?? false;
+        } 
         return false;
       });
     }
@@ -490,6 +492,7 @@ const ReservationsPage = ({ profile }) => {
               <option value="name">Nome</option>
               <option value="apartment">Apto</option>
               <option value="reservation">Reserva</option>
+              <option value="plate">Placa do Veículo</option>
             </select>
 
             <SearchInput
@@ -498,6 +501,8 @@ const ReservationsPage = ({ profile }) => {
                   ? "Buscar Hóspede"
                   : filterType === "apartment"
                   ? "Buscar Apto"
+                  : filterType === "plate"
+                  ? "Buscar Placa do Veículo"
                   : "Buscar Reserva"
               }
               value={searchTerm}
@@ -558,12 +563,22 @@ const ReservationsPage = ({ profile }) => {
                   </ProfileCell>
                 </td>
                 <td>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                        <span>{new Date(reservation.checkin).toLocaleDateString("pt-BR")}</span>
-                        <div style={{ flexGrow: 1, height: '1px', backgroundColor: '#ccc' }}></div>
-                        <span>{new Date(reservation.checkout).toLocaleDateString("pt-BR")}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                      {reservation.checkin_at && reservation.checkout_at ? ( 
+                        <>
+                          <span>{new Date(reservation.checkin_at).toLocaleDateString("pt-BR")}</span>
+                          <div style={{ flexGrow: 1, height: '1px', backgroundColor: '#ccc' }}></div>
+                          <span>{new Date(reservation.checkout_at).toLocaleDateString("pt-BR")}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>{new Date(reservation.checkin).toLocaleDateString("pt-BR")}</span>
+                          <div style={{ flexGrow: 1, height: '1px', backgroundColor: '#ccc' }}></div>
+                          <span>{new Date(reservation.checkout).toLocaleDateString("pt-BR")}</span>
+                        </>
+                      )}
                     </div>
-                </td>
+                </td> 
                 <td>{(reservation.guests_qty || 0) + 1}</td>
                 <td>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -579,27 +594,38 @@ const ReservationsPage = ({ profile }) => {
                       </Badge>
                     )}
 
-                    {isAfter(new Date(reservation.checkout), new Date()) && (
-                      <Badge
-                        status={
-                          !reservation.active
-                            ? "Canceled"
-                            : reservation.checkin_at && !reservation.checkout_at
-                            ? "In Progress"
-                            : reservation.checkin_at && reservation.checkout_at
-                            ? "Completed"
-                            : "Pending"
-                        }
-                      >
-                        {!reservation.active
-                          ? "Cancelada"
+                    {(() => {
+                        const today = new Date().setHours(0, 0, 0, 0);
+                        const checkoutDate = reservation.checkout
+                          ? new Date(reservation.checkout).setHours(0, 0, 0, 0)
+                          : null;
+
+                        // Determine the status
+                        const reservationStatus = !reservation.active
+                          ? "Canceled"
                           : reservation.checkin_at && !reservation.checkout_at
-                          ? "Em Curso"
+                          ? "In Progress"
                           : reservation.checkin_at && reservation.checkout_at
-                          ? "Finalizada"
-                          : "Prevista"}
-                      </Badge>
-                    )}
+                          ? "Completed"
+                          : "Pending";
+
+                        // Show badge only if checkout date has NOT passed or status is "Completed"
+                        if (!checkoutDate || checkoutDate >= today || reservationStatus === "Completed" || reservationStatus === "Canceled") {
+                          return (
+                            <Badge status={reservationStatus}>
+                              {!reservation.active
+                                ? "Cancelada"
+                                : reservation.checkin_at && !reservation.checkout_at
+                                ? "Em Curso"
+                                : reservation.checkin_at && reservation.checkout_at
+                                ? "Finalizada"
+                                : "Prevista"}
+                            </Badge>
+                          );
+                        }
+
+                        return null; // Do not render the Badge
+                      })()}
                     
                   </div>
                 </td>
