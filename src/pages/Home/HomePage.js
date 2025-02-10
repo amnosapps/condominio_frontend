@@ -365,6 +365,7 @@ const Dashboard = ({ profile }) => {
                         fetchReservations={fetchReservations}
                         selectedCondominium={selectedCondominium}
                         reservations={reservationsCheckin} onOpen={toggleModal} 
+                        profile={profile}
                     />
 
                     <CheckoutsWidget 
@@ -372,8 +373,6 @@ const Dashboard = ({ profile }) => {
                         selectedCondominium={selectedCondominium}
                         reservations={reservationsCheckout} onOpen={toggleModal} 
                     />
-
-                    
                 
                 </div>
                 

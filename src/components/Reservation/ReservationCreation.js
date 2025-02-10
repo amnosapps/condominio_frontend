@@ -267,7 +267,7 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments, fetc
         return;
       }
 
-      checkinDate.setHours(15, 0, 0); // Set to 3:00 PM
+      checkinDate.setHours(9, 0, 0); // Set to 3:00 PM
       checkoutDate.setHours(9, 0, 0); // Set to 9:00 AM
 
       const multipartData = new FormData();

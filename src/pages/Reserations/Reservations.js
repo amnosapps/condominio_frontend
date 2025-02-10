@@ -11,6 +11,7 @@ import { MdWarning } from "react-icons/md"; // Warning icon for alerts
 
 import {
   format,
+  isAfter
 } from "date-fns";
 
 import { ptBR  } from "date-fns/locale"; 
@@ -578,25 +579,27 @@ const ReservationsPage = ({ profile }) => {
                       </Badge>
                     )}
 
-                    <Badge
-                      status={
-                        !reservation.active
-                          ? "Canceled"
+                    {isAfter(new Date(reservation.checkout), new Date()) && (
+                      <Badge
+                        status={
+                          !reservation.active
+                            ? "Canceled"
+                            : reservation.checkin_at && !reservation.checkout_at
+                            ? "In Progress"
+                            : reservation.checkin_at && reservation.checkout_at
+                            ? "Completed"
+                            : "Pending"
+                        }
+                      >
+                        {!reservation.active
+                          ? "Cancelada"
                           : reservation.checkin_at && !reservation.checkout_at
-                          ? "In Progress"
+                          ? "Em Curso"
                           : reservation.checkin_at && reservation.checkout_at
-                          ? "Completed"
-                          : "Pending"
-                      }
-                    >
-                      {!reservation.active
-                        ? "Cancelada"
-                        : reservation.checkin_at && !reservation.checkout_at
-                        ? "Em Curso"
-                        : reservation.checkin_at && reservation.checkout_at
-                        ? "Finalizada"
-                        : "Prevista"}
-                    </Badge>
+                          ? "Finalizada"
+                          : "Prevista"}
+                      </Badge>
+                    )}
                     
                   </div>
                 </td>

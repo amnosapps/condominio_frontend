@@ -148,6 +148,7 @@ const ReservationsWidget = ({
   reservations,
   fetchReservations,
   selectedCondominium,
+  profile
 }) => {
   const [selectedReservation, setSelectedReservation] = useState(null);
 
@@ -222,6 +223,7 @@ const ReservationsWidget = ({
           selectedReservation={selectedReservation}
           fetchReservations={fetchReservations}
           selectedCondominium={selectedCondominium}
+          profile={profile}
         />
       )}
     </Widget>

@@ -947,9 +947,15 @@ const ReservationModal = ({
     ? isBefore(new Date(), reservationData.checkin) // Check if it's a past date
     : false;
 
-  const canCheckin = reservationData.checkin && reservationData.checkout
-    ? isBefore(new Date(), reservationData.checkout) && isAfter(new Date(), reservationData.checkin)// Check if check-in is before checkout
+  const today = new Date();
+  const checkinDate = reservationData.checkin ? new Date(reservationData.checkin).setHours(0, 0, 0, 0) : null;
+  const checkoutDate = reservationData.checkout ? new Date(reservationData.checkout).setHours(23, 0, 0, 0) : null;
+  const todayDate = today.setHours(0, 0, 0, 0);
+  
+  const canCheckin = checkinDate && checkoutDate
+    ? isBefore(todayDate, checkoutDate) && isAfter(todayDate, checkinDate)
     : false;
+    
 
   if (!selectedReservation) return null;
 
