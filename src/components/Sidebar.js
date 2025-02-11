@@ -367,6 +367,7 @@ const Sidebar = ({ profile }) => {
 
     const [isReportsDropdownOpen, setIsReportsDropdownOpen] = useState(false);
     const [isUsersDropdownOpen, setIsUsersDropdownOpen] = useState(false);
+    const [isAccessControlDropdownOpen, setIsAccessControlDropdownOpen] = useState(false);
 
 
     const toggleReportsDropdown = () => {
@@ -375,6 +376,10 @@ const Sidebar = ({ profile }) => {
 
     const toggleUsersDropdown = () => {
         setIsUsersDropdownOpen((prev) => !prev);
+    };
+
+    const toggleAccessControlDropdown = () => {
+        setIsAccessControlDropdownOpen((prev) => !prev);
     };
 
     useEffect(() => {
@@ -572,6 +577,37 @@ const Sidebar = ({ profile }) => {
                             </div>
                         )}
                     </NavItem>
+                    <NavItem
+                        style={{
+                            // paddingBottom: "10px",
+                            // paddingTop: "10px",
+                            borderRadius: "10px",
+                            backgroundColor: isUsersDropdownOpen ? "#f7f7f7" : "#fff",
+                        }}
+                    >
+                        <NavButton onClick={toggleAccessControlDropdown}>
+                            <FaUnlockAlt />
+                            Controle de Acesso
+                            <FaAngleDown />
+                        </NavButton>
+                        {isAccessControlDropdownOpen && (
+                            <div style={{ marginLeft: "30px", marginTop: "10px" }}>
+                                <NavButton
+                                    onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
+                                    active={location.pathname.includes(`${selectedCondominium}/soon`)}
+                                >
+                                    Dispositivos
+                                </NavButton>
+                                <NavButton
+                                    onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
+                                    active={location.pathname.includes(`${selectedCondominium}/soon`)}
+                                    style={{ paddingBottom: '10px' }}
+                                >
+                                    Usuários
+                                </NavButton>
+                            </div>
+                        )}
+                    </NavItem>
                     <NavItem>
                         <NavButton
                             onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
@@ -597,15 +633,6 @@ const Sidebar = ({ profile }) => {
                         >
                         <FaMoneyCheckAlt />
                         Financeiro
-                        </NavButton>
-                    </NavItem>
-                    <NavItem>
-                        <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
-                            // active={location.pathname.includes(`${selectedCondominium}/soon`)}
-                        >
-                        <FaUnlockAlt />
-                        Controle de Acesso
                         </NavButton>
                     </NavItem>
                     <NavItem>
