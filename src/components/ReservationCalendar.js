@@ -556,7 +556,7 @@ const ReservationCalendar = ({ profile }) => {
     setHoveredReservation(null);
   };
 
-  const [guestNameFilter, setGuestNameFilter] = useState("");
+  const [guestFilter, setGuestFilter] = useState("");
   const [startDateFilter, setStartDateFilter] = useState("");
   const [endDateFilter, setEndDateFilter] = useState("");
 
@@ -798,7 +798,7 @@ const ReservationCalendar = ({ profile }) => {
   };
 
   const filteredReservations = reservations.filter((reservation) => {
-    const matchesGuestName = reservation.guest_name.toLowerCase().includes(guestNameFilter.toLowerCase());
+    const matchesGuestName = reservation.guest_name.toLowerCase().includes(guestFilter.toLowerCase());
     const matchesDateRange =
       (!startDateFilter || reservation.checkout >= parseISO(startDateFilter)) &&
       (!endDateFilter || reservation.checkin <= parseISO(endDateFilter));
@@ -898,19 +898,24 @@ const ReservationCalendar = ({ profile }) => {
     }
   };
 
-  useEffect(() => {
-    if (guestNameFilter.trim()) {
-      const matchingReservation = reservations.find((reservation) =>
-        reservation.guest_name.toLowerCase().includes(guestNameFilter.toLowerCase())
-      );
-      if (matchingReservation) {
+  const getGuest = () => {
+    console.log("guestFilter - ", guestFilter)
+    if (!guestFilter || !guestFilter.trim()) return;
+    const matchingReservation = reservations?.find((reservation) =>
+        reservation.guest_name?.toLowerCase().includes(guestFilter.toLowerCase()) ||
+        String(reservation.id).includes(guestFilter)
+    );
+    console.log("--",matchingReservation)
+    if (matchingReservation) {
         navigateToReservation(matchingReservation);
-      }
     }
-  }, [guestNameFilter, reservations]);
+}
+  useEffect(() => {
+    getGuest();
+  }, [guestFilter, reservations]);
 
   const clearFilters = () => {
-    setGuestNameFilter("");
+    setGuestFilter("");
     setStartDateFilter("");
     setEndDateFilter("");
     setSelectedDateRange({ startDate: null, endDate: null });
@@ -964,8 +969,8 @@ const ReservationCalendar = ({ profile }) => {
           <FilterInput
             type="text"
             placeholder="Busque por nome"
-            value={guestNameFilter}
-            onChange={(e) => setGuestNameFilter(e.target.value)}
+            value={guestFilter}
+            onChange={(e) => setGuestFilter(e.target.value)}
           />
           <FilterDropdown value={filterType} onChange={handleFilterTypeChange}>
             <option value="Temporada">Temporada</option>
