@@ -134,6 +134,21 @@ const TableBody = styled.tbody`
   }
 `;
 
+const TableFooter = styled.tbody`
+  td {
+    text-align: center; /* Match header alignment */
+    padding: 12px; /* Match padding with header */
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #e5e5e5;
+    box-sizing: border-box; /* Include padding in element width */
+
+    &:last-child {
+      text-align: center;
+    }
+  }
+`;
+
 const Badge = styled.span`
   background: ${(props) =>
     props.status === "In Progress"
@@ -424,8 +439,14 @@ const ReservationsPage = ({ profile }) => {
       {/* Header */}
       <StatsContainer>
         <StatCard bgColor="#e3f2fd"> {/* Soft Light Blue for "Total" */}
+          <StatValue color="#1e88e5">
+          {filteredReservations.reduce((total, reservation) => total + (1 + (reservation.guests_qty || 0)), 0)}
+          </StatValue> {/* Medium Blue for contrast */}
+          <StatLabel style={{ whiteSpace: "nowrap" }}>Total de Ocupantes</StatLabel>
+        </StatCard>
+        <StatCard bgColor="#e3f2fd"> {/* Soft Light Blue for "Total" */}
           <StatValue color="#1e88e5">{reservations.length}</StatValue> {/* Medium Blue for contrast */}
-          <StatLabel>Total</StatLabel>
+          <StatLabel style={{ whiteSpace: "nowrap" }}>Total de Reservas</StatLabel>
         </StatCard>
         <StatCard bgColor="#e3f2fd"> {/* Soft Light Blue for "Total" */}
           <StatValue color="#1e88e5">
@@ -636,6 +657,18 @@ const ReservationsPage = ({ profile }) => {
               </ReservationRow>
             ))}
           </TableBody>
+       
+          <TableFooter>
+            <tr>
+              <th>Total de Ocupantes: </th>
+              <th>-</th>
+              <th>-</th>
+              <th>-</th>
+              <th>{filteredReservations.reduce((total, reservation) => total + (1 + (reservation.guests_qty || 0)), 0)}
+              </th>
+              <th>-</th>
+            </tr>
+          </TableFooter>
         </Table>
       </TableContainer>
 
