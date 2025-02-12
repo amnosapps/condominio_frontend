@@ -485,6 +485,7 @@ const Sidebar = ({ profile }) => {
     };
 
     const handleCondominiumChange = (event) => {
+        console.log(event.target.value)
         const newCondominium = event.target.value;
         navigate(`/${newCondominium}/home`);
     };
@@ -593,8 +594,8 @@ const Sidebar = ({ profile }) => {
                         {isAccessControlDropdownOpen && (
                             <div style={{ marginLeft: "30px", marginTop: "10px" }}>
                                 <NavButton
-                                    onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
-                                    active={location.pathname.includes(`${selectedCondominium}/soon`)}
+                                    onClick={() => handleNavigation(`/${selectedCondominium}/access/devices`)}
+                                    active={location.pathname.includes(`${selectedCondominium}/access/devices`)}
                                 >
                                     Dispositivos
                                 </NavButton>
@@ -714,8 +715,8 @@ const Sidebar = ({ profile }) => {
                                 <UserName>Olá, {profile.name || "Usuário Desconhecido"}!</UserName>
                                 <StyledSelect value={selectedCondominium} onChange={handleCondominiumChange}>
                                     {condominiums?.map((condo) => (
-                                        <option key={condo} value={condo}>
-                                            {condo}
+                                        <option key={condo.id} value={condo.name}>
+                                            {condo.name}
                                         </option>
                                     ))}
                                 </StyledSelect>
