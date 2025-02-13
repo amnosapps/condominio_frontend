@@ -128,9 +128,8 @@ const NoVisitorsMessage = styled.div`
 `;
 
 // Main Component
-const VisitorsPage = ({ profile }) => {
+const VisitorsPage = ({ profile, condominium }) => {
   const params = useParams();
-  const selectedCondominium = params.condominium;
   const [visitors, setVisitors] = useState([]);
   const [filteredVisitors, setFilteredVisitors] = useState([]);
   const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
@@ -153,7 +152,7 @@ const VisitorsPage = ({ profile }) => {
         `${process.env.REACT_APP_API_URL}/api/visitors/`,
         {
           headers: { Authorization: `Bearer ${token}` },
-          params: { condominium: selectedCondominium },
+          params: { condominium: condominium.name },
         }
       );
 
@@ -270,8 +269,8 @@ const VisitorsPage = ({ profile }) => {
         </CardContainer>
       ) : <NoVisitorsMessage>Nenhum visitante encontrado.</NoVisitorsMessage>}
 
-      {isCreationModalOpen && <VisitorCreationModal onClose={toggleCreationModal} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />}
-      {isEditModalOpen && <VisitorEditModal visitor={selectedVisitor} onClose={toggleEditModal} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />}
+      {isCreationModalOpen && <VisitorCreationModal onClose={toggleCreationModal} fetchVisitors={fetchVisitors} condominium={condominium} />}
+      {isEditModalOpen && <VisitorEditModal visitor={selectedVisitor} onClose={toggleEditModal} fetchVisitors={fetchVisitors} condominium={condominium} />}
     </Container>
   );
 };

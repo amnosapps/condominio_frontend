@@ -216,7 +216,7 @@ const ButtonRow = styled.div`
   margin-top: 15px;
 `;
 
-const VisitorEditModal = ({ visitor, onClose, fetchVisitors, selectedCondominium }) => {
+const VisitorEditModal = ({ visitor, onClose, fetchVisitors, condominium }) => {
   const [name, setName] = useState(visitor.name || "");
   const [visitDate, setVisitDate] = useState(visitor.entry || "");
   const [exitDate, setExitDate] = useState(visitor.exit || null);
@@ -239,7 +239,7 @@ const VisitorEditModal = ({ visitor, onClose, fetchVisitors, selectedCondominium
           `${process.env.REACT_APP_API_URL}/api/apartments/`,
           {
             headers: { Authorization: `Bearer ${token}` },
-            params: { condominium: selectedCondominium },
+            params: { condominium: condominium.name },
           }
         );
         setApartments(response.data);
@@ -249,7 +249,7 @@ const VisitorEditModal = ({ visitor, onClose, fetchVisitors, selectedCondominium
     };
 
     fetchApartments();
-  }, [selectedCondominium]);
+  }, [condominium]);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -313,7 +313,7 @@ const VisitorEditModal = ({ visitor, onClose, fetchVisitors, selectedCondominium
     try {
       const response = await axios.patch(
         `${process.env.REACT_APP_API_URL}/api/visitors/${visitor.id}/`,
-        { exit: now, condominium: selectedCondominium },
+        { exit: now, condominium: condominium },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -337,7 +337,7 @@ const VisitorEditModal = ({ visitor, onClose, fetchVisitors, selectedCondominium
     try {
       await axios.patch(
         `${process.env.REACT_APP_API_URL}/api/visitors/${visitor.id}/`,
-        { image_base64: image, condominium: selectedCondominium },
+        { image_base64: image, condominium: condominium },
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -600,8 +600,8 @@ const Sidebar = ({ profile }) => {
                                     Dispositivos
                                 </NavButton>
                                 <NavButton
-                                    onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
-                                    active={location.pathname.includes(`${selectedCondominium}/soon`)}
+                                    onClick={() => handleNavigation(`/${selectedCondominium}/access/users`)}
+                                    active={location.pathname.includes(`${selectedCondominium}/access/users`)}
                                     style={{ paddingBottom: '10px' }}
                                 >
                                     Usuários

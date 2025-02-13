@@ -18,6 +18,7 @@ import ReservationsPage from './pages/Reserations/Reservations';
 import VisitorsPage from './pages/Users/Visitors';
 import GuestForm from './pages/Guest/GuestForm';
 import DeviceManagement from './pages/Access/Devices';
+import UserDeviceManagement from './pages/Access/UsersDevice';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('accessToken'));
@@ -132,6 +133,7 @@ function App() {
                     <Route path="users" element={<UserManagement profile={profile} condominium={selectedCondominium} />} />
                     <Route path="visitors" element={<VisitorsPage profile={profile} condominium={selectedCondominium} />} />
                     <Route path="access/devices" element={<DeviceManagement profile={profile} condominium={selectedCondominium} />} />
+                    <Route path="access/users" element={<UserDeviceManagement condominium={selectedCondominium} />} />
                 </Route>
 
                 {/* Fallback Route */}

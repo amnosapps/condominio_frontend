@@ -161,7 +161,8 @@ const CaptureButton = styled(Button)`
   }
 `;
 
-const VisitorCreationModal = ({ onClose, fetchVisitors, selectedCondominium }) => {
+const VisitorCreationModal = ({ onClose, fetchVisitors, condominium }) => {
+  console.log(condominium)
   const [name, setName] = useState("");
   const [unit, setUnit] = useState("");
   const [document, setDocument] = useState("");
@@ -182,7 +183,7 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, selectedCondominium }) =
           `${process.env.REACT_APP_API_URL}/api/apartments/`,
           {
             headers: { Authorization: `Bearer ${token}` },
-            params: { condominium: selectedCondominium },
+            params: { condominium: condominium.name },
           }
         );
         setApartments(response.data);
@@ -192,7 +193,7 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, selectedCondominium }) =
     };
 
     fetchApartments();
-  }, [selectedCondominium]);
+  }, [condominium]);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -275,7 +276,7 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, selectedCondominium }) =
 
     const newVisitor = {
       name,
-      condominium: selectedCondominium,
+      condominium: condominium.id,
       apartment: unit,
       document,
       phone,
