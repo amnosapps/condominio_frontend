@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useSearchParams  } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams  } from "react-router-dom";
 import styled from "styled-components";
 import CryptoJS from "crypto-js";
 import axios from "axios";
@@ -169,6 +169,7 @@ const WebcamCapture = styled(Webcam)`
 
 
 const GuestForm = () => {
+  const navigate = useNavigate();
 
   const decryptReservationId = (token) => {
     try {
@@ -404,6 +405,7 @@ const GuestForm = () => {
       });
   
       alert("Dados enviados com sucesso!");
+      navigate("/success");
     } catch (error) {
       console.error("Erro ao enviar os dados:", error);
       alert(error.message || "Erro ao enviar os dados. Tente novamente.");
