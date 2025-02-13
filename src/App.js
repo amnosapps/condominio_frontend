@@ -18,6 +18,7 @@ import UserManagement from './pages/Users/User';
 import ReservationsPage from './pages/Reserations/Reservations';
 import VisitorsPage from './pages/Users/Visitors';
 import GuestForm from './pages/Guest/GuestForm';
+import SuccessPage from './pages/Guest/SuccessPage';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('accessToken'));
@@ -117,6 +118,7 @@ function App() {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
                 <Route path="/guest-form" element={<GuestForm />} />
+                <Route path="/success" element={<SuccessPage />} />
 
                 {/* Condominium Selection */}
                 <Route

@@ -946,6 +946,7 @@ function Modal({ selectedApartment, profile, onClose, fetchApartments }) {
                 <ReservationCreationModal
                     onClose={toggleModal}
                     fetchApartmentDetails={() => fetchApartmentDetails(selectedApartment.id)}
+                    fetchApartments={fetchApartments}
                     apartments={[selectedApartment]}
                     profile={profile}
                 />
@@ -958,6 +959,7 @@ function Modal({ selectedApartment, profile, onClose, fetchApartments }) {
                     selectedReservation={selectedReservation}
                     selectedApartment={selectedApartment}
                     fetchApartmentDetails={() => fetchApartmentDetails(selectedApartment.id)}
+                    fetchApartments={fetchApartments}
                     profile={profile}
                 />
             )}

@@ -694,18 +694,18 @@ const ReservationCalendar = ({ profile }) => {
     setFilterType(e.target.value); // Update the filter type
   };
 
-  useEffect(() => {
-    const reopenModalId = sessionStorage.getItem("reopenModalId");
-    if (reopenModalId) {
-      sessionStorage.removeItem("reopenModalId"); // Clear it to prevent reopening on every reload
-      const reservation = reservations.find(
-        (res) => res.id === parseInt(reopenModalId, 10)
-      );
-      if (reservation) {
-        setSelectedReservation(reservation);
-      }
-    }
-  }, [reservations]);
+  // useEffect(() => {
+  //   const reopenModalId = sessionStorage.getItem("reopenModalId");
+  //   if (reopenModalId) {
+  //     sessionStorage.removeItem("reopenModalId"); // Clear it to prevent reopening on every reload
+  //     const reservation = reservations.find(
+  //       (res) => res.id === parseInt(reopenModalId, 10)
+  //     );
+  //     if (reservation) {
+  //       setSelectedReservation(reservation);
+  //     }
+  //   }
+  // }, [reservations]);
 
   const getTotalGuestsForDay = (day) => {
     function normalizeDate(date) {
