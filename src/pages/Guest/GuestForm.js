@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useSearchParams  } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams  } from "react-router-dom";
 import styled from "styled-components";
 import CryptoJS from "crypto-js";
 import axios from "axios";
@@ -169,6 +169,7 @@ const WebcamCapture = styled(Webcam)`
 
 
 const GuestForm = () => {
+  const navigate = useNavigate();
 
   const decryptReservationId = (token) => {
     try {
@@ -234,6 +235,7 @@ const GuestForm = () => {
             estado: "",
             pais: "",
           },
+          additional_guests: Array.isArray(response.data.additional_guests) ? response.data.additional_guests : [], // ✅ Ensure array,
           guest_photo: response.data.guest_photo || "",
         });
 
@@ -382,13 +384,6 @@ const GuestForm = () => {
             age: guest.is_child ? guest.age : null, // Store age only if guest is a child
           };
   
-          // Convert base64 guest photos to file format
-          if (guest.guest_photo?.startsWith("data:image")) {
-            const response = await fetch(guest.guest_photo);
-            const guestBlob = await response.blob();
-            formDataPayload.append(`guest_photo_${index}`, guestBlob, `guest_photo_${index}.jpg`);
-          }
-  
           return guestData;
         })
       );
@@ -404,6 +399,7 @@ const GuestForm = () => {
       });
   
       alert("Dados enviados com sucesso!");
+      navigate("/success");
     } catch (error) {
       console.error("Erro ao enviar os dados:", error);
       alert(error.message || "Erro ao enviar os dados. Tente novamente.");
