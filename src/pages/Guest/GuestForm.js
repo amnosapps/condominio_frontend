@@ -235,6 +235,7 @@ const GuestForm = () => {
             estado: "",
             pais: "",
           },
+          additional_guests: Array.isArray(response.data.additional_guests) ? response.data.additional_guests : [], // ✅ Ensure array,
           guest_photo: response.data.guest_photo || "",
         });
 
@@ -382,13 +383,6 @@ const GuestForm = () => {
             is_child: guest.is_child,
             age: guest.is_child ? guest.age : null, // Store age only if guest is a child
           };
-  
-          // Convert base64 guest photos to file format
-          if (guest.guest_photo?.startsWith("data:image")) {
-            const response = await fetch(guest.guest_photo);
-            const guestBlob = await response.blob();
-            formDataPayload.append(`guest_photo_${index}`, guestBlob, `guest_photo_${index}.jpg`);
-          }
   
           return guestData;
         })
