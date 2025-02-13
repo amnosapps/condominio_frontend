@@ -372,6 +372,8 @@ const ReservationModal = ({
   closeModal,
   selectedReservation,
   fetchReservations,
+  fetchApartmentDetails,
+  fetchApartments,
   selectedApartment,
   profile,
   selectedCondominium
@@ -591,9 +593,18 @@ const ReservationModal = ({
       console.error("Erro ao atualizar a reserva:", error);
       alert("Erro ao atualizar as informações. Verifique os dados e tente novamente.");
     } finally {
+      closeModal()
       setIsSubmitting(false);
       setIsEditing(false)
-      fetchReservations(1, "right", false)
+      if (fetchReservations) {
+        fetchReservations(1, "right", false);
+      }
+      if (fetchApartments) {
+        fetchApartments()
+      }
+      if (fetchApartmentDetails) {
+        fetchApartmentDetails()
+      }
     }
   };
 
@@ -698,9 +709,17 @@ const ReservationModal = ({
   
       if (response.status === 200) {
         alert("Informações salvas com sucesso!");
-        fetchReservations(1, "right", false);
+        if (fetchReservations) {
+          fetchReservations(1, "right", false);
+        }
+        if (fetchApartments) {
+          fetchApartments()
+        }
+        if (fetchApartmentDetails) {
+          fetchApartmentDetails()
+        }
         closeModal();
-        sessionStorage.setItem("reopenModalId", selectedReservation.id);
+        // sessionStorage.setItem("reopenModalId", selectedReservation.id);
       } else {
         alert("Falha ao salvar as informações. Tente novamente.");
       }
@@ -749,9 +768,17 @@ const ReservationModal = ({
         console.log("Response received:", response);
         if (response.status === 200) {
           alert("Checkout realizado com sucesso!");
-          fetchReservations(1, "right", false)
+          if (fetchReservations) {
+            fetchReservations(1, "right", false);
+          }
+          if (fetchApartments) {
+            fetchApartments()
+          }
+          if (fetchApartmentDetails) {
+            fetchApartmentDetails()
+          }
           closeModal();
-          sessionStorage.setItem("reopenModalId", selectedReservation.id);
+          // sessionStorage.setItem("reopenModalId", selectedReservation.id);
         } else {
           console.error("Unexpected response status:", response.status);
           alert("Falha ao realizar o checkout. Tente novamente.");
@@ -780,30 +807,6 @@ const ReservationModal = ({
       .finally(() => {
         setIsSubmitting(false);
       });
-  };
-
-  const handleDeleteReservation = async () => {
-    if (!window.confirm("Você tem certeza que deseja excluir esta reserva?")) return;
-
-    const token = localStorage.getItem("accessToken");
-
-    try {
-      await api.delete(
-        `/api/reservations/${selectedReservation.id}/`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      alert("Reserva excluída com sucesso!");
-      fetchReservations(1, "right", false);
-      closeModal();
-    } catch (error) {
-      console.error("Erro ao excluir a reserva:", error);
-      alert("Erro ao excluir a reserva. Tente novamente.");
-    } finally {
-      fetchReservations(1, "right", false)
-    }
   };
 
   const handleDateChange = (field, date) => {
@@ -1007,7 +1010,15 @@ const ReservationModal = ({
   
       if (response.status === 200) {
         alert("Reserva cancelada com sucesso!");
-        fetchReservations(1, "right", false); // Refresh reservations
+        if (fetchReservations) {
+          fetchReservations(1, "right", false);
+        }
+        if (fetchApartments) {
+          fetchApartments()
+        }
+        if (fetchApartmentDetails) {
+          fetchApartmentDetails()
+        }
         closeModal(); // Close the modal
       } else {
         alert("Falha ao cancelar a reserva. Tente novamente.");
@@ -1047,7 +1058,15 @@ const ReservationModal = ({
   
       if (response.status === 200) {
         alert("Reserva reativada com sucesso!");
-        fetchReservations(1, "right", false); // Refresh reservations
+        if (fetchReservations) {
+          fetchReservations(1, "right", false);
+        }
+        if (fetchApartments) {
+          fetchApartments()
+        }
+        if (fetchApartmentDetails) {
+          fetchApartmentDetails()
+        }
         closeModal(); // Close the modal
       } else {
         alert("Falha ao reativar a reserva. Tente novamente.");
