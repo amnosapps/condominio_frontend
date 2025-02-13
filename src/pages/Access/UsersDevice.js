@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaPlus, FaCheckCircle, FaTimesCircle, FaUserCircle } from 'react-icons/fa';
 import api from '../../services/api';
 import UserDeviceModal from '../../components/Access/UserDeviceModal';
 
@@ -104,10 +104,31 @@ const ActionButtons = styled.div`
   }
 `;
 
+const VerifyButton = styled.button`
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  margin-left: 10px;
+
+  &:hover {
+    color: #28a745;
+  }
+
+  &.error {
+    color: #e74c3c;
+
+    &:hover {
+      color: #c0392b;
+    }
+  }
+`;
+
 const UserDeviceManagement = ({ condominium }) => {
     const [userDevices, setUserDevices] = useState([]);
     const [isModalOpen, setModalOpen] = useState(false);
     const [selectedUserDevice, setSelectedUserDevice] = useState(null);
+    const [deviceStatus, setDeviceStatus] = useState({});
 
     const fetchUserDevices = async () => {
         const token = localStorage.getItem('accessToken');
@@ -143,6 +164,25 @@ const UserDeviceManagement = ({ condominium }) => {
             fetchUserDevices()
         } catch (error) {
             console.error('Error deleting User Device:', error);
+        }
+    };
+
+    const handleCheckDevice = async (user_id) => {
+        const token = localStorage.getItem('accessToken');
+        try {
+            const response = await api.get(`/access/user-devices/${user_id}/check-device/`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            setDeviceStatus(prevState => ({
+                ...prevState,
+                [user_id]: "ok"
+            }));
+        } catch (error) {
+            setDeviceStatus(prevState => ({
+                ...prevState,
+                [user_id]: "error"
+            }));
         }
     };
 
@@ -188,6 +228,15 @@ const UserDeviceManagement = ({ condominium }) => {
                                         >
                                             <FaTrash />
                                         </button>
+                                        <VerifyButton onClick={() => handleCheckDevice(user.id)}>
+                                            {deviceStatus[user.id] === "ok" ? (
+                                                <FaCheckCircle style={{ color: "#28a745" }} />
+                                            ) : deviceStatus[user.id] === "error" ? (
+                                                <FaTimesCircle style={{ color: "#e74c3c" }} />
+                                            ) : (
+                                                <FaUserCircle />
+                                            )}
+                                        </VerifyButton>
                                     </ActionButtons>
                                 </td>
                             </tr>
