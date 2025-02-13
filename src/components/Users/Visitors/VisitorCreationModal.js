@@ -276,7 +276,7 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium }) => {
 
     const newVisitor = {
       name,
-      condominium: condominium.id,
+      condominium: condominium.name,
       apartment: unit,
       document,
       phone,

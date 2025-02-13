@@ -313,7 +313,7 @@ const VisitorEditModal = ({ visitor, onClose, fetchVisitors, condominium }) => {
     try {
       const response = await axios.patch(
         `${process.env.REACT_APP_API_URL}/api/visitors/${visitor.id}/`,
-        { exit: now, condominium: condominium },
+        { exit: now, condominium: condominium.name },
         {
           headers: {
             Authorization: `Bearer ${token}`,
