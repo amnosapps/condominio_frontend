@@ -223,22 +223,52 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, selectedCondominium }) =
 
   const captureImage = () => {
     if (!videoRef.current || !canvasRef.current) return;
-    
+  
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    context.drawImage(videoRef.current, 0, 0);
-    
-    const imageData = canvas.toDataURL("image/png");
-    setImage(imageData);
-    
-    // Stop the camera stream and close camera view
+  
+    // Set fixed size to 500x500
+    const TARGET_WIDTH = 500;
+    const TARGET_HEIGHT = 500;
+    canvas.width = TARGET_WIDTH;
+    canvas.height = TARGET_HEIGHT;
+  
+    // Get the original video feed dimensions
+    const videoWidth = videoRef.current.videoWidth;
+    const videoHeight = videoRef.current.videoHeight;
+  
+    // Determine scaling for best fit (crop if necessary)
+    const scale = Math.max(TARGET_WIDTH / videoWidth, TARGET_HEIGHT / videoHeight);
+    const scaledWidth = videoWidth * scale;
+    const scaledHeight = videoHeight * scale;
+    const offsetX = (scaledWidth - TARGET_WIDTH) / 2;
+    const offsetY = (scaledHeight - TARGET_HEIGHT) / 2;
+  
+    // Draw the resized and cropped image onto the canvas
+    context.drawImage(videoRef.current, -offsetX, -offsetY, scaledWidth, scaledHeight);
+  
+    // Convert to Base64 JPEG (compressed)
+    const compressedImageBase64 = canvas.toDataURL("image/jpeg", 0.8); // 80% quality
+  
+    // Validate file size before setting state
+    fetch(compressedImageBase64)
+      .then((res) => res.blob())
+      .then((blob) => {
+        console.log(`Final Image Size: ${(blob.size / 1024).toFixed(2)} KB`);
+        if (blob.size > 100 * 1024) { // 100KB limit
+          alert("O tamanho do arquivo não pode exceder 100KB.");
+          return;
+        }
+        setImage(compressedImageBase64);
+      })
+      .catch((err) => console.error("Erro ao validar a imagem:", err));
+  
+    // Stop the camera stream
     setShowCamera(false);
     if (videoRef.current.srcObject) {
       videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
     }
-  };
+  };  
 
   const handleCreateVisitor = async () => {
     const token = localStorage.getItem("accessToken");

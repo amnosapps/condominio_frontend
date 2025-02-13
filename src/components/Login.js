@@ -215,7 +215,7 @@ function Login({ onLoginSuccess }) {
             // Navigation logic
             if (userProfile.condominiums && userProfile.condominiums.length === 1) {
                 // If only one condominium, navigate directly
-                navigate(`/${userProfile.condominiums[0]}/home`);
+                navigate(`/${userProfile.condominiums[0].name}/home`);
             } else if (userProfile.condominiums && userProfile.condominiums.length > 1) {
                 // If multiple condominiums, navigate to selection page
                 navigate('/select-condominium');

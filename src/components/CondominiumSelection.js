@@ -157,54 +157,14 @@ const LoadingMessage = styled.div`
 `;
 
 // Component
-const CondominiumSelection = ({ condominiums: initialCondominiums = [], onSelect }) => {
-    const [condominiums, setCondominiums] = useState(initialCondominiums);
+const CondominiumSelection = ({ condominiums, onSelect }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchCondominiums = async () => {
-            if (initialCondominiums.length > 0) {
-                setCondominiums(initialCondominiums);
-                return;
-            }
-
-            setLoading(true);
-            setError(null);
-
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                setError("You are not authenticated. Please log in again.");
-                navigate('/login');
-                return;
-            }
-
-            try {
-                const response = api.get(`/api/profile/`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-
-                if (response.data?.condominiums?.length > 0) {
-                    setCondominiums(response.data.condominiums);
-                } else {
-                    throw new Error("No condominiums found.");
-                }
-            } catch (err) {
-                console.error("Error fetching condominiums:", err);
-                setError("Failed to load condominiums. Please log in again.");
-                navigate('/login');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchCondominiums();
-    }, [initialCondominiums, navigate]);
-
     const handleCondominiumSelect = (condominium) => {
         onSelect(condominium);
-        navigate(`/${condominium}/home`);
+        navigate(`/${condominium.name}/home`);
     };
 
     if (loading) {
@@ -235,10 +195,10 @@ const CondominiumSelection = ({ condominiums: initialCondominiums = [], onSelect
         <Container>
             <Title>Selecione o Condominio</Title>
             <CardGrid>
-                {condominiums.map((condo) => (
-                    <Card key={condo} onClick={() => handleCondominiumSelect(condo)}>
+                {condominiums?.map((condo) => (
+                    <Card key={condo.id} onClick={() => handleCondominiumSelect(condo)}>
                         <CardImage src="condo.png" alt="Apartment" />
-                        <CardTitle>{condo}</CardTitle>
+                        <CardTitle>{condo.name}</CardTitle>
                     </Card>
                 ))}
             </CardGrid>
