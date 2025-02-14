@@ -167,7 +167,6 @@ const CheckoutsWidget = ({
     <Widget>
       <Header>
         <WidgetTitle>Checkouts Pendentes</WidgetTitle>
-        <OpenButton onClick={onOpen}>+ Nova Reserva</OpenButton>
       </Header>
       {reservations && reservations.length > 0 ? (
         <ReservationList>
