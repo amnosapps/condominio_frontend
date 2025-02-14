@@ -135,10 +135,10 @@ const TableBody = styled.tbody`
 `;
 
 const TableFooter = styled.tbody`
-  td {
+  > td {
     text-align: center; /* Match header alignment */
     padding: 12px; /* Match padding with header */
-    font-size: 14px;
+    font-size: 8px;
     color: #333;
     border-bottom: 1px solid #e5e5e5;
     box-sizing: border-box; /* Include padding in element width */
@@ -658,7 +658,7 @@ const ReservationsPage = ({ profile }) => {
             ))}
           </TableBody>
        
-          <TableFooter>
+          <TableHeader>
             <tr>
               <th>Total de Ocupantes: </th>
               <th>-</th>
@@ -668,7 +668,7 @@ const ReservationsPage = ({ profile }) => {
               </th>
               <th>-</th>
             </tr>
-          </TableFooter>
+          </TableHeader>
         </Table>
       </TableContainer>
 
