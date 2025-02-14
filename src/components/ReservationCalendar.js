@@ -798,12 +798,18 @@ const ReservationCalendar = ({ profile }) => {
   };
 
   const filteredReservations = reservations.filter((reservation) => {
-    const matchesGuestName = reservation.guest_name.toLowerCase().includes(guestFilter.toLowerCase());
+    const matchesGuestName =
+      guestFilter &&
+      (reservation.guest_name?.toLowerCase().includes(guestFilter.toLowerCase()) ||
+      String(reservation.id).includes(guestFilter));
+  
     const matchesDateRange =
       (!startDateFilter || reservation.checkout >= parseISO(startDateFilter)) &&
       (!endDateFilter || reservation.checkin <= parseISO(endDateFilter));
-    return matchesGuestName && matchesDateRange;
+  
+    return (!guestFilter || matchesGuestName) && matchesDateRange;
   });
+  
 
   const getReservationBars = (apartment, day) => {
     const roomReservations = filteredReservations
@@ -968,7 +974,7 @@ const ReservationCalendar = ({ profile }) => {
         <FiltersWrapper>
           <FilterInput
             type="text"
-            placeholder="Busque por nome"
+            placeholder="Busque uma reserva"
             value={guestFilter}
             onChange={(e) => setGuestFilter(e.target.value)}
           />
