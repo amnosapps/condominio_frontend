@@ -1147,7 +1147,7 @@ const ReservationModal = ({
                     selected={reservationData.checkout}
                     onChange={(date) => handleDateChange("checkout", date)}
                     dateFormat="dd/MM/yyyy"
-                    disabled={!isEditing || reservationData.checkin_at}
+                    disabled={!isEditing || reservationData.checkout_at}
                     className="custom-date-picker"
                   />
                 </FieldValue>
@@ -1208,7 +1208,7 @@ const ReservationModal = ({
                     selected={selectedReservation.checkin}
                     dateFormat="dd/MM/yyyy"
                     disabled={true}
-                     className="custom-date-picker"
+                    className="custom-date-picker"
                   />
                 </FieldValue>
               </Column>
