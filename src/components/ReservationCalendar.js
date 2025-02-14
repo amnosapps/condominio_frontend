@@ -653,6 +653,8 @@ const ReservationCalendar = ({ profile }) => {
         additional_photos: reservation.additional_photos_urls || [],
         checkin: reservation.checkin ? parseISO(reservation.checkin) : null,
         checkout: reservation.checkout ? parseISO(reservation.checkout) : null,
+        hour_checkin: reservation.hour_checkin ? reservation.hour_checkin : "15:00",
+        hour_checkout: reservation.hour_checkout ? reservation.hour_checkout : "12:00",
         checkin_at: reservation.checkin_at ? parseISO(reservation.checkin_at) : null,
         checkout_at: reservation.checkout_at ? parseISO(reservation.checkout_at) : null,
         has_children: reservation.has_children,
