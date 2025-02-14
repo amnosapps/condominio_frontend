@@ -252,6 +252,20 @@ const LogsModalContainer = styled.div`
 const LogsButton = styled.button`
   margin: 1px 5px;
   padding: 10px 20px;
+  background-color:#F0B500;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #E0A800;
+  }
+`;
+
+const PrintButton = styled.button`
+  margin: 1px 5px;
+  padding: 10px 20px;
   background-color: #007bff;
   color: white;
   border: none;
@@ -1091,13 +1105,6 @@ const ReservationModal = ({
             <GreenButton onClick={toggleQrCodeModal}>
               <FaQrcode width={40} />
             </GreenButton>
-            <a onClick={generateDocumentPdf} style={{ color: "white", padding: "10px", borderRadius: "5px", cursor: "pointer" }}>
-              <img
-                  src="/download-pdf.png"
-                  alt="PDF Reserva"
-                  style={{ width: "30px", height: "auto", cursor: "pointer" }}
-                />
-            </a>
             <div><strong style={{ fontSize: '20px' }}>#{selectedReservation.id} - Apto {reservationData.apartment}</strong></div>
             {!selectedReservation.active && (
               <Badge active={selectedReservation.active}>
@@ -1624,6 +1631,10 @@ const ReservationModal = ({
           )}
 
           <LogsButton onClick={fetchLogs}>Auditoria</LogsButton> 
+
+          <PrintButton onClick={generateDocumentPdf}>
+              Imprimir
+          </PrintButton>
 
           {profile?.user_type === "owner" || profile?.user_type === "admin" ? (
             !selectedReservation.active ? (
