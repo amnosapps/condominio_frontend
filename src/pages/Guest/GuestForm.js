@@ -5,6 +5,7 @@ import CryptoJS from "crypto-js";
 import axios from "axios";
 import Webcam from "react-webcam";
 import { FaCamera, FaFileUpload, FaTrash } from "react-icons/fa";
+import { formatCPF } from "../../utils/regex";
 
 const API_URL = process.env.REACT_APP_API_URL;
 const SECRET_KEY = process.env.REACT_APP_QRCODE_SECRET || "your-secret-key";
@@ -438,12 +439,16 @@ const GuestForm = () => {
           <option value="rg">RG</option>
           <option value="passport">Passaporte</option>
         </Select>
-
         <Label>Documento</Label>
         <Input
           type="text"
           value={formData.guest_document}
-          onChange={(e) => handleChange("guest_document", e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            const formattedValue =
+              formData.document_type === "cpf" ? formatCPF(value) : value;
+            handleChange("guest_document", formattedValue);
+          }}
           required
         />
 
