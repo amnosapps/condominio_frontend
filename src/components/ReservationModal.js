@@ -17,6 +17,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import api from "../services/api";
 
 import CryptoJS from "crypto-js";
+import { formatCPF } from "../utils/regex";
 const SECRET_KEY = process.env.REACT_APP_QRCODE_SECRET || "your-secret-key";
 
 // Styled Components
@@ -1316,12 +1317,12 @@ const ReservationModal = ({
           <Column>
             <FieldLabel>Documento:</FieldLabel>
             <FieldValue>
-              <EditableInput
-                type="text"
-                value={reservationData.guest_document}
-                onChange={(e) => handleChange("guest_document", e.target.value)}
-                disabled={!isEditing || reservationData.checkin_at} 
-              />
+            <EditableInput
+              type="text"
+              value={reservationData.guest_document}
+              onChange={(e) => handleChange("guest_document",reservationData.document_type === "cpf" ? formatCPF(e.target.value) : e.target.value)}
+              disabled={!isEditing || reservationData.checkin_at} 
+            />
             </FieldValue>
           </Column>
           
@@ -1497,15 +1498,15 @@ const ReservationModal = ({
                   </FieldValue>
                 </Column>
                 <Column>
-                  <EditableInput
-                    type="text"
-                    placeholder="Num Documento"
-                    value={guest.document}
-                    onChange={(e) =>
-                      updateGuestDetails(index, "document", e.target.value)
-                    }
-                    disabled={!isEditing} 
-                  />
+                <EditableInput
+                  type="text"
+                  placeholder="Num Documento"
+                  value={guest.document}
+                  onChange={(e) =>
+                    updateGuestDetails(index, "document", guest.document_type === "cpf" ? formatCPF(e.target.value) : e.target.value)
+                  }
+                  disabled={!isEditing} 
+                />
                 </Column>
                 <Column>
                   {guest.is_child && (
