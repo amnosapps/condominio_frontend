@@ -6,6 +6,7 @@ import { registerLocale } from "react-datepicker";
 import ptBR from "date-fns/locale/pt-BR";
 import axios from "axios";
 import api from "../../services/api";
+import { format, setHours, setMinutes } from "date-fns";
 
 registerLocale("pt-BR", ptBR);
 
@@ -79,6 +80,16 @@ const Column = styled.div`
   flex: 1;
   margin-right: 30px;
   min-width: 150px; /* Ensure columns are responsive */
+  margin-top: 10px;
+
+  .custom-date-picker {
+    width: 150px; /* Larger width for the input */
+    padding: 8px 10px; /* Add padding for larger clickable area */
+    font-size: 16px; /* Bigger font for readability */
+    border-radius: 4px; /* Rounded corners for better appearance */
+    border: 1px solid #ccc; /* Subtle border for distinction */
+    outline: none;
+  }
 `;
 
 const Label = styled.label`
@@ -205,6 +216,8 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments, fetc
     guests_qty: 0,
     checkin: null,
     checkout: null,
+    hour_checkin: "15:00",
+    hour_checkout: "12:00",
   });
 
   const [additionalGuests, setAdditionalGuests] = useState([]);
@@ -278,6 +291,8 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments, fetc
       multipartData.append("guests_qty", formData.guests_qty);
       multipartData.append("checkin", checkinDate.toISOString());
       multipartData.append("checkout", checkoutDate.toISOString());
+      multipartData.append("hour_checkin", formData.hour_checkin);
+      multipartData.append("hour_checkout", formData.hour_checkout);
       multipartData.append("active", true);
 
       multipartData.append("additional_guests", JSON.stringify(additionalGuests));
@@ -330,6 +345,57 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments, fetc
                   placeholderText="Selecione as datas"
                 />
               </StyledDatePickerWrapper>
+            </Column>
+            <Column>
+              <Label>Hora de Check-in:</Label>
+              <DatePicker
+                selected={
+                  formData.hour_checkin
+                    ? setHours(setMinutes(new Date(), 0), parseInt(formData.hour_checkin, 10))
+                    : null
+                }
+                onChange={(date) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    hour_checkin: format(date, "HH:mm"), // Store hour in "HH:mm" format
+                  }));
+                }}
+                showTimeSelect
+                showTimeSelectOnly
+                // timeIntervals={60} // Only full hours
+                timeCaption="Hora"
+                timeFormat="HH:mm"
+                dateFormat="HH:mm"
+                locale="pt-BR"
+                placeholderText="Selecione a hora"
+                className="custom-date-picker"
+              />
+
+            </Column>
+            <Column>
+              <Label>Hora de Check-out:</Label>
+              <DatePicker
+                selected={
+                  formData.hour_checkout
+                    ? setHours(setMinutes(new Date(), 0), parseInt(formData.hour_checkout, 10))
+                    : null
+                }
+                onChange={(date) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    hour_checkout: format(date, "HH:mm"), // Store hour in "HH:mm" format
+                  }));
+                }}
+                showTimeSelect
+                showTimeSelectOnly
+                // timeIntervals={60} // Only full hours
+                timeCaption="Hora"
+                timeFormat="HH:mm"
+                dateFormat="HH:mm"
+                locale="pt-BR"
+                placeholderText="Selecione a hora"
+                className="custom-date-picker"
+              />
             </Column>
             <Column>
               <Label>Apartamento:</Label>
