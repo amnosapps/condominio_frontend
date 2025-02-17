@@ -224,8 +224,8 @@ const EditableInput = styled.input`
 const LogsModalContainer = styled.div`
   margin-top: 50px;
   background-color: white;
-  width: 80%;
-  max-width: 600px;
+  width: 100%;
+  max-width: 700px;
   max-height: 80vh;
   padding: 20px;
   border-radius: 8px;
