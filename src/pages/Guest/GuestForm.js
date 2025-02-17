@@ -293,10 +293,15 @@ const GuestForm = () => {
 
   // Function to add a new guest safely
   const addAdditionalGuest = () => {
+    if (formData.additional_guests.length >= (reservation.guest_qty)) {
+      alert(`O limite máximo de hóspedes adicionais é ${reservation.guest_qty}.`);
+      return;
+    }
+  
     setFormData((prev) => ({
       ...prev,
       additional_guests: [
-        ...(Array.isArray(prev.additional_guests) ? prev.additional_guests : []), // Ensure it's an array
+        ...(Array.isArray(prev.additional_guests) ? prev.additional_guests : []),
         { name: "", document: "", document_type: "", age: 0, is_child: false, guest_photo: "" },
       ],
     }));
