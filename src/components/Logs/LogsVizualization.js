@@ -66,6 +66,10 @@ const DataKey = styled.span`
 
 const DataValue = styled.span`
   color: #777;
+
+  > span {
+    font-weight: 700;
+  }
 `;
 
 const LogsListComponent = ({ logs }) => {
@@ -78,21 +82,48 @@ const LogsListComponent = ({ logs }) => {
     }));
   };
 
-  const renderData = (data) => {
-    if (!data || Object.keys(data).length === 0) {
+  const formatDate = (dateString) => {
+    if (!dateString) return 'null';
+    return new Date(dateString).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+  };
+
+  const formatDateLog = (dateString) => {
+    if (!dateString) return 'null';
+    return new Date(dateString).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+  };
+
+  const renderModifiedData = (oldData, newData) => {
+    if (!oldData && !newData) {
       return <p>Nenhum dado disponível.</p>;
+    }
+
+    const allKeys = new Set([...Object.keys(oldData || {}), ...Object.keys(newData || {})]);
+    const modifiedEntries = [...allKeys].filter((key) => JSON.stringify(oldData?.[key]) !== JSON.stringify(newData?.[key]));
+
+    if (modifiedEntries.length === 0) {
+      return <p>Nenhuma modificação.</p>;
     }
 
     return (
       <DataList>
-        {Object.entries(data).map(([key, value]) => (
+        {modifiedEntries.map((key) => (
           <DataItem key={key}>
             <DataKey>{key}</DataKey>
-            <DataValue>{JSON.stringify(value)}</DataValue>
+            <DataValue>
+              {key.includes('checkin') || key.includes('checkout') ? formatDate(oldData?.[key]) : JSON.stringify(oldData?.[key]) || 'null'} → <span>{key.includes('checkin') || key.includes('checkout') ? formatDate(newData?.[key]) : JSON.stringify(newData?.[key]) || 'null'}</span>
+            </DataValue>
           </DataItem>
         ))}
       </DataList>
     );
+  };
+
+  const formatAction = (log) => {
+    if (log.new_data?.checkin_at && !log.old_data?.checkin_at) return <span style={{ color: 'green' }}>Check-in</span>;
+    if (log.new_data?.checkout_at && !log.old_data?.checkout_at) return <span style={{ color: 'red' }}>Check-out</span>;
+    if (log.action === 'update') return 'Atualização';
+    if (log.action === 'criada') return 'Criação';
+    return log.action;
   };
 
   return (
@@ -102,16 +133,14 @@ const LogsListComponent = ({ logs }) => {
           <LogItem key={log.id}>
             <LogHeader onClick={() => toggleLogDetails(log.id)}>
               <LogHeaderItem>{log.user}</LogHeaderItem>
-              <LogHeaderItem>{log.action}</LogHeaderItem>
-              <LogHeaderItem>{new Date(log.timestamp).toLocaleString()}</LogHeaderItem>
+              <LogHeaderItem>{formatAction(log)}</LogHeaderItem>
+              <LogHeaderItem>{formatDateLog(log.timestamp)}</LogHeaderItem>
               <CollapseIcon>{expandedLogs[log.id] ? '-' : '+'}</CollapseIcon>
             </LogHeader>
             {expandedLogs[log.id] && (
               <LogDetails>
-                <h4>Dados Antigos</h4>
-                {renderData(log.old_data)}
-                <h4>Dados Novos</h4>
-                {renderData(log.new_data)}
+                <h4>Modificações</h4>
+                {renderModifiedData(log.old_data, log.new_data)}
               </LogDetails>
             )}
           </LogItem>
