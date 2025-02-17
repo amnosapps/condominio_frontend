@@ -366,7 +366,20 @@ const CloseQrCodeButton = styled.button`
   cursor: pointer;
 `;
 
+const CopyButton = styled.button`
+  margin-top: 10px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
 
+  &:hover {
+    background-color: #0056b3;
+  }
+`;
 
 const ReservationModal = ({
   closeModal,
@@ -1657,15 +1670,27 @@ const ReservationModal = ({
             <QrCodeModalContainer onClick={(e) => e.stopPropagation()}>
               <CloseQrCodeButton onClick={toggleQrCodeModal}>×</CloseQrCodeButton>
               
-              <div
-                onClick={() => window.open(`${window.location.origin}/guest-form?token=${encodeURIComponent(encryptReservationId(selectedReservation.id))}`, '_blank')}
-                style={{ cursor: 'pointer', display: 'inline-block' }}
-              >
+              <div>
                 <h3>Abrir Pré-Checkin</h3>
-                <QRCodeCanvas
-                  value={`${window.location.origin}/guest-form?token=${encodeURIComponent(encryptReservationId(selectedReservation.id))}`}
-                  size={200}
-                />
+                <div 
+                  style={{ cursor: 'pointer', display: 'inline-block' }}
+                  onClick={() => window.open(`${window.location.origin}/guest-form?token=${encodeURIComponent(encryptReservationId(selectedReservation.id))}`, '_blank')}                
+                >
+                  <QRCodeCanvas
+                    value={`${window.location.origin}/guest-form?token=${encodeURIComponent(encryptReservationId(selectedReservation.id))}`}
+                    size={200}
+                    />
+                </div>
+                <CopyButton
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `${window.location.origin}/guest-form?token=${encodeURIComponent(encryptReservationId(selectedReservation.id))}`
+                    );
+                    alert('Link copiado!');
+                  }}
+                >
+                  Copiar Link
+                </CopyButton>
               </div>
             </QrCodeModalContainer>
           </QrCodeModalOverlay>
