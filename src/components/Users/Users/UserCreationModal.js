@@ -3,6 +3,7 @@ import styled from "styled-components";
 import axios from "axios";
 import { FaCamera, FaFileImage } from "react-icons/fa";
 
+// Styled Components
 const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -25,17 +26,6 @@ const ModalContent = styled.div`
   overflow-y: auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   position: relative;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-  }
-  &::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
 `;
 
 const ModalHeader = styled.div`
@@ -87,7 +77,6 @@ const UploadContainer = styled.div`
   margin-top: 10px;
   margin-bottom: 10px;
 `;
-
 
 const UploadIcon = styled.div`
   display: flex;
@@ -161,38 +150,17 @@ const CaptureButton = styled(Button)`
   }
 `;
 
-const VisitorCreationModal = ({ onClose, fetchVisitors, condominium }) => {
+const UserCreationModal = ({ onClose, fetchUsers, condominium }) => {
   const [name, setName] = useState("");
-  const [unit, setUnit] = useState("");
   const [document, setDocument] = useState("");
   const [phone, setPhone] = useState("");
+  const [role, setRole] = useState("");
   const [image, setImage] = useState(null);
-  const [apartments, setApartments] = useState([]);
   const [showCamera, setShowCamera] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
-  
-
-  useEffect(() => {
-    const fetchApartments = async () => {
-      const token = localStorage.getItem("accessToken");
-      try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/apartments/`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { condominium: condominium.name },
-          }
-        );
-        setApartments(response.data);
-      } catch (error) {
-        console.error("Error fetching apartments:", error.response?.data || error);
-      }
-    };
-
-    fetchApartments();
-  }, [condominium]);
+  const streamRef = useRef(null);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -208,13 +176,14 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium }) => {
   };
 
   const startCamera = async () => {
-    setShowCamera(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.play();
+        streamRef.current = stream;
       }
+      setShowCamera(true)
     } catch (error) {
       console.error("Error accessing camera:", error);
       alert("Erro ao acessar a câmera.");
@@ -223,70 +192,76 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium }) => {
 
   const captureImage = () => {
     if (!videoRef.current || !canvasRef.current) return;
-  
+
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
-  
+
     // Set fixed size to 500x500
     const TARGET_WIDTH = 500;
     const TARGET_HEIGHT = 500;
     canvas.width = TARGET_WIDTH;
     canvas.height = TARGET_HEIGHT;
-  
+
     // Get the original video feed dimensions
     const videoWidth = videoRef.current.videoWidth;
     const videoHeight = videoRef.current.videoHeight;
-  
+
     // Determine scaling for best fit (crop if necessary)
     const scale = Math.max(TARGET_WIDTH / videoWidth, TARGET_HEIGHT / videoHeight);
     const scaledWidth = videoWidth * scale;
     const scaledHeight = videoHeight * scale;
     const offsetX = (scaledWidth - TARGET_WIDTH) / 2;
     const offsetY = (scaledHeight - TARGET_HEIGHT) / 2;
-  
+
     // Draw the resized and cropped image onto the canvas
     context.drawImage(videoRef.current, -offsetX, -offsetY, scaledWidth, scaledHeight);
-  
+
     // Convert to Base64 JPEG (compressed)
-    const compressedImageBase64 = canvas.toDataURL("image/jpeg", 0.8); // 80% quality
-  
+    const compressedImageBase64 = canvas.toDataURL("image/jpeg", 0.8);
+
     // Validate file size before setting state
     fetch(compressedImageBase64)
       .then((res) => res.blob())
       .then((blob) => {
         console.log(`Final Image Size: ${(blob.size / 1024).toFixed(2)} KB`);
-        if (blob.size > 100 * 1024) { // 100KB limit
+        if (blob.size > 100 * 1024) {
           alert("O tamanho do arquivo não pode exceder 100KB.");
           return;
         }
         setImage(compressedImageBase64);
       })
       .catch((err) => console.error("Erro ao validar a imagem:", err));
-  
+
     // Stop the camera stream
     setShowCamera(false);
     if (videoRef.current.srcObject) {
       videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
     }
-  };  
+  };
 
-  const handleCreateVisitor = async () => {
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+  };
+
+  const handleCreateUser = async () => {
     const token = localStorage.getItem("accessToken");
 
-    const newVisitor = {
+    const newUser = {
       name,
-      condominium: condominium.name,
-      apartment: unit,
+      condominium: condominium.id,
+      role,  // Include user type
       document,
       phone,
-      entry: new Date().toISOString(), // Set entry as the current date/time
       image_base64: image,
     };
 
     try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/visitors/`,
-        newVisitor,
+      await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/condominium-users/`,
+        newUser,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -295,83 +270,64 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium }) => {
         }
       );
 
-      console.log("Visitor created:", response.data);
-      fetchVisitors();
+      fetchUsers();
       onClose();
     } catch (error) {
-      console.error("Error creating visitor:", error.response?.data || error);
-      alert("Failed to create visitor. Please check the details and try again.");
+      console.error("Error creating user:", error);
+      alert("Failed to create user. Please try again.");
     }
   };
 
-  const triggerFileInput = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+  useEffect(() => {
+    if (showCamera) {
+      startCamera();
+    } else {
+      stopCamera();
     }
-  };
+  }, [showCamera]);
+
 
   return (
     <ModalOverlay>
       <ModalContent>
         <ModalHeader>
-          <h3>Criar Visitante</h3>
+          <h3>Criar Usuário</h3>
           <button onClick={onClose}>&times;</button>
         </ModalHeader>
         <ProfileImageContainer>
-          {image ? (
-            <ProfileImage src={image} alt="Profile" />
-          ) : (
-            <ProfileImage
-              src="https://placehold.co/100x100.png"
-              alt="Escolha uma imagem"
-            />
-          )}
-          <UploadContainer>
-            <UploadIcon onClick={triggerFileInput}>
-              <FaFileImage />
-              <input type="file" accept="image/*" onChange={handleImageUpload} ref={fileInputRef} />
-            </UploadIcon>
-            <UploadIcon onClick={startCamera}>
-              <FaCamera />
-            </UploadIcon>
-          </UploadContainer>
+          {image ? <ProfileImage src={image} alt="Profile" /> : <ProfileImage src="https://placehold.co/100x100.png" />}
         </ProfileImageContainer>
-        {showCamera && <Video ref={videoRef} autoPlay show />}
-        {showCamera && <CaptureButton onClick={captureImage}>Capturar Foto</CaptureButton>}
+        <UploadContainer>
+          <UploadIcon onClick={startCamera}><FaCamera /></UploadIcon>
+          <UploadIcon onClick={() => fileInputRef.current.click()}><FaFileImage /></UploadIcon>
+          <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} hidden />
+        </UploadContainer>
+        {showCamera && (
+          <>
+            <Video ref={videoRef} autoPlay playsInline show={showCamera} />
+            <CaptureButton onClick={captureImage}>Capturar Foto</CaptureButton>
+          </>
+        )}
+
         <canvas ref={canvasRef} style={{ display: "none" }} />
-        <Input
-          type="text"
-          placeholder="Nome do Visitante"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <Select value={unit} onChange={(e) => setUnit(e.target.value)}>
-          <option value="" disabled>
-            Selecione a Unidade
-          </option>
-          {apartments.map((apartment) => (
-            <option key={apartment.id} value={apartment.id}>
-              Unidade {apartment.number}
-            </option>
-          ))}
-        </Select>
-        <Input
-          type="text"
-          placeholder="Documento (CPF/RG)"
-          value={document}
-          onChange={(e) => setDocument(e.target.value)}
-        />
-        <Input
-          type="text"
-          placeholder="Telefone"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
         
-        <Button onClick={handleCreateVisitor}>Registrar Entrada</Button>
+        <Select value={role} onChange={(e) => setRole(e.target.value)}>
+          <option value="" disabled>Selecione o Tipo de Usuário</option>
+          <option value="admin">Admin</option>
+          <option value="user">Usuário</option>
+          <option value="worker">Funcionário</option>
+          <option value="resident">Residente</option>
+          <option value="owner">Proprietário</option>
+          <option value="manager">Gerente</option>
+          <option value="visitor">Visitante</option>
+        </Select>
+        <Input type="text" placeholder="Nome" value={name} onChange={(e) => setName(e.target.value)} />
+        <Input type="text" placeholder="Documento (CPF/RG)" value={document} onChange={(e) => setDocument(e.target.value)} />
+        <Input type="text" placeholder="Telefone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        <Button onClick={handleCreateUser}>Criar Usuário</Button>
       </ModalContent>
     </ModalOverlay>
   );
 };
 
-export default VisitorCreationModal;
+export default UserCreationModal;

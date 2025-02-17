@@ -13,12 +13,12 @@ import ServicesPage from './pages/Services';
 import Dashboard from './pages/Services/Dashboard';
 import HomePage from './pages/Home/HomePage';
 import Soon from './pages/Soon';
-import UserManagement from './pages/Users/User';
 import ReservationsPage from './pages/Reserations/Reservations';
 import VisitorsPage from './pages/Users/Visitors';
 import GuestForm from './pages/Guest/GuestForm';
 import DeviceManagement from './pages/Access/Devices';
 import UserDeviceManagement from './pages/Access/UsersDevice';
+import UsersPage from './pages/Users/CondoUsersPage';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('accessToken'));
@@ -130,7 +130,7 @@ function App() {
                     <Route path="services" element={<ServicesPage condominium={selectedCondominium} />} />
                     <Route path="dashboard" element={<Dashboard condominium={selectedCondominium} />} />
                     <Route path="soon" element={<Soon />} />
-                    <Route path="users" element={<UserManagement profile={profile} condominium={selectedCondominium} />} />
+                    <Route path="users" element={<UsersPage profile={profile} condominium={selectedCondominium} />} />
                     <Route path="visitors" element={<VisitorsPage profile={profile} condominium={selectedCondominium} />} />
                     <Route path="access/devices" element={<DeviceManagement profile={profile} condominium={selectedCondominium} />} />
                     <Route path="access/users" element={<UserDeviceManagement condominium={selectedCondominium} />} />
