@@ -244,7 +244,7 @@ const VisitorsPage = ({ profile }) => {
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
         >
-          <option value="all">Todos</option>
+          <option value="all">Nome</option>
           <option value="apartment">Apartamento</option>
         </select>
 
