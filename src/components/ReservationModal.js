@@ -409,9 +409,26 @@ const ReservationModal = ({
   const [logs, setLogs] = useState([]);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
 
+  const convertToLocalDate = (date) => {
+    if (!date) return null;
+  
+    if (date instanceof Date && !isNaN(date)) {
+      return date; // Already in the correct format
+    }
+  
+    const parsedDate = new Date(date);
+    
+    if (!isNaN(parsedDate)) {
+      // Convert to local timezone (matches working format)
+      return new Date(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate(), parsedDate.getHours(), parsedDate.getMinutes());
+    }
+  
+    return null; // Return null if conversion fails
+  };
+
   const [reservationData, setReservationData] = useState({
-    checkin: selectedReservation?.checkin ? new Date(selectedReservation.checkin) : null,
-    checkout: selectedReservation?.checkout ? new Date(selectedReservation.checkout) : null,
+    checkin: convertToLocalDate(selectedReservation?.checkin),
+    checkout: convertToLocalDate(selectedReservation?.checkout),
     guest_name: selectedReservation?.guest_name || "",
     observations: selectedReservation?.observations || "",
     guest_document: selectedReservation?.guest_document || "",
@@ -423,10 +440,8 @@ const ReservationModal = ({
     hasChildren: selectedReservation?.hasChildren || "no",
     photos: selectedReservation?.photos || "", // Main photo URL
     additional_photos: selectedReservation?.additional_photos || [], // Additional photos array
-    checkin: selectedReservation?.checkin || null, // Check-in timestamp
-    checkout: selectedReservation?.checkout || null, // Checkout timestamp
-    hour_checkin: selectedReservation.hour_checkin ? selectedReservation.hour_checkin : null,
-    hour_checkout: selectedReservation.hour_checkout ? selectedReservation.hour_checkout : null,
+    hour_checkin: selectedReservation.hour_checkin ? selectedReservation.hour_checkin : "15:00",
+    hour_checkout: selectedReservation.hour_checkout ? selectedReservation.hour_checkout : "12:00",
     checkin_at: selectedReservation?.checkin_at || null, // Check-in timestamp
     checkout_at: selectedReservation?.checkout_at || null, // Checkout timestamp
     address: selectedReservation?.address || {
@@ -1133,6 +1148,43 @@ const ReservationModal = ({
     return CryptoJS.AES.encrypt(reservationId.toString(), SECRET_KEY).toString();
   };
 
+  const DateTimePicker = ({ date, time, onChange, disabled, defaultHour = 15 }) => {
+    // Ensure the date is a valid Date object
+    const isValidDate = date && date instanceof Date && !isNaN(date);
+  
+    // Extract hours and minutes from time, or use default hour (15:00 for check-in, 09:00 for check-out)
+    const [hour, minute] = time?.split(":").map(Number) || [defaultHour, 0];
+  
+    // Construct final Date object
+    const selectedDate = isValidDate
+      ? new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, minute)
+      : new Date(); // Fallback to today
+  
+    return (
+      <DatePicker
+        selected={selectedDate}
+        onChange={(date) => {
+          if (date) {
+            // Extract new date and time
+            const newDate = new Date(date);
+            const formattedTime = format(newDate, "HH:mm");
+  
+            // Pass values to the parent component
+            onChange({ date: newDate, time: formattedTime });
+          }
+        }}
+        showTimeSelect
+        timeFormat="HH:mm"
+        timeIntervals={15}
+        dateFormat="dd/MM/yyyy HH:mm"
+        disabled={disabled}
+        className="custom-date-picker"
+      />
+    );
+  };
+
+  console.log(reservationData.checkin)
+
   return (
     <ModalOverlay onClick={closeModal1}>
       <ModalContainer onClick={(e) => e.stopPropagation()} className="modal-container">
@@ -1172,62 +1224,30 @@ const ReservationModal = ({
               }}>
               <Column>
                 <FieldLabel>Check-in:</FieldLabel>
-                <FieldValue>
-                <DatePicker
-                  selected={
-                    new Date(
-                          reservationData.checkin.getFullYear(),
-                          reservationData.checkin.getMonth(),
-                          reservationData.checkin.getDate(),
-                          parseInt(reservationData?.hour_checkin.split(":")[0] || "15"), // Default to 15:00
-                          parseInt(reservationData?.hour_checkin.split(":")[1] || "00")
-                        )
-                  }
-                  onChange={(date) => {
-                    const newDate = new Date(date);
-                    newDate.setHours(0, 0, 0, 0); // Keep only the date part
-                    handleChange("checkin", newDate);
-                    handleChange("hour_checkin", format(date, "HH:mm")); // Store time separately
-                  }}
-                  showTimeSelect
-                  timeFormat="HH:mm"
-                  timeIntervals={15}
-                  dateFormat="dd/MM/yyyy HH:mm"
-                  disabled={!isEditing || reservationData.checkin_at}
-                  className="custom-date-picker"
-                />
-                </FieldValue>
+                <DateTimePicker
+                    date={reservationData.checkin}
+                    time={reservationData.hour_checkin}
+                    defaultHour={15} // Default check-in time
+                    onChange={({ date, time }) => {
+                      handleChange("checkin", date);
+                      handleChange("hour_checkin", time);
+                    }}
+                    disabled={!isEditing || reservationData.checkin_at}
+                  />
               </Column>
 
               <Column>
                 <FieldLabel>Check-out:</FieldLabel>
-                <FieldValue>
-                <DatePicker
-                  selected={
-                    reservationData.checkout
-                      ? new Date(
-                          reservationData.checkout.getFullYear(),
-                          reservationData.checkout.getMonth(),
-                          reservationData.checkout.getDate(),
-                          parseInt(reservationData.hour_checkout?.split(":")[0] || "09"), // Default to 09:00
-                          parseInt(reservationData.hour_checkout?.split(":")[1] || "00")
-                        )
-                      : null
-                  }
-                  onChange={(date) => {
-                    const newDate = new Date(date);
-                    newDate.setHours(0, 0, 0, 0); // Keep only the date part
-                    handleChange("checkout", newDate);
-                    handleChange("hour_checkout", format(date, "HH:mm")); // Store time separately
+                <DateTimePicker
+                  date={reservationData.checkout}
+                  time={reservationData.hour_checkout}
+                  defaultHour={9} // Default check-out time
+                  onChange={({ date, time }) => {
+                    handleChange("checkout", date);
+                    handleChange("hour_checkout", time);
                   }}
-                  showTimeSelect
-                  timeFormat="HH:mm"
-                  timeIntervals={15}
-                  dateFormat="dd/MM/yyyy HH:mm"
                   disabled={!isEditing || reservationData.checkout_at}
-                  className="custom-date-picker"
                 />
-                </FieldValue>
               </Column>
 
               <Column style={{ flex: 2, textAlign: "center" }}>
