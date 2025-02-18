@@ -682,31 +682,14 @@ function Modal({ selectedApartment, profile, onClose, fetchApartments }) {
                                 
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center' }}>
-                            {profile.user_type === 'staff' && ( // Verifica se o usuário é 'staff'
-                            <StatusContainer>
-                                <StatusCircle
-                                    color={statusColors[apartmentDetails.status_name]}
-                                />
-                                <select
-                                    value={apartmentDetails.status}
-                                    onChange={(e) => handleStatusChange(parseInt(e.target.value))}
-                                    style={{
-                                        marginLeft: '8px',
-                                        padding: '0.3rem',
-                                        borderRadius: '4px',
-                                        border: '1px solid #ccc',
-                                        cursor: 'pointer',
-                                    }}
-                                >
-                                    <option value={0} style={{ color: statusColors.Disponível }}>Disponível</option>
-                                    <option value={1} style={{ color: statusColors.Ocupado }}>Ocupado</option>
-                                    <option value={2} style={{ color: statusColors.Manutenção }}>Manutenção</option>
-                                </select>
-                                <span>
-                                    Tipo: 
+                                <StatusContainer>
+                                    <StatusCircle
+                                        color={statusColors[apartmentDetails.status_name]}
+                                    />
                                     <select
-                                        value={apartmentDetails.type}
-                                        onChange={(e) => handleTypeChange(parseInt(e.target.value))}
+                                        disabled={profile.user_type != 'staff'}
+                                        value={apartmentDetails.status}
+                                        onChange={(e) => handleStatusChange(parseInt(e.target.value))}
                                         style={{
                                             marginLeft: '8px',
                                             padding: '0.3rem',
@@ -715,14 +698,30 @@ function Modal({ selectedApartment, profile, onClose, fetchApartments }) {
                                             cursor: 'pointer',
                                         }}
                                     >
-                                        <option value={0} style={{ color: '#36a2eb' }}>Temporada</option>
-                                        <option value={1} style={{ color: '#6c757d' }}>Moradia</option>
-                                    </select>    
-                                </span>
-                                <span>Capacidade: {apartmentDetails.max_occupation}</span>
-                            </StatusContainer>
-                        )}
-
+                                        <option value={0} style={{ color: statusColors.Disponível }}>Disponível</option>
+                                        <option value={1} style={{ color: statusColors.Ocupado }}>Ocupado</option>
+                                        <option value={2} style={{ color: statusColors.Manutenção }}>Manutenção</option>
+                                    </select>
+                                    <span>
+                                        Tipo: 
+                                        <select
+                                            value={apartmentDetails.type}
+                                            onChange={(e) => handleTypeChange(parseInt(e.target.value))}
+                                            disabled={profile.user_type != 'staff'}
+                                            style={{
+                                                marginLeft: '8px',
+                                                padding: '0.3rem',
+                                                borderRadius: '4px',
+                                                border: '1px solid #ccc',
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            <option value={0} style={{ color: '#36a2eb' }}>Temporada</option>
+                                            <option value={1} style={{ color: '#6c757d' }}>Moradia</option>
+                                        </select>    
+                                    </span>
+                                    <span>Capacidade: {apartmentDetails.max_occupation}</span>
+                                </StatusContainer>
                             </div>
                         </div>
                         <div>

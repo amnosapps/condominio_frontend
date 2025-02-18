@@ -110,7 +110,26 @@ const LogsListComponent = ({ logs }) => {
           <DataItem key={key}>
             <DataKey>{key}</DataKey>
             <DataValue>
-              {key.includes('checkin') || key.includes('checkout') ? formatDate(oldData?.[key]) : JSON.stringify(oldData?.[key]) || 'null'} → <span>{key.includes('checkin') || key.includes('checkout') ? formatDate(newData?.[key]) : JSON.stringify(newData?.[key]) || 'null'}</span>
+              {key.includes('checkin') || key.includes('checkout') ? (
+                key.includes('hour_checkin') || key.includes('hour_checkout') ? (
+                  `${oldData?.[key] || 'null'} → ` 
+                  ) : (
+                  `${formatDate(oldData?.[key])} → `
+                  )
+              ) : (
+                `${JSON.stringify(oldData?.[key]) || 'null'} → `
+              )}
+              <span>
+                {key.includes('checkin') || key.includes('checkout') ? (
+                  key.includes('hour_checkin') || key.includes('hour_checkout') ? (
+                    newData?.[key] || 'null'
+                  ) : (
+                    formatDate(newData?.[key])
+                  )
+                ) : (
+                  JSON.stringify(newData?.[key]) || 'null'
+                )}
+              </span>
             </DataValue>
           </DataItem>
         ))}
@@ -129,22 +148,25 @@ const LogsListComponent = ({ logs }) => {
   return (
     <LogsList>
       {logs.length > 0 ? (
-        logs.map((log) => (
-          <LogItem key={log.id}>
-            <LogHeader onClick={() => toggleLogDetails(log.id)}>
-              <LogHeaderItem>{log.user}</LogHeaderItem>
-              <LogHeaderItem>{formatAction(log)}</LogHeaderItem>
-              <LogHeaderItem>{formatDateLog(log.timestamp)}</LogHeaderItem>
-              <CollapseIcon>{expandedLogs[log.id] ? '-' : '+'}</CollapseIcon>
-            </LogHeader>
-            {expandedLogs[log.id] && (
-              <LogDetails>
-                <h4>Modificações</h4>
-                {renderModifiedData(log.old_data, log.new_data)}
-              </LogDetails>
-            )}
-          </LogItem>
-        ))
+        logs
+          .slice()
+          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)) // Sorting logs with the most recent on top
+          .map((log) => (
+            <LogItem key={log.id}>
+              <LogHeader onClick={() => toggleLogDetails(log.id)}>
+                <LogHeaderItem>{log.user}</LogHeaderItem>
+                <LogHeaderItem>{formatAction(log)}</LogHeaderItem>
+                <LogHeaderItem>{formatDateLog(log.timestamp)}</LogHeaderItem>
+                <CollapseIcon>{expandedLogs[log.id] ? '-' : '+'}</CollapseIcon>
+              </LogHeader>
+              {expandedLogs[log.id] && (
+                <LogDetails>
+                  <h4>Modificações</h4>
+                  {renderModifiedData(log.old_data, log.new_data)}
+                </LogDetails>
+              )}
+            </LogItem>
+          ))
       ) : (
         <p>Não foram encontrados logs desta reserva.</p>
       )}
