@@ -137,6 +137,7 @@ const VisitorsPage = ({ profile }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedVisitor, setSelectedVisitor] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("all");
 
   // Date Filter - Default: Last Week to Today
   const today = new Date().toISOString().split("T")[0];
@@ -184,17 +185,33 @@ const VisitorsPage = ({ profile }) => {
   }, [startDate, endDate]);
 
   const handleSearchChange = (e) => {
-    const value = e.target.value;
+    const value = e.target.value.toLowerCase().trim();
     setSearchTerm(value);
+    console.log("Novo searchTerm:",value);
 
-    if (value.trim() === "") {
+    if (!value) {
       setFilteredVisitors(visitors);
-    } else {
-      const filtered = visitors.filter((visitor) =>
-        visitor.name.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredVisitors(filtered);
+      return;
     }
+
+    const filtered = visitors.filter((visitor) => {
+      const name = visitor.name.toLowerCase();
+      const apartment = visitor.apartment_number ? String(visitor.apartment_number).toLowerCase() : "";
+
+      const match =
+      filterType === "all"
+        ? name.includes(value) || apartment.includes(value)
+        : filterType === "apartment"
+        ? apartment.includes(value)
+        : false;
+
+      console.log(`Checando visitante: ${visitor.name}, Apto: ${visitor.apartment_number}, Match: ${match}`);
+
+      return match;
+    });
+
+    console.log("visitantes filtrados:", filtered);
+    setFilteredVisitors(filtered);
   };
 
   const handleVisitorClick = (visitor) => {
@@ -208,15 +225,38 @@ const VisitorsPage = ({ profile }) => {
     setIsEditModalOpen(false);
   };
 
+  
+
   return (
     <Container>
       {/* Filters */}
       <FiltersRow>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <select
+          style={{
+            padding: "8px",
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            fontSize: "14px",
+            backgroundColor: "#fff",
+            cursor: "pointer",
+          }}
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
+        >
+          <option value="all">Todos</option>
+          <option value="apartment">Apartamento</option>
+        </select>
+
         <SearchInput
-          placeholder="Buscar Visitante"
+          placeholder={
+            filterType === "all" ? "Buscar Visitante" : "Buscar Apto"}
           value={searchTerm}
           onChange={handleSearchChange}
         />
+      </div>
+
+
         <DateInput
           type="date"
           value={startDate}
@@ -232,11 +272,29 @@ const VisitorsPage = ({ profile }) => {
 
       {/* Visitors List */}
       {filteredVisitors.length > 0 ? (
-        <CardContainer>
-          {filteredVisitors.map((visitor) => (
+      <CardContainer>
+        {filteredVisitors
+          .filter((visitor) => {
+            const name = visitor.name?.toLowerCase() || "";
+            const apartment = visitor.apartment_number ? String(visitor.apartment_number).toLowerCase() : "";
+            const search = searchTerm.toLowerCase().trim();
+
+            console.log(`Visitante: ${name}, Apto: ${apartment}, Busca: ${search}`);
+
+            if (!search) return true;
+
+            if (filterType === "all") {
+              return name.includes(search) || apartment.includes(search);
+            } else if (filterType === "apartment") {
+              return apartment.includes(search);
+            }
+
+            return true;
+          })
+          .map((visitor) => (
             <VisitorCard
               key={visitor.id}
-              isExited={!!visitor.exit} // If exit exists, the card will be faded.
+              isExited={!!visitor.exit}
               onClick={() => handleVisitorClick(visitor)}
             >
               <div>
@@ -263,12 +321,18 @@ const VisitorsPage = ({ profile }) => {
                   <FaPhoneAlt />
                   {visitor.phone || "N/A"}
                 </VisitorInfo>
-                <VisitorInfo>Unidade: <strong>{visitor.apartment_number}</strong></VisitorInfo>
+                <VisitorInfo>
+                  Unidade: <strong>{visitor.apartment_number}</strong>
+                </VisitorInfo>
               </div>
             </VisitorCard>
           ))}
-        </CardContainer>
-      ) : <NoVisitorsMessage>Nenhum visitante encontrado.</NoVisitorsMessage>}
+      </CardContainer>
+    ) : (
+      <NoVisitorsMessage>Nenhum visitante encontrado.</NoVisitorsMessage>
+    )}
+
+
 
       {isCreationModalOpen && <VisitorCreationModal onClose={toggleCreationModal} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />}
       {isEditModalOpen && <VisitorEditModal visitor={selectedVisitor} onClose={toggleEditModal} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />}
