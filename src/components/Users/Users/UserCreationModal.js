@@ -154,8 +154,13 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium }) => {
   const [name, setName] = useState("");
   const [document, setDocument] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
   const [image, setImage] = useState(null);
+  const [userType, setUserType] = useState("");
+  const [apartment, setApartment] = useState("");
+  const [availableApartments, setAvailableApartments] = useState([]);
+
   const [showCamera, setShowCamera] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -249,14 +254,28 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium }) => {
   const handleCreateUser = async () => {
     const token = localStorage.getItem("accessToken");
 
-    const newUser = {
-      name,
-      condominium: condominium.id,
-      role,  // Include user type
-      document,
-      phone,
-      image_base64: image,
-    };
+    const newUser = ["admin", "worker", "owner", "manager"].includes(userType) ? {
+        name,
+        role,
+        document,
+        user_type: userType,
+        phone,
+        email,
+        apartment: userType === "resident" || userType === "visitor" ? apartment : null,
+        condominiums: [condominium.id],
+        image_base64: image
+    } : {
+        name,
+        role,
+        entry: new Date().toISOString(),
+        condominium: condominium.id,
+        document,
+        user_type: userType,
+        phone,
+        email,
+        apartment: userType === "resident" || userType === "visitor" ? apartment : null,
+        image_base64: image
+    }
 
     try {
       await axios.post(
@@ -267,6 +286,7 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium }) => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+          params: { condominium: condominium.name, user_type: userType },
         }
       );
 
@@ -286,6 +306,26 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium }) => {
     }
   }, [showCamera]);
 
+  useEffect(() => {
+    if (userType === "resident" || userType === "visitor") {
+      const fetchApartments = async () => {
+        const token = localStorage.getItem("accessToken");
+        try {
+          const response = await axios.get(
+            `${process.env.REACT_APP_API_URL}/api/apartments/`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+              params: { condominium: condominium.name },
+            }
+          );
+          setAvailableApartments(response.data);
+        } catch (error) {
+          console.error("Error fetching apartments:", error);
+        }
+      };
+      fetchApartments();
+    }
+  }, [userType, condominium]);
 
   return (
     <ModalOverlay>
@@ -311,7 +351,7 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium }) => {
 
         <canvas ref={canvasRef} style={{ display: "none" }} />
         
-        <Select value={role} onChange={(e) => setRole(e.target.value)}>
+        <Select value={userType} onChange={(e) => setUserType(e.target.value)}>
           <option value="" disabled>Selecione o Tipo de Usuário</option>
           <option value="admin">Admin</option>
           <option value="user">Usuário</option>
@@ -321,9 +361,31 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium }) => {
           <option value="manager">Gerente</option>
           <option value="visitor">Visitante</option>
         </Select>
+
         <Input type="text" placeholder="Nome" value={name} onChange={(e) => setName(e.target.value)} />
+
+        {/* Conditional Fields Based on User Type */}
+        {(userType === "resident" || userType === "visitor") && (
+          <Select value={apartment} onChange={(e) => setApartment(e.target.value)}>
+            <option value="" disabled>Selecione a Unidade</option>
+            {availableApartments.map((apt) => (
+              <option key={apt.id} value={apt.id}>Unidade {apt.number}</option>
+            ))}
+          </Select>
+        )}
+
+        {(userType === "user" || userType === "worker") && (
+          <Select value={role} onChange={(e) => setRole(e.target.value)}>
+            <option value="" disabled>Selecione a Função</option>
+            <option value="receptionist">Recepcionista</option>
+            <option value="worker">Funcionário</option>
+          </Select>
+        )}
+
         <Input type="text" placeholder="Documento (CPF/RG)" value={document} onChange={(e) => setDocument(e.target.value)} />
         <Input type="text" placeholder="Telefone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+
         <Button onClick={handleCreateUser}>Criar Usuário</Button>
       </ModalContent>
     </ModalOverlay>

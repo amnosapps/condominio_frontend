@@ -79,6 +79,8 @@ const UserCard = styled.div`
   padding: 15px;
   cursor: pointer;
   transition: transform 0.3s, box-shadow 0.3s;
+  opacity: ${({ disabled }) => (disabled ? "0.5" : "1")};
+  filter: ${({ disabled }) => (disabled ? "grayscale(100%)" : "none")};
 
   &:hover {
     transform: translateY(-5px);
@@ -134,17 +136,20 @@ const UsersPage = ({ profile, condominium }) => {
           params: { condominium: condominium.name, user_type: userType },
         }
       );
-
-      // Flatten response if fetching all users
+  
+      let fetchedUsers = [];
       if (userType === "all") {
-        let allUsers = [];
         Object.values(response.data).forEach((userList) => {
-          allUsers = [...allUsers, ...userList];
+          fetchedUsers = [...fetchedUsers, ...userList];
         });
-        setUsers(allUsers);
       } else {
-        setUsers(response.data);
+        fetchedUsers = response.data;
       }
+  
+      // Sort users: Those with user_device come first
+      fetchedUsers.sort((a, b) => (b.user_device ? 1 : 0) - (a.user_device ? 1 : 0));
+  
+      setUsers(fetchedUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -199,7 +204,11 @@ const UsersPage = ({ profile, condominium }) => {
           {users
             .filter((user) => user.name.toLowerCase().includes(searchTerm.toLowerCase()))
             .map((user) => (
-              <UserCard key={user.id} onClick={() => handleUserClick(user)}>
+              <UserCard 
+                key={user.id} 
+                onClick={() => handleUserClick(user)}
+                disabled={!user.user_device}
+              >
                 <ProfileImage
                   src={user.image_base64 || "https://placehold.co/100x100.png"}
                   alt="Profile"
