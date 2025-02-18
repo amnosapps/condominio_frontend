@@ -578,9 +578,14 @@ const ReservationModal = ({
       checkoutDate.setHours(9, 0, 0, 0); // Force 09:00 (9 AM)
       formData.append("checkout", checkoutDate.toISOString());
     }
+
+    if (reservationData.hour_checkin) {
+      formData.append("hour_checkin", reservationData.hour_checkin);
+    }
+    if (reservationData.hour_checkout) {
+      formData.append("hour_checkout", reservationData.hour_checkout);
+    }
     
-    formData.append("hour_checkin", reservationData.hour_checkin);
-    formData.append("hour_checkout", reservationData.hour_checkout);
     formData.append("observations", reservationData.observations);
     formData.append("guest_name", reservationData.guest_name);
     formData.append("guest_document", reservationData.guest_document);
@@ -886,114 +891,123 @@ const ReservationModal = ({
     } = reservationData;
   
     const doc = new jsPDF();
-  
+
+    const logoWidth = 50;
+    const logoHeight = 50;
+    
+    // Largura da página
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    // Centralizando a imagem no topo
+    const x = (pageWidth - logoWidth) / 2;
+    doc.addImage('/IGOOVE.png', 'PNG', x, 10, logoWidth, logoHeight);
+    
     // Set document title
     doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
-    doc.text(`Reserva #${selectedReservation.id}`, 105, 20, null, null, "center");
-
+    doc.text(`Reserva #${selectedReservation.id}`, 105, 70, null, null, "center"); 
+    
     // Condominium and Apartment Information
     doc.setFontSize(14);
-    doc.text("Condomínio", 10, 30);
+    doc.text("Condomínio", 10, 80); 
     doc.setFont("helvetica", "normal");
-    doc.text(`Condomínio: ${selectedCondominium || "N/A"}`, 10, 40);
-    doc.text(`Apartamento: ${apartment || "N/A"}`, 10, 50);
+    doc.text(`Condomínio: ${selectedCondominium || "N/A"}`, 10, 90); 
+    doc.text(`Apartamento: ${apartment || "N/A"}`, 10, 100); 
     if (apartment_owner) {
-      doc.text(`Proprietário: ${apartment_owner}`, 10, 60);
+      doc.text(`Proprietário: ${apartment_owner}`, 10, 110); 
     }
-
+    
     // Add a divider
     doc.setDrawColor(200);
     doc.setLineWidth(0.5);
-    doc.line(10, 65, 200, 65);
-
+    doc.line(10, 115, 200, 115);
+    
     // Add basic information
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("Informações Gerais", 10, 75);
-
+    doc.text("Informações Gerais", 10, 125); 
+    
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
-    doc.text(`Hóspede: ${guest_name}`, 10, 85);
-    doc.text(`Documento: ${guest_document}`, 10, 95);
-    doc.text(`Contato: ${guest_phone || "N/A"}`, 10, 105);
-    doc.text(`Check-in: ${format(new Date(checkin), "dd/MM/yyyy")}`, 10, 115);
-    doc.text(`Check-out: ${format(new Date(checkout), "dd/MM/yyyy")}`, 10, 125);
-
+    doc.text(`Hóspede: ${guest_name}`, 10, 135);
+    doc.text(`Documento: ${guest_document}`, 10, 145); 
+    doc.text(`Contato: ${guest_phone || "N/A"}`, 10, 155);
+    doc.text(`Check-in: ${format(new Date(checkin), "dd/MM/yyyy")}`, 10, 165); 
+    doc.text(`Check-out: ${format(new Date(checkout), "dd/MM/yyyy")}`, 10, 175); 
+    
     // Add a divider before hosting information
     doc.setDrawColor(200);
     doc.setLineWidth(0.5);
-    doc.line(10, 135, 200, 135);
-
+    doc.line(10, 185, 200, 185);
+    
     // Add hosting information
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("Informações da hospedagem", 10, 145);
-
+    doc.text("Informações da hospedagem", 10, 195); 
+    
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
-    doc.text(`Entrada do hóspede: ${checkin_at ? format(new Date(checkin_at), "dd/MM/yyyy HH:mm") : "N/A"}`, 10, 155);
-    doc.text(`Saída do hóspede: ${checkout_at ? format(new Date(checkout_at), "dd/MM/yyyy HH:mm") : "N/A"}`, 10, 165);
+    doc.text(`Entrada do hóspede: ${checkin_at ? format(new Date(checkin_at), "dd/MM/yyyy HH:mm") : "N/A"}`, 10, 205);
+    doc.text(`Saída do hóspede: ${checkout_at ? format(new Date(checkout_at), "dd/MM/yyyy HH:mm") : "N/A"}`, 10, 215); 
     
-
     // Add a divider before observations
     doc.setDrawColor(200);
     doc.setLineWidth(0.5);
-    doc.line(10, 175, 200, 175);
-
+    doc.line(10, 225, 200, 225);
+    
     // Add observations
     doc.setFont("helvetica", "bold");
-    doc.text("Observações", 10, 185);
+    doc.text("Observações", 10, 235);
     doc.setFont("helvetica", "normal");
-    doc.text(observations || "Nenhuma observação.", 10, 195);
-
+    doc.text(observations || "Nenhuma observação.", 10, 245); 
+    
     // Add address
     doc.setFont("helvetica", "bold");
-    doc.text("Endereço", 10, 205);
+    doc.text("Endereço", 10, 255); 
     doc.setFont("helvetica", "normal");
     doc.text(
       `${address.endereco || "N/A"}, ${address.bairro || "N/A"}, ${address.cidade || "N/A"}, ${address.estado || "N/A"}, ${address.pais || "N/A"} (${address.cep || "N/A"})`,
       10,
-      215
+      265 
     );
-
+    
     // Add vehicle information
     if (vehicle_plate) {
       doc.setFont("helvetica", "bold");
-      doc.text("Veículo", 10, 225);
+      doc.text("Veículo", 10, 275); 
       doc.setFont("helvetica", "normal");
-      doc.text(`Placa: ${vehicle_plate}`, 10, 235);
+      doc.text(`Placa: ${vehicle_plate}`, 10, 285); 
     }
-
+    
     // Add additional guests
     if (additional_guests.length > 0) {
       doc.setFont("helvetica", "bold");
-      doc.text("Hóspedes Adicionais", 10, 245);
+      doc.text("Hóspedes Adicionais", 10, 295); 
       additional_guests.forEach((guest, index) => {
         doc.setFont("helvetica", "normal");
         doc.text(
           `${index + 1}. ${guest.name || "N/A"} - ${guest.document || "N/A"} (${guest.is_child ? "Criança" : "Adulto"})`,
           10,
-          255 + index * 10
+          305 + index * 10 
         );
       });
     }
-
+    
     // Footer
     doc.setFontSize(10);
     doc.setFont("helvetica", "italic");
     doc.text(
       "Documento gerado automaticamente.",
       105,
-      290,
+      350, // Ajustado para 350
       null,
       null,
       "center"
     );
-
-  
-    // Save the PDF
+    
+    // Salvar o PDF
     doc.save(`${selectedCondominium}_reserva_${selectedReservation.id}_${apartment}.pdf`);
+    
   };
 
   const toggleEditing = () => {
@@ -1161,15 +1175,13 @@ const ReservationModal = ({
                 <FieldValue>
                 <DatePicker
                   selected={
-                    reservationData.checkin
-                      ? new Date(
+                    new Date(
                           reservationData.checkin.getFullYear(),
                           reservationData.checkin.getMonth(),
                           reservationData.checkin.getDate(),
-                          parseInt(reservationData.hour_checkin?.split(":")[0] || "15"), // Default to 15:00
-                          parseInt(reservationData.hour_checkin?.split(":")[1] || "00")
+                          parseInt(reservationData?.hour_checkin.split(":")[0] || "15"), // Default to 15:00
+                          parseInt(reservationData?.hour_checkin.split(":")[1] || "00")
                         )
-                      : null
                   }
                   onChange={(date) => {
                     const newDate = new Date(date);
