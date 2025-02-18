@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import axios from "axios";
-import { FaCamera, FaFileImage } from "react-icons/fa";
+import { FaCamera, FaFileImage, FaTimes } from "react-icons/fa";
 
 // Styled Components
 const ModalOverlay = styled.div`
@@ -125,6 +125,41 @@ const Select = styled.select`
   font-size: 14px;
 `;
 
+const TagContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+`;
+
+const Tag = styled.div`
+  background: #f46600;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+`;
+
+const RemoveIcon = styled(FaTimes)`
+  cursor: pointer;
+  font-size: 12px;
+  &:hover {
+    color: #e05a00;
+  }
+`;
+
+const SelectStyled = styled.select`
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+`;
+
 const Button = styled.button`
   width: 100%;
   padding: 10px;
@@ -151,183 +186,200 @@ const CaptureButton = styled(Button)`
 `;
 
 const UserCreationModal = ({ onClose, fetchUsers, condominium }) => {
-  const [name, setName] = useState("");
-  const [document, setDocument] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState("");
-  const [image, setImage] = useState(null);
-  const [userType, setUserType] = useState("");
-  const [apartment, setApartment] = useState("");
-  const [availableApartments, setAvailableApartments] = useState([]);
+    const [name, setName] = useState("");
+    const [document, setDocument] = useState("");
+    const [phone, setPhone] = useState("");
+    const [email, setEmail] = useState("");
+    const [role, setRole] = useState("");
+    const [image, setImage] = useState(null);
+    const [userType, setUserType] = useState("");
+    const [apartment, setApartment] = useState(""); // Single apartment for resident/visitor
+    const [apartments, setApartments] = useState([]); // Multiple apartments for owner/manager
 
-  const [showCamera, setShowCamera] = useState(false);
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const fileInputRef = useRef(null);
-  const streamRef = useRef(null);
+    const [availableApartments, setAvailableApartments] = useState([]);
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
+    const [showCamera, setShowCamera] = useState(false);
+    const videoRef = useRef(null);
+    const canvasRef = useRef(null);
+    const fileInputRef = useRef(null);
+    const streamRef = useRef(null);
 
-    reader.onloadend = () => {
-      setImage(reader.result);
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+
+        reader.onloadend = () => {
+        setImage(reader.result);
+        };
+
+        if (file) {
+        reader.readAsDataURL(file);
+        }
     };
 
-    if (file) {
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
-        streamRef.current = stream;
-      }
-      setShowCamera(true)
-    } catch (error) {
-      console.error("Error accessing camera:", error);
-      alert("Erro ao acessar a câmera.");
-    }
-  };
-
-  const captureImage = () => {
-    if (!videoRef.current || !canvasRef.current) return;
-
-    const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
-
-    // Set fixed size to 500x500
-    const TARGET_WIDTH = 500;
-    const TARGET_HEIGHT = 500;
-    canvas.width = TARGET_WIDTH;
-    canvas.height = TARGET_HEIGHT;
-
-    // Get the original video feed dimensions
-    const videoWidth = videoRef.current.videoWidth;
-    const videoHeight = videoRef.current.videoHeight;
-
-    // Determine scaling for best fit (crop if necessary)
-    const scale = Math.max(TARGET_WIDTH / videoWidth, TARGET_HEIGHT / videoHeight);
-    const scaledWidth = videoWidth * scale;
-    const scaledHeight = videoHeight * scale;
-    const offsetX = (scaledWidth - TARGET_WIDTH) / 2;
-    const offsetY = (scaledHeight - TARGET_HEIGHT) / 2;
-
-    // Draw the resized and cropped image onto the canvas
-    context.drawImage(videoRef.current, -offsetX, -offsetY, scaledWidth, scaledHeight);
-
-    // Convert to Base64 JPEG (compressed)
-    const compressedImageBase64 = canvas.toDataURL("image/jpeg", 0.8);
-
-    // Validate file size before setting state
-    fetch(compressedImageBase64)
-      .then((res) => res.blob())
-      .then((blob) => {
-        console.log(`Final Image Size: ${(blob.size / 1024).toFixed(2)} KB`);
-        if (blob.size > 100 * 1024) {
-          alert("O tamanho do arquivo não pode exceder 100KB.");
-          return;
-        }
-        setImage(compressedImageBase64);
-      })
-      .catch((err) => console.error("Erro ao validar a imagem:", err));
-
-    // Stop the camera stream
-    setShowCamera(false);
-    if (videoRef.current.srcObject) {
-      videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
-    }
-  };
-
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-  };
-
-  const handleCreateUser = async () => {
-    const token = localStorage.getItem("accessToken");
-
-    const newUser = ["admin", "worker", "owner", "manager"].includes(userType) ? {
-        name,
-        role,
-        document,
-        user_type: userType,
-        phone,
-        email,
-        apartment: userType === "resident" || userType === "visitor" ? apartment : null,
-        condominiums: [condominium.id],
-        image_base64: image
-    } : {
-        name,
-        role,
-        entry: new Date().toISOString(),
-        condominium: condominium.id,
-        document,
-        user_type: userType,
-        phone,
-        email,
-        apartment: userType === "resident" || userType === "visitor" ? apartment : null,
-        image_base64: image
-    }
-
-    try {
-      await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/condominium-users/`,
-        newUser,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          params: { condominium: condominium.name, user_type: userType },
-        }
-      );
-
-      fetchUsers();
-      onClose();
-    } catch (error) {
-      console.error("Error creating user:", error);
-      alert("Failed to create user. Please try again.");
-    }
-  };
-
-  useEffect(() => {
-    if (showCamera) {
-      startCamera();
-    } else {
-      stopCamera();
-    }
-  }, [showCamera]);
-
-  useEffect(() => {
-    if (userType === "resident" || userType === "visitor") {
-      const fetchApartments = async () => {
-        const token = localStorage.getItem("accessToken");
+    const startCamera = async () => {
         try {
-          const response = await axios.get(
-            `${process.env.REACT_APP_API_URL}/api/apartments/`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-              params: { condominium: condominium.name },
-            }
-          );
-          setAvailableApartments(response.data);
-        } catch (error) {
-          console.error("Error fetching apartments:", error);
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.play();
+            streamRef.current = stream;
         }
-      };
-      fetchApartments();
-    }
-  }, [userType, condominium]);
+        setShowCamera(true)
+        } catch (error) {
+        console.error("Error accessing camera:", error);
+        alert("Erro ao acessar a câmera.");
+        }
+    };
 
-  return (
+    const captureImage = () => {
+        if (!videoRef.current || !canvasRef.current) return;
+
+        const canvas = canvasRef.current;
+        const context = canvas.getContext("2d");
+
+        // Set fixed size to 500x500
+        const TARGET_WIDTH = 500;
+        const TARGET_HEIGHT = 500;
+        canvas.width = TARGET_WIDTH;
+        canvas.height = TARGET_HEIGHT;
+
+        // Get the original video feed dimensions
+        const videoWidth = videoRef.current.videoWidth;
+        const videoHeight = videoRef.current.videoHeight;
+
+        // Determine scaling for best fit (crop if necessary)
+        const scale = Math.max(TARGET_WIDTH / videoWidth, TARGET_HEIGHT / videoHeight);
+        const scaledWidth = videoWidth * scale;
+        const scaledHeight = videoHeight * scale;
+        const offsetX = (scaledWidth - TARGET_WIDTH) / 2;
+        const offsetY = (scaledHeight - TARGET_HEIGHT) / 2;
+
+        // Draw the resized and cropped image onto the canvas
+        context.drawImage(videoRef.current, -offsetX, -offsetY, scaledWidth, scaledHeight);
+
+        // Convert to Base64 JPEG (compressed)
+        const compressedImageBase64 = canvas.toDataURL("image/jpeg", 0.8);
+
+        // Validate file size before setting state
+        fetch(compressedImageBase64)
+        .then((res) => res.blob())
+        .then((blob) => {
+            console.log(`Final Image Size: ${(blob.size / 1024).toFixed(2)} KB`);
+            if (blob.size > 100 * 1024) {
+            alert("O tamanho do arquivo não pode exceder 100KB.");
+            return;
+            }
+            setImage(compressedImageBase64);
+        })
+        .catch((err) => console.error("Erro ao validar a imagem:", err));
+
+        // Stop the camera stream
+        setShowCamera(false);
+        if (videoRef.current.srcObject) {
+        videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+        }
+    };
+
+    const stopCamera = () => {
+        if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        }
+    };
+
+    const handleCreateUser = async () => {
+        const token = localStorage.getItem("accessToken");
+
+        const newUser = ["admin", "worker", "owner", "manager"].includes(userType) ? {
+            name,
+            role,
+            document,
+            user_type: userType,
+            phone,
+            email,
+            apartments: apartments,
+            condominiums: [condominium.id],
+            image_base64: image
+        } : {
+            name,
+            role,
+            entry: new Date().toISOString(),
+            condominium: condominium.id,
+            document,
+            user_type: userType,
+            phone,
+            email,
+            apartment: apartment,
+            image_base64: image
+        }
+
+        try {
+        await axios.post(
+            `${process.env.REACT_APP_API_URL}/api/condominium-users/`,
+            newUser,
+            {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            params: { condominium: condominium.name, user_type: userType },
+            }
+        );
+
+        fetchUsers();
+        onClose();
+        } catch (error) {
+        console.error("Error creating user:", error);
+        alert("Failed to create user. Please try again.");
+        }
+    };
+
+    useEffect(() => {
+        if (showCamera) {
+        startCamera();
+        } else {
+        stopCamera();
+        }
+    }, [showCamera]);
+
+    useEffect(() => {
+        if (userType === "resident" || userType === "visitor") {
+        const fetchApartments = async () => {
+            const token = localStorage.getItem("accessToken");
+            try {
+            const response = await axios.get(
+                `${process.env.REACT_APP_API_URL}/api/apartments/`,
+                {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { condominium: condominium.name },
+                }
+            );
+            setAvailableApartments(response.data);
+            } catch (error) {
+            console.error("Error fetching apartments:", error);
+            }
+        };
+        fetchApartments();
+        }
+    }, [userType, condominium]);
+
+    const handleApartmentChange = (e) => {
+        setApartment(e.target.value);
+    };
+
+    const removeApartment = (apt) => {
+        setApartments(apartments.filter((a) => a !== apt));
+    };
+      
+    const handleMultipleApartmentChange = (e) => {
+        const selectedApt = e.target.value;
+        if (selectedApt && !apartments.includes(selectedApt)) {
+          setApartments([...apartments, selectedApt]);
+        }
+    };
+
+    return (
     <ModalOverlay>
       <ModalContent>
         <ModalHeader>
@@ -351,27 +403,51 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium }) => {
 
         <canvas ref={canvasRef} style={{ display: "none" }} />
         
-        <Select value={userType} onChange={(e) => setUserType(e.target.value)}>
-          <option value="" disabled>Selecione o Tipo de Usuário</option>
-          <option value="admin">Admin</option>
-          <option value="user">Usuário</option>
-          <option value="worker">Funcionário</option>
-          <option value="resident">Residente</option>
-          <option value="owner">Proprietário</option>
-          <option value="manager">Gerente</option>
-          <option value="visitor">Visitante</option>
-        </Select>
+        <SelectStyled value={userType} onChange={(e) => setUserType(e.target.value)}>
+            <option value="" disabled>Selecione o Tipo de Usuário</option>
+            <option value="admin">Admin</option>
+            <option value="user">Usuário</option>
+            <option value="worker">Funcionário</option>
+            <option value="resident">Residente</option>
+            <option value="owner">Proprietário</option>
+            <option value="manager">Gerente</option>
+            <option value="visitor">Visitante</option>
+        </SelectStyled>
 
         <Input type="text" placeholder="Nome" value={name} onChange={(e) => setName(e.target.value)} />
 
-        {/* Conditional Fields Based on User Type */}
+        <Input type="text" placeholder="Documento (CPF/RG)" value={document} onChange={(e) => setDocument(e.target.value)} />
+        <Input type="text" placeholder="Telefone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+
         {(userType === "resident" || userType === "visitor") && (
-          <Select value={apartment} onChange={(e) => setApartment(e.target.value)}>
+            <SelectStyled value={apartment} onChange={handleApartmentChange}>
             <option value="" disabled>Selecione a Unidade</option>
             {availableApartments.map((apt) => (
-              <option key={apt.id} value={apt.id}>Unidade {apt.number}</option>
+                <option key={apt.id} value={apt.id}>Unidade {apt.number}</option>
             ))}
-          </Select>
+            </SelectStyled>
+        )}
+
+        {/* Multiple Apartment Selection (Owner & Manager) */}
+        {(userType === "owner" || userType === "manager") && (
+            <>
+                <SelectStyled value="" onChange={handleMultipleApartmentChange}>
+                    <option value="" disabled>Adicionar Unidade</option>
+                    {availableApartments
+                    .filter((apt) => !apartments.includes(apt.id))
+                    .map((apt) => (
+                        <option key={apt.id} value={apt.number}>Unidade {apt.number}</option>
+                    ))}
+                </SelectStyled>
+                <TagContainer>
+                    {apartments.map((apt) => (
+                    <Tag key={apt}>
+                        Unidade {apt} <RemoveIcon onClick={() => removeApartment(apt)} />
+                    </Tag>
+                    ))}
+                </TagContainer>
+            </>
         )}
 
         {(userType === "user" || userType === "worker") && (
@@ -381,10 +457,6 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium }) => {
             <option value="worker">Funcionário</option>
           </Select>
         )}
-
-        <Input type="text" placeholder="Documento (CPF/RG)" value={document} onChange={(e) => setDocument(e.target.value)} />
-        <Input type="text" placeholder="Telefone" value={phone} onChange={(e) => setPhone(e.target.value)} />
-        <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
 
         <Button onClick={handleCreateUser}>Criar Usuário</Button>
       </ModalContent>
