@@ -151,7 +151,7 @@ const UserDeviceModal = ({ isOpen, onClose, userDevice, condominium_id, refreshL
         const fetchDevices = async () => {
             const token = localStorage.getItem('accessToken');
             try {
-                const response = await api.get('/access/devices/', {
+                const response = await api.get('/api/access/devices/', {
                     headers: { Authorization: `Bearer ${token}` },
                     params: { condominium: condominium_id },
                 });
