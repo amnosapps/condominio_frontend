@@ -124,6 +124,7 @@ const UsersPage = ({ profile, condominium }) => {
   const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [availableApartments, setAvailableApartments] = useState([]);
 
   // Fetch users from the API
   const fetchUsers = async () => {
@@ -174,6 +175,26 @@ const UsersPage = ({ profile, condominium }) => {
     setIsEditModalOpen(false);
   };
 
+  useEffect(() => {
+    const fetchApartments = async () => {
+        const token = localStorage.getItem("accessToken");
+        try {
+        const response = await axios.get(
+            `${process.env.REACT_APP_API_URL}/api/apartments/`,
+            {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { condominium: condominium.name },
+            }
+        );
+        setAvailableApartments(response.data);
+        } catch (error) {
+        console.error("Error fetching apartments:", error);
+        }
+    };
+
+    fetchApartments();
+}, []);
+
   return (
     <Container>
       {/* Filters */}
@@ -185,13 +206,11 @@ const UsersPage = ({ profile, condominium }) => {
         />
         <Select value={userType} onChange={(e) => setUserType(e.target.value)}>
           <option value="all">Todos</option>
-          <option value="admin">Admin</option>
-          <option value="user">Usuário</option>
-          <option value="worker">Funcionário</option>
+          <option value="admin">Síndico/Admin</option>
+          <option value="worker">Colaborador</option>
           <option value="resident">Residente</option>
           <option value="owner">Proprietário</option>
-          <option value="manager">Gerente</option>
-          <option value="visitor">Visitante</option>
+          <option value="manager">Gestor</option>
         </Select>
         <CreateButton onClick={toggleCreationModal}>
           <FaUserPlus /> Adicionar Usuário
@@ -222,8 +241,8 @@ const UsersPage = ({ profile, condominium }) => {
         <NoUsersMessage>Nenhum usuário encontrado.</NoUsersMessage>
       )}
 
-      {isCreationModalOpen && <UserCreationModal onClose={toggleCreationModal} fetchUsers={fetchUsers} condominium={condominium} />}
-      {isEditModalOpen && <UserEditModal user={selectedUser} onClose={toggleEditModal} fetchUsers={fetchUsers} condominium={condominium} />}
+      {isCreationModalOpen && <UserCreationModal onClose={toggleCreationModal} fetchUsers={fetchUsers} condominium={condominium} availableApartments={availableApartments} />}
+      {isEditModalOpen && <UserEditModal user={selectedUser} onClose={toggleEditModal} fetchUsers={fetchUsers} condominium={condominium} availableApartments={availableApartments} />}
     </Container>
   );
 };

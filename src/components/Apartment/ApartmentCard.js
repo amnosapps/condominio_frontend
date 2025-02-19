@@ -83,7 +83,7 @@ function ApartmentCard({ apartment, onClick }) {
 
     const guestCount = activeReservation
         ? (activeReservation?.guests_qty || 0) + 1
-        : 0;
+        : 1;
 
     return (
         <ApartmentCardContainer status={apartment.status} onClick={onClick}>

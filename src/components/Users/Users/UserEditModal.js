@@ -112,7 +112,72 @@ const Button = styled.button`
   }
 `;
 
-const UserEditModal = ({ user, onClose, fetchUsers, condominium }) => {
+const ProfileImageContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  position: relative;
+`;
+
+const ProfileImage = styled.img`
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f46600;
+`;
+
+const UploadContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+`;
+
+const UploadIcon = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f46600;
+  color: white;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+  &:hover {
+    background-color: #e05a00;
+  }
+
+  input {
+    display: none;
+  }
+`;
+
+const Video = styled.video`
+  display: ${({ show }) => (show ? "block" : "none")};
+  width: 100%;
+  max-height: 300px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+`;
+
+const CaptureButton = styled(Button)`
+  background: #f46600;
+  margin-top: 1px;
+  margin-bottom: 20px;
+
+  &:hover {
+    background: #e05a00;
+  }
+`;
+
+
+const UserEditModal = ({ user, onClose, fetchUsers, condominium, availableApartments }) => {
   const [name, setName] = useState(user.name);
   const [document, setDocument] = useState(user.document || "");
   const [phone, setPhone] = useState(user.phone || "");
@@ -122,34 +187,12 @@ const UserEditModal = ({ user, onClose, fetchUsers, condominium }) => {
   const [image, setImage] = useState(user.image_base64 || null);
   const [apartment, setApartment] = useState(user.apartment || "");
   const [apartments, setApartments] = useState(user.apartments || []);
-  const [availableApartments, setAvailableApartments] = useState([]);
+ 
   const [showCamera, setShowCamera] = useState(false);
-  const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const fileInputRef = useRef(null);
   const streamRef = useRef(null);
-
-  // Fetch apartments for resident & visitor
-  useEffect(() => {
-    if (userType === "resident" || userType === "visitor") {
-      const fetchApartments = async () => {
-        const token = localStorage.getItem("accessToken");
-        try {
-          const response = await axios.get(
-            `${process.env.REACT_APP_API_URL}/api/apartments/`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-              params: { condominium: condominium.name },
-            }
-          );
-          setAvailableApartments(response.data);
-        } catch (error) {
-          console.error("Error fetching apartments:", error);
-        }
-      };
-      fetchApartments();
-    }
-  }, [userType, condominium]);
 
   const handleUpdateUser = async () => {
     const token = localStorage.getItem("accessToken");
@@ -196,6 +239,98 @@ const UserEditModal = ({ user, onClose, fetchUsers, condominium }) => {
     }
   };
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      setImage(reader.result);
+    };
+
+    if (file) {
+      reader.readAsDataURL(file);
+    }
+};
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+          streamRef.current = stream;
+      }
+      setShowCamera(true)
+      } catch (error) {
+        console.error("Error accessing camera:", error);
+      alert("Erro ao acessar a câmera.");
+      }
+  };
+
+  const captureImage = () => {
+      if (!videoRef.current || !canvasRef.current) return;
+
+      const canvas = canvasRef.current;
+      const context = canvas.getContext("2d");
+
+      // Set fixed size to 500x500
+      const TARGET_WIDTH = 500;
+      const TARGET_HEIGHT = 500;
+      canvas.width = TARGET_WIDTH;
+      canvas.height = TARGET_HEIGHT;
+
+      // Get the original video feed dimensions
+      const videoWidth = videoRef.current.videoWidth;
+      const videoHeight = videoRef.current.videoHeight;
+
+      // Determine scaling for best fit (crop if necessary)
+      const scale = Math.max(TARGET_WIDTH / videoWidth, TARGET_HEIGHT / videoHeight);
+      const scaledWidth = videoWidth * scale;
+      const scaledHeight = videoHeight * scale;
+      const offsetX = (scaledWidth - TARGET_WIDTH) / 2;
+      const offsetY = (scaledHeight - TARGET_HEIGHT) / 2;
+
+      // Draw the resized and cropped image onto the canvas
+      context.drawImage(videoRef.current, -offsetX, -offsetY, scaledWidth, scaledHeight);
+
+      // Convert to Base64 JPEG (compressed)
+      const compressedImageBase64 = canvas.toDataURL("image/jpeg", 0.8);
+
+      // Validate file size before setting state
+      fetch(compressedImageBase64)
+      .then((res) => res.blob())
+      .then((blob) => {
+          console.log(`Final Image Size: ${(blob.size / 1024).toFixed(2)} KB`);
+          if (blob.size > 100 * 1024) {
+          alert("O tamanho do arquivo não pode exceder 100KB.");
+          return;
+          }
+          setImage(compressedImageBase64);
+      })
+      .catch((err) => console.error("Erro ao validar a imagem:", err));
+
+      // Stop the camera stream
+      setShowCamera(false);
+      if (videoRef.current.srcObject) {
+        videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+      }
+  };
+
+  const stopCamera = () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+  };
+
+  useEffect(() => {
+    if (showCamera) {
+      startCamera();
+    } else {
+      stopCamera();
+    }
+  }, [showCamera]);
+
   return (
     <ModalOverlay>
       <ModalContent>
@@ -203,6 +338,23 @@ const UserEditModal = ({ user, onClose, fetchUsers, condominium }) => {
           <h3>Editar Usuário</h3>
           <button onClick={onClose}>&times;</button>
         </ModalHeader>
+
+        <ProfileImageContainer>
+          {image ? <ProfileImage src={image} alt="Profile" /> : <ProfileImage src="https://placehold.co/100x100.png" />}
+        </ProfileImageContainer>
+        <UploadContainer>
+          <UploadIcon onClick={startCamera}><FaCamera /></UploadIcon>
+          <UploadIcon onClick={() => fileInputRef.current.click()}><FaFileImage /></UploadIcon>
+          <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} hidden />
+        </UploadContainer>
+        {showCamera && (
+          <>
+            <Video ref={videoRef} autoPlay playsInline show={showCamera} />
+            <CaptureButton onClick={captureImage}>Capturar Foto</CaptureButton>
+          </>
+        )}
+
+        <canvas ref={canvasRef} style={{ display: "none" }} />
 
         <Input type="text" placeholder="Nome" value={name} onChange={(e) => setName(e.target.value)} />
 

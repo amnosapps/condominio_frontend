@@ -185,7 +185,7 @@ const CaptureButton = styled(Button)`
   }
 `;
 
-const UserCreationModal = ({ onClose, fetchUsers, condominium }) => {
+const UserCreationModal = ({ onClose, fetchUsers, condominium, availableApartments }) => {
     const [name, setName] = useState("");
     const [document, setDocument] = useState("");
     const [phone, setPhone] = useState("");
@@ -195,8 +195,6 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium }) => {
     const [userType, setUserType] = useState("");
     const [apartment, setApartment] = useState(""); // Single apartment for resident/visitor
     const [apartments, setApartments] = useState([]); // Multiple apartments for owner/manager
-
-    const [availableApartments, setAvailableApartments] = useState([]);
 
     const [showCamera, setShowCamera] = useState(false);
     const videoRef = useRef(null);
@@ -342,27 +340,6 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium }) => {
         stopCamera();
         }
     }, [showCamera]);
-
-    useEffect(() => {
-        if (userType === "resident" || userType === "visitor") {
-        const fetchApartments = async () => {
-            const token = localStorage.getItem("accessToken");
-            try {
-            const response = await axios.get(
-                `${process.env.REACT_APP_API_URL}/api/apartments/`,
-                {
-                headers: { Authorization: `Bearer ${token}` },
-                params: { condominium: condominium.name },
-                }
-            );
-            setAvailableApartments(response.data);
-            } catch (error) {
-            console.error("Error fetching apartments:", error);
-            }
-        };
-        fetchApartments();
-        }
-    }, [userType, condominium]);
 
     const handleApartmentChange = (e) => {
         setApartment(e.target.value);
