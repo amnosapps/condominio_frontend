@@ -152,7 +152,7 @@ const DeviceManagement = ({ profile, condominium }) => {
     const fetchDevices = async () => {
         const token = localStorage.getItem('accessToken');
         try {
-            const response = await api.get('/access/devices/', {
+            const response = await api.get('/api/access/devices/', {
                 headers: { Authorization: `Bearer ${token}` },
                 params: { condominium: condominium.id },
             });
@@ -182,7 +182,7 @@ const DeviceManagement = ({ profile, condominium }) => {
     const handleDeleteDevice = async (deviceId) => {
         const token = localStorage.getItem('accessToken');
         try {
-            await api.delete(`/access/devices/${deviceId}/`, {
+            await api.delete(`/api/access/devices/${deviceId}/`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 

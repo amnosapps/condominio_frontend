@@ -174,11 +174,11 @@ const UserDeviceModal = ({ isOpen, onClose, userDevice, condominium_id, refreshL
             const payload = { ...formData, condominium: condominium_id };
 
             if (userDevice) {
-                await api.put(`/access/user-devices/${userDevice.id}/`, payload, {
+                await api.put(`/api/access/user-devices/${userDevice.id}/`, payload, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
             } else {
-                await api.post('/access/user-devices/', payload, {
+                await api.post('/api/access/user-devices/', payload, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
             }

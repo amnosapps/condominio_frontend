@@ -146,11 +146,11 @@ const DeviceModal = ({ isOpen, onClose, device, condominium_id, fetchDevices }) 
     const token = localStorage.getItem('accessToken');
     try {
       if (device) {
-        await api.put(`/access/devices/${device.id}/`, formData, {
+        await api.put(`/api/access/devices/${device.id}/`, formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await api.post('/access/devices/', formData, {
+        await api.post('/api/access/devices/', formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
