@@ -4,6 +4,8 @@ import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
 import api from '../services/api';
 import { FaAngleDown, FaBell, FaCalendarAlt, FaChartLine, FaCity, FaCloudSun, FaCog, FaCommentAlt, FaHome, FaKey, FaMoneyCheckAlt, FaPoll, FaRegCommentAlt, FaUnlockAlt, FaUsers } from 'react-icons/fa';
+import { FaHeadset } from "react-icons/fa";
+import Modal from "./ModalSideBar/ModalSideBar"
 
 const SidebarContainer = styled.div`
     background-color: #fff;
@@ -368,6 +370,7 @@ const Sidebar = ({ profile }) => {
     const [isReportsDropdownOpen, setIsReportsDropdownOpen] = useState(false);
     const [isUsersDropdownOpen, setIsUsersDropdownOpen] = useState(false);
     const [isAccessControlDropdownOpen, setIsAccessControlDropdownOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
 
     const toggleReportsDropdown = () => {
@@ -490,6 +493,11 @@ const Sidebar = ({ profile }) => {
         navigate(`/${newCondominium}/home`);
     };
 
+
+    const handleOpenModal  = () => {
+        setIsModalOpen(true);
+      };
+
     return (
         <>
              {isMobile && (
@@ -609,7 +617,20 @@ const Sidebar = ({ profile }) => {
                             </div>
                         )}
                     </NavItem>
+
+                    <>
                     <NavItem>
+                        <NavButton
+                        onClick={handleOpenModal}>
+                        <FaHeadset size={24} /> 
+                        Fale Conosco
+                        </NavButton>
+                    </NavItem>
+
+                    {isModalOpen && <Modal onClose={() => setIsModalOpen(false)} />} 
+                    </>
+                    
+                    {/* <NavItem>
                         <NavButton
                             onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
                             // active={location.pathname.includes(`${selectedCondominium}/soon`)}
@@ -663,7 +684,7 @@ const Sidebar = ({ profile }) => {
                         <FaBell />
                         Notificações
                         </NavButton>
-                    </NavItem>
+                    </NavItem> */}
                 </NavList>
                 
                 <ProfileAndLogoutContainer>
