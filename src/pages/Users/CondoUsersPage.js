@@ -63,8 +63,7 @@ const Select = styled.select`
 const CardContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
-  margin-top: 10px;
+  gap: 10px;
 `;
 
 const UserCard = styled.div`
@@ -72,7 +71,7 @@ const UserCard = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  width: 220px;
+  width: 180px;
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -89,8 +88,8 @@ const UserCard = styled.div`
 `;
 
 const ProfileImage = styled.img`
-  width: 100px;
-  height: 100px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid ${({ role }) => {
@@ -112,21 +111,21 @@ const ProfileImage = styled.img`
 `;
 
 const UserName = styled.h4`
-  font-size: 18px;
+  font-size: 14px;
   color: #333;
   margin-top: 10px;
   text-align: center;
 `;
 
 const UserRole = styled.p`
-margin-top: -20px;
-  font-size: 14px;
+  margin-top: -20px;
+  font-size: 12px;
   font-weight: 700;
   color: #555;
 `;
 
 const ContactInfo = styled.div`
-  font-size: 14px;
+  font-size: 12px;
   color: #666;
 
   p {
@@ -156,7 +155,7 @@ const ApartmentItem = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 12px;
   color: #444;
   background: #f1f1f1;
   padding: 6px 10px;
@@ -317,6 +316,7 @@ const UsersPage = ({ profile, condominium }) => {
               <UserCard 
                 key={user.id} 
                 onClick={() => handleUserClick(user)} 
+                disabled={!user.active}
               >
                 <ProfileImage
                   src={user.image_base64 || "https://placehold.co/100x100.png"}
@@ -337,21 +337,20 @@ const UsersPage = ({ profile, condominium }) => {
                     </p>
                   )}
                 </ContactInfo>
-                <ApartmentInfo>
-                  {user.apartments?.length > 0 && (
-                    <>
-                      <ApartmentGrid>
-                        {user.apartments.slice(0, 8).map((apt) => (
-                          <ApartmentItem key={apt.id}>
-                            <FaBuilding color="#6c757d" /> {apt.number}
-                          </ApartmentItem>
-                        ))}
-                      </ApartmentGrid>
-                      {user.apartments.length > 8 && <MoreText>+{user.apartments.length - 8} mais</MoreText>}
-                    </>
-                  )}
-                </ApartmentInfo>
-
+                {user.apartments?.length > 0 && (
+                  <ApartmentInfo>
+                      <>
+                        <ApartmentGrid>
+                          {user.apartments.slice(0, 6).map((apt) => (
+                            <ApartmentItem key={apt.id}>
+                              <FaBuilding color="#6c757d" /> {apt.number}
+                            </ApartmentItem>
+                          ))}
+                        </ApartmentGrid>
+                        {user.apartments.length > 6 && <MoreText>+{user.apartments.length - 6} mais</MoreText>}
+                      </>
+                  </ApartmentInfo>
+                )}
 
                 {(!user.user_device || !user.image_base64) && (
                   <WarningMessage>

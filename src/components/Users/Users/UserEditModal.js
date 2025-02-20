@@ -239,6 +239,29 @@ const UserEditModal = ({ user, onClose, fetchUsers, condominium, availableApartm
     }
   };
 
+  const handleDeactivateUser = async () => {
+    const token = localStorage.getItem("accessToken");
+  
+    try {
+      await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/condominium-users/${user.id}/`,
+        { active: false, user_type: userType, },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      fetchUsers();
+      onClose();
+    } catch (error) {
+      console.error("Error deactivating user:", error);
+      alert("Falha ao desativar usuário. Tente novamente.");
+    }
+  };
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     const reader = new FileReader();
@@ -412,6 +435,9 @@ const UserEditModal = ({ user, onClose, fetchUsers, condominium, availableApartm
         )}
 
         <Button onClick={handleUpdateUser}>Atualizar Usuário</Button>
+        <Button onClick={handleDeactivateUser} style={{ background: "#d9534f", marginTop: "5px" }}>
+          Desativar Usuário
+        </Button>
       </ModalContent>
     </ModalOverlay>
   );
