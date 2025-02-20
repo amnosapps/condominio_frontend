@@ -198,26 +198,33 @@ const UserEditModal = ({ user, onClose, fetchUsers, condominium, availableApartm
   const handleUpdateUser = async () => {
     const token = localStorage.getItem("accessToken");
 
-    const updatedUser = ["admin", "worker", "owner", "manager"].includes(userType) ? {
+    let updatedUser = {
       name,
-      role,
       document,
       user_type: userType,
       phone,
       email,
-      apartments,
-      condominiums: [condominium.id],
-      image_base64: image
-    } : {
-      name,
-      condominium: condominium.id,
-      document,
-      user_type: userType,
-      phone,
-      email,
-      apartments: [apartment],
       image_base64: image
     };
+
+    if (["admin", "worker", "owner", "manager"].includes(userType)) {
+        updatedUser = {
+            ...updatedUser,
+            apartments,
+            condominiums: [condominium.id]
+        };
+
+        if (userType === "worker") {
+            updatedUser.role = role;
+        }
+    } else {
+        updatedUser = {
+            ...updatedUser,
+            entry: new Date().toISOString(),
+            condominium: condominium.id,
+            apartment
+        };
+    }
 
     try {
       await axios.put(

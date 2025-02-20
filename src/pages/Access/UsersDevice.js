@@ -130,6 +130,7 @@ const UserDeviceManagement = ({ condominium }) => {
     const [selectedUserDevice, setSelectedUserDevice] = useState(null);
     const [deviceStatus, setDeviceStatus] = useState({});
 
+    // Fetch User Devices with multiple linked devices
     const fetchUserDevices = async () => {
         const token = localStorage.getItem('accessToken');
         try {
@@ -153,6 +154,7 @@ const UserDeviceManagement = ({ condominium }) => {
         setModalOpen(true);
     };
 
+    // DELETE User from all linked devices
     const handleDeleteUserDevice = async (user_id) => {
         const token = localStorage.getItem('accessToken');
         try {
@@ -160,30 +162,36 @@ const UserDeviceManagement = ({ condominium }) => {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            
-            fetchUserDevices()
+            fetchUserDevices();
         } catch (error) {
             console.error('Error deleting User Device:', error);
         }
     };
 
-    const handleCheckDevice = async (user_id) => {
+    // Check User on All Linked Devices
+    const handleCheckDevice = async (user_id, devices) => {
         const token = localStorage.getItem('accessToken');
-        try {
-            const response = await api.get(`/api/access/user-devices/${user_id}/check-device/`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+        let foundOnDevices = [];
 
-            setDeviceStatus(prevState => ({
-                ...prevState,
-                [user_id]: "ok"
-            }));
-        } catch (error) {
-            setDeviceStatus(prevState => ({
-                ...prevState,
-                [user_id]: "error"
-            }));
+        for (const device of devices) {
+            try {
+                const response = await api.get(`/api/access/user-devices/${user_id}/check-device/`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                    params: { device_id: device.id },
+                });
+
+                if (response.status === 200) {
+                    foundOnDevices.push(device.name);
+                }
+            } catch (error) {
+                console.error(`Error checking User on Device ${device.name}:`, error);
+            }
         }
+
+        setDeviceStatus(prevState => ({
+            ...prevState,
+            [user_id]: foundOnDevices.length > 0 ? "ok" : "error"
+        }));
     };
 
     useEffect(() => {
@@ -206,17 +214,21 @@ const UserDeviceManagement = ({ condominium }) => {
                             <th>Nome</th>
                             <th>Tipo</th>
                             <th>Autoridade</th>
-                            <th>Dispositivo</th>
+                            <th>Dispositivos</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {userDevices.map((user) => (
+                        {userDevices?.map((user) => (
                             <tr key={user.id}>
                                 <td>{user.name}</td>
                                 <td>{user.type_display}</td>
                                 <td>{user.authority_display}</td>
-                                <td>{user.device_name}</td>
+                                <td>
+                                    {user.devices?.map(device => (
+                                        <span key={device.id}>{device.name}, </span>
+                                    ))}
+                                </td>
                                 <td>
                                     <ActionButtons>
                                         <button onClick={() => handleEditUserDevice(user)}>
@@ -228,13 +240,11 @@ const UserDeviceManagement = ({ condominium }) => {
                                         >
                                             <FaTrash />
                                         </button>
-                                        <VerifyButton onClick={() => handleCheckDevice(user.id)}>
+                                        <VerifyButton onClick={() => handleCheckDevice(user.id, user.devices)}>
                                             {deviceStatus[user.id] === "ok" ? (
                                                 <FaCheckCircle style={{ color: "#28a745" }} />
-                                            ) : deviceStatus[user.id] === "error" ? (
-                                                <FaTimesCircle style={{ color: "#e74c3c" }} />
                                             ) : (
-                                                <FaUserCircle />
+                                                <FaTimesCircle style={{ color: "#e74c3c" }} />
                                             )}
                                         </VerifyButton>
                                     </ActionButtons>

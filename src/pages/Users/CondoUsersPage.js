@@ -71,7 +71,7 @@ const UserCard = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  width: 180px;
+  width: 160px;
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -92,7 +92,7 @@ const ProfileImage = styled.img`
   height: 70px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid ${({ role }) => {
+  border: 2px solid ${({ role }) => {
     switch (role) {
       case "Síndico/Admin":
         return "#ff5733"; // Orange-red for admins
@@ -178,7 +178,7 @@ const WarningMessage = styled.div`
   background: #fff3cd;
   color: #856404;
   padding: 6px;
-  font-size: 12px;
+  font-size: 10px;
   border-radius: 5px;
   margin-top: 10px;
   text-align: center;
@@ -351,10 +351,10 @@ const UsersPage = ({ profile, condominium }) => {
                       </>
                   </ApartmentInfo>
                 )}
-
-                {(!user.user_device || !user.image_base64) && (
+                
+                {(userType != "manager") && (!user.user_device || !user.image_base64) && (
                   <WarningMessage>
-                    <FaExclamationTriangle color="#856404" style={{ marginRight: "5px" }} /> Usuário sem facial cadastrada
+                    <FaExclamationTriangle color="#856404" style={{ marginRight: "5px" }} /> Usuário sem facial
                   </WarningMessage>
                 )}
               </UserCard>

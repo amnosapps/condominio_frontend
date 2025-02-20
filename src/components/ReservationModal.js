@@ -426,6 +426,8 @@ const ReservationModal = ({
     return null; // Return null if conversion fails
   };
 
+  console.log(selectedReservation)
+
   const [reservationData, setReservationData] = useState({
     checkin: convertToLocalDate(selectedReservation?.checkin),
     checkout: convertToLocalDate(selectedReservation?.checkout),
@@ -480,6 +482,9 @@ const ReservationModal = ({
           is_child: false,
         }));
   });
+
+  const [profileImage, setProfileImage] = useState(selectedReservation?.image_base64 || "");
+  const [additionalPhotos, setAdditionalPhotos] = useState(selectedReservation?.additional_photos || []);
 
   const [maxGuests, setMaxGuests] = useState(selectedApartment ? selectedApartment.max_occupation : 1);
   

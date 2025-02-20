@@ -190,7 +190,7 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium, availableApartmen
     const [document, setDocument] = useState("");
     const [phone, setPhone] = useState("");
     const [email, setEmail] = useState("");
-    const [role, setRole] = useState("");
+    const [role, setRole] = useState(null);
     const [image, setImage] = useState(null);
     const [userType, setUserType] = useState("");
     const [apartment, setApartment] = useState(""); // Single apartment for resident/visitor
@@ -289,28 +289,33 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium, availableApartmen
     const handleCreateUser = async () => {
         const token = localStorage.getItem("accessToken");
 
-        const newUser = ["admin", "worker", "owner", "manager"].includes(userType) ? {
-            name,
-            role,
-            document,
-            user_type: userType,
-            phone,
-            email,
-            apartments: apartments,
-            condominiums: [condominium.id],
-            image_base64: image
-        } : {
-            name,
-            role,
-            entry: new Date().toISOString(),
-            condominium: condominium.id,
-            document,
-            user_type: userType,
-            phone,
-            email,
-            apartment: apartment,
-            image_base64: image
-        }
+        let newUser = {
+          name,
+          document,
+          user_type: userType,
+          phone,
+          email,
+          image_base64: image
+      };
+  
+      if (["admin", "worker", "owner", "manager"].includes(userType)) {
+          newUser = {
+              ...newUser,
+              apartments,
+              condominiums: [condominium.id]
+          };
+  
+          if (userType === "worker") {
+              newUser.role = role;
+          }
+      } else {
+          newUser = {
+              ...newUser,
+              entry: new Date().toISOString(),
+              condominium: condominium.id,
+              apartment
+          };
+      }
 
         try {
         await axios.post(
@@ -425,9 +430,9 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium, availableApartmen
             </>
         )}
 
-        {(userType === "user" || userType === "worker") && (
+        {userType === "worker" && (
           <Select value={role} onChange={(e) => setRole(e.target.value)}>
-            <option value="" disabled>Selecione a Função</option>
+            <option value="">Selecione a Função</option>
             <option value="receptionist">Recepcionista</option>
             <option value="worker">Funcionário</option>
           </Select>
