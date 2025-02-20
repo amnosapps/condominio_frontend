@@ -182,11 +182,12 @@ const UserEditModal = ({ user, onClose, fetchUsers, condominium, availableApartm
   const [document, setDocument] = useState(user.document || "");
   const [phone, setPhone] = useState(user.phone || "");
   const [email, setEmail] = useState(user.email || "");
-  const [role, setRole] = useState(user.role || "");
-  const [userType, setUserType] = useState(user.role || "");
+  const [role, setRole] = useState(user.role || null);
+  const [userType, setUserType] = useState(user.user_type || "");
   const [image, setImage] = useState(user.image_base64 || null);
-  const [apartment, setApartment] = useState(user.apartment || "");
-  const [apartments, setApartments] = useState(user.apartments || []);
+  const [apartment, setApartment] = useState(user.apartments?.length ? user.apartments[0].id : "");
+  const [apartments, setApartments] = useState(user.apartments?.map(apt => apt.id) || []);
+
  
   const [showCamera, setShowCamera] = useState(false);
   const videoRef = useRef(null);
@@ -209,13 +210,12 @@ const UserEditModal = ({ user, onClose, fetchUsers, condominium, availableApartm
       image_base64: image
     } : {
       name,
-      role,
       condominium: condominium.id,
       document,
       user_type: userType,
       phone,
       email,
-      apartment,
+      apartments: [apartment],
       image_base64: image
     };
 
@@ -362,29 +362,43 @@ const UserEditModal = ({ user, onClose, fetchUsers, condominium, availableApartm
         <Input type="text" placeholder="Telefone" value={phone} onChange={(e) => setPhone(e.target.value)} />
         <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
 
-        {(userType === "resident" || userType === "visitor") && (
+        {userType === "resident" && (
           <Select value={apartment} onChange={(e) => setApartment(e.target.value)}>
             <option value="" disabled>Selecione a Unidade</option>
             {availableApartments.map((apt) => (
-              <option key={apt.id} value={apt.id}>Unidade {apt.number}</option>
+              <option key={apt.id} value={apt.id}>
+                Unidade {apt.number}
+              </option>
             ))}
           </Select>
         )}
 
         {(userType === "owner" || userType === "manager") && (
           <>
-            <Select value="" onChange={(e) => setApartments([...apartments, e.target.value])}>
+            <Select value="" onChange={(e) => {
+              const aptId = parseInt(e.target.value);
+              if (!apartments.includes(aptId)) {
+                setApartments([...apartments, aptId]);
+              }
+            }}>
               <option value="" disabled>Adicionar Unidade</option>
-              {availableApartments.filter((apt) => !apartments.includes(apt.id)).map((apt) => (
-                <option key={apt.id} value={apt.number}>Unidade {apt.number}</option>
+              {availableApartments
+                .filter((apt) => !apartments.includes(apt.id))
+                .map((apt) => (
+                  <option key={apt.id} value={apt.id}>Unidade {apt.number}</option>
               ))}
             </Select>
+
             <TagContainer>
-              {apartments.map((apt) => (
-                <Tag key={apt}>
-                  Unidade {apt} <RemoveIcon onClick={() => setApartments(apartments.filter(a => a !== apt))} />
-                </Tag>
-              ))}
+              {apartments.map((aptId) => {
+                const apt = availableApartments.find(a => a.id === aptId);
+                return (
+                  <Tag key={aptId}>
+                    Unidade {apt?.number}
+                    <RemoveIcon onClick={() => setApartments(apartments.filter(a => a !== aptId))} />
+                  </Tag>
+                );
+              })}
             </TagContainer>
           </>
         )}
