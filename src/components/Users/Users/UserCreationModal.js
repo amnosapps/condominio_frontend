@@ -382,13 +382,11 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium, availableApartmen
         
         <SelectStyled value={userType} onChange={(e) => setUserType(e.target.value)}>
             <option value="" disabled>Selecione o Tipo de Usuário</option>
-            <option value="admin">Admin</option>
-            <option value="user">Usuário</option>
-            <option value="worker">Funcionário</option>
+            <option value="admin">Síndico/Admin</option>
+            <option value="worker">Colaborador</option>
             <option value="resident">Residente</option>
             <option value="owner">Proprietário</option>
-            <option value="manager">Gerente</option>
-            <option value="visitor">Visitante</option>
+            <option value="manager">Gestor</option>
         </SelectStyled>
 
         <Input type="text" placeholder="Nome" value={name} onChange={(e) => setName(e.target.value)} />
