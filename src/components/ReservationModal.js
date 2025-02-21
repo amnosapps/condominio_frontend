@@ -328,6 +328,15 @@ const Column = styled.div`
   flex: 1;
   margin-right: 15px;
   min-width: 150px; /* Ensure columns are responsive */
+
+  .custom-date-picker {
+    width: 180px; /* Larger width for the input */
+    padding: 8px 10px; /* Add padding for larger clickable area */
+    font-size: 16px; /* Bigger font for readability */
+    border-radius: 6px; /* Rounded corners for better appearance */
+    border: 1px solid #ccc; /* Subtle border for distinction */
+    outline: none;
+  }
 `;
 
 const ColumnProfile = styled.div`
@@ -1242,8 +1251,6 @@ const ReservationModal = ({
     );
   };
 
-  console.log(reservationData.checkin)
-
   return (
     <ModalOverlay onClick={closeModal1}>
       <ModalContainer onClick={(e) => e.stopPropagation()} className="modal-container">
@@ -1253,7 +1260,7 @@ const ReservationModal = ({
             reservationId={selectedReservation.id}
             guestType={selectedGuest.type}
             guestIndex={selectedGuest.index}
-            additionalGuests={reservationData.additional_guests}
+            additionalGuests={additionalGuests}
             fetchReservations={fetchReservations}
           />
         )}
@@ -1291,6 +1298,21 @@ const ReservationModal = ({
                 justifyContent: "space-between",
                 marginBottom: "10px",
               }}>
+                <ColumnProfile onClick={() => {
+                  setSelectedGuest({ type: "main", index: null });
+                  setIsCameraOpen(true);
+                }}>
+                  {reservationData.image_base64 ? (
+                    <ProfileImageWrapper>
+                      <ProfileImage src={reservationData.image_base64} alt="Profile" />
+                    </ProfileImageWrapper>
+                  ) : (
+                    <ProfileImage
+                      src="https://placehold.co/100x100.png"
+                      alt="Escolha uma imagem"
+                    />
+                  )}
+                </ColumnProfile>
               <Column>
                 <FieldLabel>Check-in:</FieldLabel>
                 <DateTimePicker
@@ -1367,6 +1389,21 @@ const ReservationModal = ({
           </>
         ) : (
           <Row style={{ alignItems: "center", gap: "2px" }}>
+            <ColumnProfile onClick={() => {
+              setSelectedGuest({ type: "main", index: null });
+              setIsCameraOpen(true);
+            }}>
+              {reservationData.image_base64 ? (
+                <ProfileImageWrapper>
+                  <ProfileImage src={reservationData.image_base64} alt="Profile" />
+                </ProfileImageWrapper>
+              ) : (
+                <ProfileImage
+                  src="https://placehold.co/100x100.png"
+                  alt="Escolha uma imagem"
+                />
+              )}
+            </ColumnProfile>
               <Column>
                 <FieldLabel>Checkin:</FieldLabel>
                 <FieldValue>
@@ -1438,21 +1475,6 @@ const ReservationModal = ({
 
         {/* Guest Information */}
         <Row>
-          <ColumnProfile onClick={() => {
-            setSelectedGuest({ type: "main", index: null });
-            setIsCameraOpen(true);
-          }}>
-            {reservationData.image_base64 ? (
-              <ProfileImageWrapper>
-                <ProfileImage src={reservationData.image_base64} alt="Profile" />
-              </ProfileImageWrapper>
-            ) : (
-              <ProfileImage
-                src="https://placehold.co/100x100.png"
-                alt="Escolha uma imagem"
-              />
-            )}
-          </ColumnProfile>
           <Column>
             <FieldLabel>Nome:</FieldLabel>
             <FieldValue>

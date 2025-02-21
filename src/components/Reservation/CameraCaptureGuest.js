@@ -140,18 +140,26 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
         const token = localStorage.getItem("accessToken");
         const formData = new FormData();
 
+        console.log(guestType)
+
         if (guestType === "main") {
             formData.append("image_base64", imageBase64);
         } else if (guestType === "additional") {
-            const formattedAdditionalGuests = additionalGuests.map(guest => ({
-                name: guest.name,
-                id: guest.id,
-                image_base64: guest.image_base64
-              }));
-              
-              formData.append("additional_guests", JSON.stringify(formattedAdditionalGuests));
-              
+            // Ensure guestIndex is within bounds
+            if (guestIndex >= 0 && guestIndex < additionalGuests.length) {
+                additionalGuests[guestIndex].image_base64 = imageBase64;
+            } else {
+                console.error("Invalid guest index:", guestIndex);
+                alert("Erro: Índice de hóspede adicional inválido.");
+                setIsUploading(false);
+                return;
+            }
+
+            // Append the updated list of guests
+            formData.append("additional_guests", JSON.stringify(additionalGuests));
         }
+
+        console.log(additionalGuests)
 
         try {
             const response = await axios.patch(
