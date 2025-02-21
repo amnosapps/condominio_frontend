@@ -24,7 +24,7 @@ const ModalContent = styled.div`
   border-radius: 8px;
   width: 400px;
   max-height: 90vh;
-  overflow-y: auto;
+  overflow-y: visible;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   position: relative;
 
@@ -187,6 +187,7 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium }) => {
   const [name, setName] = useState("");
   const [unit, setUnit] = useState("");
   const [exit, setExit] = useState("");
+  const [observations, setObservations] = useState("");
   const [document, setDocument] = useState("");
   const [phone, setPhone] = useState("");
   const [image, setImage] = useState(null);
@@ -302,6 +303,7 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium }) => {
       name,
       condominium: condominium.name,
       apartment: unit,
+      observations,
       document,
       phone,
       role,
@@ -416,6 +418,23 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium }) => {
             timeCaption="Hora"
             placeholderText="Selecione data e hora"
             className="custom-datepicker"
+          />
+        </InputContainer>
+
+        <InputContainer>
+          <Label>Observações</Label>
+          <textarea
+            value={observations}
+            onChange={(e) => setObservations(e.target.value)}
+            rows="3"
+            style={{
+              width: "100%",
+              padding: "10px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+              fontSize: "14px",
+              resize: "vertical",
+            }}
           />
         </InputContainer>
         

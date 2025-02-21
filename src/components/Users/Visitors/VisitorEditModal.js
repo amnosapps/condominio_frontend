@@ -14,7 +14,7 @@ const ModalOverlay = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 999;
 `;
 
 const ModalContent = styled.div`
@@ -23,7 +23,7 @@ const ModalContent = styled.div`
   border-radius: 8px;
   width: 400px;
   max-height: 90vh;
-  overflow-y: auto;
+  overflow-y: visible;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   position: relative;
 
@@ -132,6 +132,8 @@ const InputContainer = styled.div`
     border-radius: 4px;
     font-size: 14px;
   }
+
+  
 `;
 
 const Label = styled.label`
@@ -230,6 +232,7 @@ const VisitorEditModal = ({ visitor, onClose, fetchVisitors, condominium }) => {
   const [visitDate, setVisitDate] = useState(visitor.entry || "");
   const [expectedExit, setExpectedExit] = useState(visitor.exit ? new Date(visitor.exit) : null);
   const [exitDate, setExitDate] = useState(visitor.exit_at || null);
+  const [observations, setObservations] = useState(visitor.observations || "");
   const [unit, setUnit] = useState(visitor.apartment || "");
   const [document, setDocument] = useState(visitor.document || "");
   const [phone, setPhone] = useState(visitor.phone || "");
@@ -393,6 +396,29 @@ const VisitorEditModal = ({ visitor, onClose, fetchVisitors, condominium }) => {
     }
   };
 
+  const handleUpdateObservations = async () => {
+    const token = localStorage.getItem("accessToken");
+  
+    try {
+      await axios.patch(
+        `${process.env.REACT_APP_API_URL}/api/visitors/${visitor.id}/`,
+        { observations, condominium: condominium.name },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      fetchVisitors(); // Refresh the visitors list
+      alert("Observações atualizadas com sucesso!");
+    } catch (error) {
+      console.error("Erro ao atualizar observações:", error);
+      alert("Erro ao atualizar as observações. Tente novamente.");
+    }
+  };
+
   return (
     <ModalOverlay>
       <ModalContent>
@@ -471,6 +497,23 @@ const VisitorEditModal = ({ visitor, onClose, fetchVisitors, condominium }) => {
         <InputContainer>
           <Label>Telefone</Label>
           <Input disabled={true} type="text" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        </InputContainer>
+        <InputContainer>
+          <Label>Observações</Label>
+          <textarea
+            disabled
+            value={observations}
+            onChange={(e) => setObservations(e.target.value)}
+            rows="3"
+            style={{
+              width: "100%",
+              padding: "10px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+              fontSize: "14px",
+              resize: "vertical",
+            }}
+          />
         </InputContainer>
         <ButtonRow>
           {!exitDate && (
