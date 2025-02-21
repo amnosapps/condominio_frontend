@@ -578,12 +578,16 @@ const ReservationsPage = ({ profile }) => {
                 
                 <td>
                   <ProfileCell>
-                    <ProfileImage
-                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        reservation.guest_name
-                      )}`}
-                      alt={`${reservation.guest_name}`}
-                    />
+                    {reservation.image_base64 ? (
+                        <ProfileImage src={reservation.image_base64} alt="Profile" />
+                    ) : (
+                      <ProfileImage
+                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          reservation.guest_name
+                        )}`}
+                        alt={`${reservation.guest_name}`}
+                      />
+                    )}
                     {reservation.guest_name}
                   </ProfileCell>
                 </td>

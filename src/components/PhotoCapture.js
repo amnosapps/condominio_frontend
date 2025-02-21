@@ -148,6 +148,8 @@ const PhotoCapture = ({ existingPhotos, onPhotosChange }) => {
       setCapturedPhotos((prev) => [...prev, photoUrl]);
       onPhotosChange([...capturedPhotos, photoUrl]);
     });
+
+    setCameraActive(false)
   };
 
   const removePhoto = (index) => {

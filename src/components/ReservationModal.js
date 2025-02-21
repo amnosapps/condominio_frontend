@@ -18,6 +18,7 @@ import api from "../services/api";
 
 import CryptoJS from "crypto-js";
 import { formatCPF } from "../utils/regex";
+import CameraCaptureModal from "./Reservation/CameraCaptureGuest";
 const SECRET_KEY = process.env.REACT_APP_QRCODE_SECRET || "your-secret-key";
 
 // Styled Components
@@ -302,6 +303,18 @@ const CloseLogsButton = styled.button`
   cursor: pointer;
 `;
 
+const ProfileImageWrapper = styled.div`
+  position: relative;
+`;
+
+const ProfileImage = styled.img`
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f46600;
+`;
+
 
 const Row = styled.div`
   display: flex;
@@ -315,6 +328,10 @@ const Column = styled.div`
   flex: 1;
   margin-right: 15px;
   min-width: 150px; /* Ensure columns are responsive */
+`;
+
+const ColumnProfile = styled.div`
+  margin-right: 10px;
 `;
 
 const FieldLabel = styled.strong`
@@ -426,8 +443,6 @@ const ReservationModal = ({
     return null; // Return null if conversion fails
   };
 
-  console.log(selectedReservation)
-
   const [reservationData, setReservationData] = useState({
     checkin: convertToLocalDate(selectedReservation?.checkin),
     checkout: convertToLocalDate(selectedReservation?.checkout),
@@ -454,6 +469,7 @@ const ReservationModal = ({
       estado: "",
       pais: "",
     },
+    image_base64: selectedReservation?.image_base64,
     vehicle_plate: selectedReservation?.vehicle_plate || "",
     additional_guests: selectedReservation?.additional_guests || [],
     reservation_file: selectedReservation?.reservation_file || "",
@@ -465,14 +481,15 @@ const ReservationModal = ({
   );
   
   const [additionalGuests, setAdditionalGuests] = useState(() => {
-    const qty = selectedReservation?.guests_qty ? selectedReservation.guests_qty : 0; 
-    return selectedReservation?.additional_guests.length > 0 
+    const qty = selectedReservation?.guests_qty ? selectedReservation.guests_qty : 0;
+    return selectedReservation?.additional_guests.length > 0
       ? selectedReservation.additional_guests.map((guest) => ({
           name: guest.name || "",
           document: guest.document || "",
           document_type: guest.document_type || "",
           age: guest.age || 0,
           is_child: guest.is_child || false,
+          image_base64: guest.image_base64 || "", // Store guest profile image
         }))
       : Array.from({ length: qty }, () => ({
           name: "",
@@ -480,11 +497,14 @@ const ReservationModal = ({
           document_type: "",
           age: 0,
           is_child: false,
+          image_base64: "", // Initialize empty profile image field
         }));
   });
 
   const [profileImage, setProfileImage] = useState(selectedReservation?.image_base64 || "");
   const [additionalPhotos, setAdditionalPhotos] = useState(selectedReservation?.additional_photos || []);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [selectedGuest, setSelectedGuest] = useState({ type: null, index: null });
 
   const [maxGuests, setMaxGuests] = useState(selectedApartment ? selectedApartment.max_occupation : 1);
   
@@ -510,6 +530,52 @@ const ReservationModal = ({
     } catch (error) {
       console.error("Error fetching logs:", error);
       alert("Failed to load logs. Please try again.");
+    }
+  };
+
+  const convertImageToBase64 = (file, callback) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => callback(reader.result);
+    reader.onerror = (error) => console.error("Error converting image: ", error);
+  };
+
+  const handleProfileImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      convertImageToBase64(file, (base64) => setProfileImage(base64));
+    }
+  };
+
+  const handleGuestProfileImageChange = (index, event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        setAdditionalGuests((prevGuests) =>
+          prevGuests.map((guest, i) =>
+            i === index ? { ...guest, image_base64: reader.result } : guest
+          )
+        );
+      };
+      reader.onerror = (error) => console.error("Error converting image: ", error);
+    }
+  };
+  
+
+  const handleGuestDocumentImageChange = (index, event) => {
+    const file = event.target.files[0];
+    if (file) {
+      convertImageToBase64(file, (base64) => {
+        setAdditionalGuests((prevGuests) =>
+          prevGuests.map((guest, i) =>
+            i === index
+              ? { ...guest, additionalPhotos: [...guest.additionalPhotos, { image_base64: base64 }] }
+              : guest
+          )
+        );
+      });
     }
   };
 
@@ -742,19 +808,7 @@ const ReservationModal = ({
   
     // Append Additional Guests
     formData.append("additional_guests", JSON.stringify(additionalGuests));
-  
-    console.log(reservationData.additional_photos);
-    const photos = reservationData.additional_photos.map(async (photoUrl, index) => {
-      const response = await fetch(photoUrl);
-      const blob = await response.blob();
-      return new File([blob], `photo-${index}.jpg`, { type: blob.type });
-    });
-  
-    const photoFiles = await Promise.all(photos);
-  
-    photoFiles.forEach((file) => {
-      formData.append("additional_photos", file);
-    });
+    formData.append("additional_photos", JSON.stringify(additionalPhotos));
   
     try {
       const response = await api.patch(
@@ -1193,6 +1247,16 @@ const ReservationModal = ({
   return (
     <ModalOverlay onClick={closeModal1}>
       <ModalContainer onClick={(e) => e.stopPropagation()} className="modal-container">
+        {isCameraOpen && (
+          <CameraCaptureModal
+            onClose={() => setIsCameraOpen(false)}
+            reservationId={selectedReservation.id}
+            guestType={selectedGuest.type}
+            guestIndex={selectedGuest.index}
+            additionalGuests={reservationData.additional_guests}
+            fetchReservations={fetchReservations}
+          />
+        )}
         <div style={{ display: 'flex', alignContent: 'center', alignItems: 'center', justifyContent: "space-between" }}>
           <div style={{ display: "flex", gap: "10px", alignItems: "center", margin: '1px 0px' }}>
             <GreenButton onClick={toggleQrCodeModal}>
@@ -1374,6 +1438,21 @@ const ReservationModal = ({
 
         {/* Guest Information */}
         <Row>
+          <ColumnProfile onClick={() => {
+            setSelectedGuest({ type: "main", index: null });
+            setIsCameraOpen(true);
+          }}>
+            {reservationData.image_base64 ? (
+              <ProfileImageWrapper>
+                <ProfileImage src={reservationData.image_base64} alt="Profile" />
+              </ProfileImageWrapper>
+            ) : (
+              <ProfileImage
+                src="https://placehold.co/100x100.png"
+                alt="Escolha uma imagem"
+              />
+            )}
+          </ColumnProfile>
           <Column>
             <FieldLabel>Nome:</FieldLabel>
             <FieldValue>
@@ -1575,6 +1654,18 @@ const ReservationModal = ({
               </div>
               
               <Row>
+                <ColumnProfile key={index} onClick={() => {
+                  setSelectedGuest({ type: "additional", index });
+                  setIsCameraOpen(true);
+                }}>
+                  {guest.image_base64 ? (
+                    <ProfileImageWrapper>
+                      <ProfileImage src={guest.image_base64} alt="Profile" />
+                    </ProfileImageWrapper>
+                  ) : (
+                    <ProfileImage src="https://placehold.co/100x100.png" alt="Foto" />
+                  )}
+                </ColumnProfile>
                 <Column>
                   <EditableInput
                     type="text"
@@ -1611,7 +1702,7 @@ const ReservationModal = ({
                 </Column>
                 <Column>
                   {guest.is_child && (
-                    <>
+                    <Column>
                       <StyledSelect
                         value={guest.age}
                         onChange={(e) =>
@@ -1626,7 +1717,7 @@ const ReservationModal = ({
                           </option>
                         ))}
                       </StyledSelect>
-                    </>
+                    </Column>
                   )}
                 </Column>
               </Row>
@@ -1662,10 +1753,6 @@ const ReservationModal = ({
           </AddGuestButton>
         </div>
 
-        <PhotoCapture
-          existingPhotos={reservationData.additional_photos}
-          onPhotosChange={updatePhotos}
-        />
         <div style={{ display: "flex", justifyContent: "start", gap: "10px" }}>
           {!isEditing ? (
             <GreenButton onClick={toggleEditing} disabled={reservationData.checkout_at}
