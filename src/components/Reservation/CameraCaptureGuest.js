@@ -93,17 +93,46 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
 
     const captureImage = async () => {
         if (!videoRef.current || !canvasRef.current) return;
-
+  
         const canvas = canvasRef.current;
         const context = canvas.getContext("2d");
-        canvas.width = videoRef.current.videoWidth;
-        canvas.height = videoRef.current.videoHeight;
-        context.drawImage(videoRef.current, 0, 0);
-
-        const imageBase64 = canvas.toDataURL("image/png");
-
+    
+        // Set fixed size to 500x500
+        const TARGET_WIDTH = 500;
+        const TARGET_HEIGHT = 500;
+        canvas.width = TARGET_WIDTH;
+        canvas.height = TARGET_HEIGHT;
+    
+        // Get the original video feed dimensions
+        const videoWidth = videoRef.current.videoWidth;
+        const videoHeight = videoRef.current.videoHeight;
+    
+        // Determine scaling for best fit (crop if necessary)
+        const scale = Math.max(TARGET_WIDTH / videoWidth, TARGET_HEIGHT / videoHeight);
+        const scaledWidth = videoWidth * scale;
+        const scaledHeight = videoHeight * scale;
+        const offsetX = (scaledWidth - TARGET_WIDTH) / 2;
+        const offsetY = (scaledHeight - TARGET_HEIGHT) / 2;
+    
+        // Draw the resized and cropped image onto the canvas
+        context.drawImage(videoRef.current, -offsetX, -offsetY, scaledWidth, scaledHeight);
+    
+        // Convert to Base64 JPEG (compressed)
+        const compressedImageBase64 = canvas.toDataURL("image/jpeg", 0.8); // 80% quality
+    
+        // Validate file size before setting state
+        fetch(compressedImageBase64)
+            .then((res) => res.blob())
+            .then((blob) => {
+                console.log(`Final Image Size: ${(blob.size / 1024).toFixed(2)} KB`);
+                if (blob.size > 100 * 1024) { // 100KB limit
+                    alert("O tamanho do arquivo não pode exceder 100KB.");
+                    return;
+                }
+            })
+            .catch((err) => console.error("Erro ao validar a imagem:", err));
         // Send the image update request
-        await updateGuestImage(imageBase64);
+        await updateGuestImage(compressedImageBase64);
     };
 
     const updateGuestImage = async (imageBase64) => {
@@ -116,7 +145,7 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
         } else if (guestType === "additional") {
             const formattedAdditionalGuests = additionalGuests.map(guest => ({
                 name: guest.name,
-                document: guest.document,
+                id: guest.id,
                 image_base64: guest.image_base64
               }));
               
