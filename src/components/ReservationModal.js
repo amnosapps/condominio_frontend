@@ -648,11 +648,11 @@ const ReservationModal = ({
       if (response.status === 200) {
         alert("Informações atualizadas com sucesso!");
       } else {
-        alert("Falha ao atualizar as informações. Tente novamente.");
+        alert("Falha ao atualizar as informações. Tente novamente.", response.data.message);
       }
     } catch (error) {
       console.error("Erro ao atualizar a reserva:", error);
-      alert("Erro ao atualizar as informações. Verifique os dados e tente novamente.");
+      alert("Erro ao atualizar as informações. Verifique os dados e tente novamente.", error);
     } finally {
       closeModal()
       setIsSubmitting(false);
@@ -782,14 +782,14 @@ const ReservationModal = ({
         closeModal();
         // sessionStorage.setItem("reopenModalId", selectedReservation.id);
       } else {
-        alert("Falha ao salvar as informações. Tente novamente.");
+        alert("Falha ao salvar as informações. Tente novamente.", response.data);
       }
     } catch (error) {
       console.error("Erro ao atualizar a reserva:", error);
   
       if (error.response) {
         console.error("Response data:", error.response.data);
-        alert(`Erro no servidor: ${error.response.status}. Mensagem: ${error.response.data.detail || "Erro desconhecido"}`);
+        alert(`Erro no servidor: ${error.response.status}. Mensagem: ${error.response.data.error || "Erro desconhecido"}`);
       } else if (error.request) {
         console.error("Request data:", error.request);
         alert("Erro na comunicação com o servidor. Verifique sua conexão.");
