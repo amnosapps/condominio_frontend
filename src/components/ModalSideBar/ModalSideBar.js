@@ -89,8 +89,8 @@ const ContactModal = ({ onClose }) => {
           <CloseButton onClick={onClose}>&times;</CloseButton>
         </Header>
         <ContactInfo>
-            <p>Email: Contato.igoove.com.br</p>
-            <p>Phone: (83) 0000-0000</p> 
+            <p>Email: contato@igoove.com.br</p>
+            {/* <p>Phone: (83) 0000-0000</p>  */}
         </ContactInfo>
       </ModalContainer>
     </ModalOverlay>
