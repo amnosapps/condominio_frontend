@@ -406,14 +406,14 @@ const UserEditModal = ({ user, onClose, fetchUsers, condominium, availableApartm
         {(userType === "owner" || userType === "manager") && (
           <>
             <Select value="" onChange={(e) => {
-              const aptId = parseInt(e.target.value);
+              const aptId = Number(e.target.value); // Ensure aptId is a number
               if (!apartments.includes(aptId)) {
                 setApartments([...apartments, aptId]);
               }
             }}>
               <option value="" disabled>Adicionar Unidade</option>
               {availableApartments
-                .filter((apt) => !apartments.includes(apt.id))
+                .filter((apt) => !apartments.includes(Number(apt.id))) // Ensure apt.id is compared as a number
                 .map((apt) => (
                   <option key={apt.id} value={apt.id}>Unidade {apt.number}</option>
               ))}
@@ -421,7 +421,8 @@ const UserEditModal = ({ user, onClose, fetchUsers, condominium, availableApartm
 
             <TagContainer>
               {apartments.map((aptId) => {
-                const apt = availableApartments.find(a => a.id === aptId);
+                const apt = availableApartments.find(a => String(a.id) === String(aptId));
+                console.log(aptId)
                 return (
                   <Tag key={aptId}>
                     Unidade {apt?.number}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaEdit, FaTrash, FaPlus, FaCheckCircle, FaTimesCircle, FaUserCircle } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaPlus, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import api from '../../services/api';
 import UserDeviceModal from '../../components/Access/UserDeviceModal';
 
@@ -130,7 +130,7 @@ const UserDeviceManagement = ({ condominium }) => {
     const [selectedUserDevice, setSelectedUserDevice] = useState(null);
     const [deviceStatus, setDeviceStatus] = useState({});
 
-    // Fetch User Devices with multiple linked devices
+    // Fetch User Devices
     const fetchUserDevices = async () => {
         const token = localStorage.getItem('accessToken');
         try {
@@ -154,7 +154,6 @@ const UserDeviceManagement = ({ condominium }) => {
         setModalOpen(true);
     };
 
-    // DELETE User from all linked devices
     const handleDeleteUserDevice = async (user_id) => {
         const token = localStorage.getItem('accessToken');
         try {
@@ -168,30 +167,27 @@ const UserDeviceManagement = ({ condominium }) => {
         }
     };
 
-    // Check User on All Linked Devices
-    const handleCheckDevice = async (user_id, devices) => {
+    const handleCheckDevice = async (user_id, device_id) => {
         const token = localStorage.getItem('accessToken');
-        let foundOnDevices = [];
+        try {
+            const response = await api.get(`/api/access/user-devices/${user_id}/check-device/`, {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { device_id },
+            });
 
-        for (const device of devices) {
-            try {
-                const response = await api.get(`/api/access/user-devices/${user_id}/check-device/`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                    params: { device_id: device.id },
-                });
-
-                if (response.status === 200) {
-                    foundOnDevices.push(device.name);
-                }
-            } catch (error) {
-                console.error(`Error checking User on Device ${device.name}:`, error);
+            if (response.status === 200) {
+                setDeviceStatus((prevState) => ({
+                    ...prevState,
+                    [`${user_id}-${device_id}`]: "ok",
+                }));
             }
+        } catch (error) {
+            console.error(`Error checking User on Device ${device_id}:`, error);
+            setDeviceStatus((prevState) => ({
+                ...prevState,
+                [`${user_id}-${device_id}`]: "error",
+            }));
         }
-
-        setDeviceStatus(prevState => ({
-            ...prevState,
-            [user_id]: foundOnDevices.length > 0 ? "ok" : "error"
-        }));
     };
 
     useEffect(() => {
@@ -225,9 +221,26 @@ const UserDeviceManagement = ({ condominium }) => {
                                 <td>{user.type_display}</td>
                                 <td>{user.authority_display}</td>
                                 <td>
-                                    {user.devices?.map(device => (
-                                        <span key={device.id}>{device.name}, </span>
-                                    ))}
+                                    {user.device.length > 0 ? (
+                                        <ul>
+                                            {user.device.map((dev) => (
+                                                <li key={dev.id}>
+                                                    {dev.name} - {dev.ip}
+                                                    <VerifyButton
+                                                        onClick={() => handleCheckDevice(user.id, dev.id)}
+                                                    >
+                                                        {deviceStatus[`${user.id}-${dev.id}`] === "ok" ? (
+                                                            <FaCheckCircle style={{ color: "#28a745" }} />
+                                                        ) : (
+                                                            <FaTimesCircle style={{ color: "#e74c3c" }} />
+                                                        )}
+                                                    </VerifyButton>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        "Nenhum dispositivo"
+                                    )}
                                 </td>
                                 <td>
                                     <ActionButtons>
@@ -240,13 +253,6 @@ const UserDeviceManagement = ({ condominium }) => {
                                         >
                                             <FaTrash />
                                         </button>
-                                        <VerifyButton onClick={() => handleCheckDevice(user.id, user.devices)}>
-                                            {deviceStatus[user.id] === "ok" ? (
-                                                <FaCheckCircle style={{ color: "#28a745" }} />
-                                            ) : (
-                                                <FaTimesCircle style={{ color: "#e74c3c" }} />
-                                            )}
-                                        </VerifyButton>
                                     </ActionButtons>
                                 </td>
                             </tr>

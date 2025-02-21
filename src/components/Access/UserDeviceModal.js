@@ -82,6 +82,18 @@ const Select = styled.select`
   cursor: pointer;
 `;
 
+const MultiSelect = styled.select`
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  height: 120px; /* Adjust height for multiple selection */
+`;
+
 const Button = styled.button`
   background-color: ${(props) => (props.primary ? '#007bff' : '#6c757d')};
   color: white;
@@ -106,7 +118,7 @@ const UserDeviceModal = ({ isOpen, onClose, userDevice, condominium_id, refreshL
         valid_from: '',
         valid_to: '',
         user_id_device: '',
-        device: '',
+        devices: [],  // Store multiple device IDs as an array
         condominium: condominium_id,
     });
 
@@ -131,7 +143,7 @@ const UserDeviceModal = ({ isOpen, onClose, userDevice, condominium_id, refreshL
                 valid_from: userDevice.valid_from || '',
                 valid_to: userDevice.valid_to || '',
                 user_id_device: userDevice.user_id_device,
-                device: userDevice.device.toString(),
+                devices: userDevice.device.map(dev => dev.id) || [],  // Convert to array of IDs
                 condominium: condominium_id,
             });
         } else {
@@ -141,7 +153,7 @@ const UserDeviceModal = ({ isOpen, onClose, userDevice, condominium_id, refreshL
                 authority: '1',
                 valid_from: '',
                 valid_to: '',
-                device: '',
+                devices: [],
                 condominium: condominium_id,
             });
         }
@@ -198,6 +210,14 @@ const UserDeviceModal = ({ isOpen, onClose, userDevice, condominium_id, refreshL
         }));
     };
 
+    const handleMultiSelectChange = (e) => {
+        const selectedValues = Array.from(e.target.selectedOptions, option => option.value);
+        setFormData((prevData) => ({
+            ...prevData,
+            devices: selectedValues, // Store multiple selected device IDs
+        }));
+    };
+
     return (
         <ModalContainer isOpen={isOpen}>
             <ModalContent>
@@ -218,39 +238,19 @@ const UserDeviceModal = ({ isOpen, onClose, userDevice, condominium_id, refreshL
                             required
                         />
                         <Select name="type" value={formData.type} onChange={handleChange} required>
-                            {typeOptions.map((option) => (
+                            {typeOptions.map(option => (
                                 <option key={option.value} value={option.value}>
                                     {option.label}
                                 </option>
                             ))}
                         </Select>
-                        <Select name="authority" value={formData.authority} onChange={handleChange} required>
-                            {authorityOptions.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </Select>
-                        <Input
-                            type="datetime-local"
-                            name="valid_from"
-                            value={formData.valid_from}
-                            onChange={handleChange}
-                        />
-                        <Input
-                            type="datetime-local"
-                            name="valid_to"
-                            value={formData.valid_to}
-                            onChange={handleChange}
-                        />
-                        <Select name="device" value={formData.device} onChange={handleChange} required>
-                            <option value="">Selecione um Dispositivo</option>
-                            {devices.map((device) => (
+                        <MultiSelect name="devices" multiple value={formData.devices} onChange={handleMultiSelectChange}>
+                            {devices.map(device => (
                                 <option key={device.id} value={device.id}>
                                     {device.name} (IP: {device.ip})
                                 </option>
                             ))}
-                        </Select>
+                        </MultiSelect>
                     </ModalBody>
                     <ModalFooter>
                         <Button type="button" onClick={onClose}>Cancelar</Button>
