@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import { FaCamera, FaFileImage } from "react-icons/fa";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -118,6 +120,26 @@ const Video = styled.video`
   margin-bottom: 10px;
 `;
 
+const InputContainer = styled.div`
+  margin-bottom: 15px;
+
+  .custom-datepicker {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+`;
+
+const Label = styled.label`
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #555;
+`;
+
 const Input = styled.input`
   width: 96%;
   padding: 10px;
@@ -164,9 +186,12 @@ const CaptureButton = styled(Button)`
 const VisitorCreationModal = ({ onClose, fetchVisitors, condominium }) => {
   const [name, setName] = useState("");
   const [unit, setUnit] = useState("");
+  const [exit, setExit] = useState("");
   const [document, setDocument] = useState("");
   const [phone, setPhone] = useState("");
   const [image, setImage] = useState(null);
+  const [role, setRole] = useState(1); 
+
   const [apartments, setApartments] = useState([]);
   const [showCamera, setShowCamera] = useState(false);
   const videoRef = useRef(null);
@@ -279,7 +304,10 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium }) => {
       apartment: unit,
       document,
       phone,
+      role,
       entry: new Date().toISOString(), // Set entry as the current date/time
+      entry_at: new Date().toISOString(), // Set entry as the current date/time
+      exit: exit,
       image_base64: image,
     };
 
@@ -339,12 +367,7 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium }) => {
         {showCamera && <Video ref={videoRef} autoPlay show />}
         {showCamera && <CaptureButton onClick={captureImage}>Capturar Foto</CaptureButton>}
         <canvas ref={canvasRef} style={{ display: "none" }} />
-        <Input
-          type="text"
-          placeholder="Nome do Visitante"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        
         <Select value={unit} onChange={(e) => setUnit(e.target.value)}>
           <option value="" disabled>
             Selecione a Unidade
@@ -355,6 +378,19 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium }) => {
             </option>
           ))}
         </Select>
+
+        <Select value={role} onChange={(e) => setRole(Number(e.target.value))}>
+          <option value={0}>Prestador de Serviço</option>
+          <option value={1}>Visita</option>
+        </Select>
+
+        <Input
+          type="text"
+          placeholder="Nome do Visitante"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+
         <Input
           type="text"
           placeholder="Documento (CPF/RG)"
@@ -367,6 +403,21 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium }) => {
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
         />
+
+        <InputContainer>
+          <Label>Previsão de Saída</Label>
+          <DatePicker
+            selected={exit ? new Date(exit) : null}
+            onChange={(date) => setExit(date.toISOString())} // Store full date-time in ISO format
+            dateFormat="dd/MM/yyyy HH:mm" // Display in Brazilian format with time
+            showTimeSelect // Enables time selection
+            timeFormat="HH:mm" // 24-hour format
+            timeIntervals={30} // Allows selection in 30-minute intervals
+            timeCaption="Hora"
+            placeholderText="Selecione data e hora"
+            className="custom-datepicker"
+          />
+        </InputContainer>
         
         <Button onClick={handleCreateVisitor}>Registrar Entrada</Button>
       </ModalContent>

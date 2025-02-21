@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { FaPhoneAlt, FaCalendarAlt, FaRegCalendarAlt } from "react-icons/fa";
+import { FaPhoneAlt, FaCalendarAlt, FaRegCalendarAlt, FaExclamationTriangle } from "react-icons/fa";
 import VisitorCreationModal from "../../components/Users/Visitors/VisitorCreationModal";
 import VisitorEditModal from "../../components/Users/Visitors/VisitorEditModal";
 import axios from "axios";
@@ -120,6 +120,19 @@ const VisitorInfo = styled.p`
   }
 `;
 
+const WarningMessage = styled.div`
+  display: flex;
+  align-items: center;
+  background: #fff3cd;
+  color: #856404;
+  padding: 6px;
+  font-size: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+  text-align: center;
+  font-weight: bold;
+`;
+
 const NoVisitorsMessage = styled.div`
   margin-top: 20px;
   font-size: 16px;
@@ -153,25 +166,23 @@ const VisitorsPage = ({ profile, condominium }) => {
         `${process.env.REACT_APP_API_URL}/api/visitors/`,
         {
           headers: { Authorization: `Bearer ${token}` },
-          params: { condominium: condominium.name },
+          params: {
+            condominium: condominium.name,
+            start_date: startDate, // Send start_date filter
+            end_date: endDate, // Send end_date filter
+          },
         }
       );
-
+  
       let visitorsData = response.data;
-
-      // Filter by date range
-      visitorsData = visitorsData.filter(visitor => {
-        const entryDate = new Date(visitor.entry).toISOString().split("T")[0];
-        return entryDate >= startDate && entryDate <= endDate;
-      });
-
-      // Sort visitors: First, those who have entered but not exited
+  
+      // Sort visitors: Active visitors first
       visitorsData.sort((a, b) => {
-        if (!a.exit && b.exit) return -1;
-        if (a.exit && !b.exit) return 1;
+        if (!a.exit_at && b.exit_at) return -1;
+        if (a.exit_at && !b.exit_at) return 1;
         return new Date(b.entry) - new Date(a.entry);
       });
-
+  
       setVisitors(visitorsData);
       setFilteredVisitors(visitorsData);
     } catch (error) {
@@ -290,42 +301,53 @@ const VisitorsPage = ({ profile, condominium }) => {
 
             return true;
           })
-          .map((visitor) => (
-            <VisitorCard
-              key={visitor.id}
-              isExited={!!visitor.exit}
-              onClick={() => handleVisitorClick(visitor)}
-            >
-              <div>
-                {visitor.image_base64 ? (
-                  <ProfileImage src={visitor.image_base64} alt="Profile" />
-                ) : (
-                  <ProfileImage
-                    src="https://placehold.co/100x100.png"
-                    alt="Escolha uma imagem"
-                  />
-                )}
-                <VisitorName>{visitor.name}</VisitorName>
-                <VisitorInfo>
-                  <FaRegCalendarAlt />
-                  {new Date(visitor.entry).toLocaleString("pt-BR")}
-                </VisitorInfo>
-                {visitor.exit && (
+          .map((visitor) => {
+            const hasMissedExit =
+              visitor.exit &&
+              new Date(visitor.exit) < new Date() && // Exit date is in the past
+              !visitor.exit_at; // But no actual exit recorded
+            
+            return (
+              <VisitorCard
+                key={visitor.id}
+                isExited={!!visitor.exit_at}
+                onClick={() => handleVisitorClick(visitor)}
+              >
+                <div>
+                  {visitor.image_base64 ? (
+                    <ProfileImage src={visitor.image_base64} alt="Profile" />
+                  ) : (
+                    <ProfileImage
+                      src="https://placehold.co/100x100.png"
+                      alt="Escolha uma imagem"
+                    />
+                  )}
+                  <VisitorName>{visitor.name}</VisitorName>
                   <VisitorInfo>
-                    <FaCalendarAlt style={{ color: "red" }} />
-                    {new Date(visitor.exit).toLocaleString("pt-BR")}
+                    <FaRegCalendarAlt />
+                    {new Date(visitor.entry).toLocaleString("pt-BR")}
                   </VisitorInfo>
-                )}
-                <VisitorInfo>
-                  <FaPhoneAlt />
-                  {visitor.phone || "N/A"}
-                </VisitorInfo>
-                <VisitorInfo>
-                  Unidade: <strong>{visitor.apartment_number}</strong>
-                </VisitorInfo>
-              </div>
-            </VisitorCard>
-          ))}
+                  {visitor.exit_at && (
+                    <VisitorInfo>
+                      <FaCalendarAlt style={{ color: "red" }} />
+                      {new Date(visitor.exit_at).toLocaleString("pt-BR")}
+                    </VisitorInfo>
+                  )}
+                  <VisitorInfo>
+                    <FaPhoneAlt />
+                    {visitor.phone || "N/A"}
+                  </VisitorInfo>
+                  <VisitorInfo>
+                    Unidade: <strong>{visitor.apartment_number}</strong>
+                  </VisitorInfo>
+                  {hasMissedExit && (
+                    <WarningMessage>
+                      <FaExclamationTriangle color="#856404" style={{ marginRight: "5px" }} /> Saída não registrada
+                    </WarningMessage>
+                  )}
+                </div>
+              </VisitorCard>
+          )})}
       </CardContainer>
     ) : (
       <NoVisitorsMessage>Nenhum visitante encontrado.</NoVisitorsMessage>

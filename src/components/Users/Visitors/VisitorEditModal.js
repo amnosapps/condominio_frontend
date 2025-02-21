@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import { FaCamera, FaCheck, FaFileImage } from "react-icons/fa";
 import axios from "axios";
+import DatePicker from "react-datepicker";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -123,6 +124,14 @@ const Video = styled.video`
 
 const InputContainer = styled.div`
   margin-bottom: 15px;
+
+  .custom-datepicker {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
 `;
 
 const Label = styled.label`
@@ -219,7 +228,8 @@ const ButtonRow = styled.div`
 const VisitorEditModal = ({ visitor, onClose, fetchVisitors, condominium }) => {
   const [name, setName] = useState(visitor.name || "");
   const [visitDate, setVisitDate] = useState(visitor.entry || "");
-  const [exitDate, setExitDate] = useState(visitor.exit || null);
+  const [expectedExit, setExpectedExit] = useState(visitor.exit ? new Date(visitor.exit) : null);
+  const [exitDate, setExitDate] = useState(visitor.exit_at || null);
   const [unit, setUnit] = useState(visitor.apartment || "");
   const [document, setDocument] = useState(visitor.document || "");
   const [phone, setPhone] = useState(visitor.phone || "");
@@ -313,7 +323,7 @@ const VisitorEditModal = ({ visitor, onClose, fetchVisitors, condominium }) => {
     try {
       const response = await axios.patch(
         `${process.env.REACT_APP_API_URL}/api/visitors/${visitor.id}/`,
-        { exit: now, condominium: condominium.name },
+        { exit_at: now, condominium: condominium.name },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -352,6 +362,34 @@ const VisitorEditModal = ({ visitor, onClose, fetchVisitors, condominium }) => {
     } catch (error) {
       console.error("Error updating image:", error);
       alert("Erro ao atualizar a imagem. Tente novamente.");
+    }
+  };
+
+  const handleUpdateExpectedExit = async () => {
+    if (!expectedExit) {
+      alert("Selecione uma data válida para a previsão de saída.");
+      return;
+    }
+  
+    const token = localStorage.getItem("accessToken");
+  
+    try {
+      await axios.patch(
+        `${process.env.REACT_APP_API_URL}/api/visitors/${visitor.id}/`,
+        { exit: expectedExit.toISOString(), condominium: condominium.name },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      fetchVisitors(); // Refresh the visitors list
+      alert("Previsão de saída atualizada com sucesso!");
+    } catch (error) {
+      console.error("Erro ao atualizar a previsão de saída:", error);
+      alert("Erro ao atualizar a previsão de saída. Tente novamente.");
     }
   };
 
@@ -397,16 +435,35 @@ const VisitorEditModal = ({ visitor, onClose, fetchVisitors, condominium }) => {
           <Label>Nome do Visitante</Label>
           <Input disabled={true} type="text" value={name} onChange={(e) => setName(e.target.value)} />
         </InputContainer>
-        <InputContainer>
-          <Label>Data de Entrada</Label>
-          <Input disabled={true} type="text" value={new Date(visitDate).toLocaleString('pt-BR')} />
-        </InputContainer>
-        {exitDate && (
+        <div style={{ display: "flex"}}>
           <InputContainer>
-            <Label>Data de Saída</Label>
-            <Input disabled={true} type="text" value={new Date(exitDate).toLocaleString('pt-BR')} />
+            <Label>Data de Entrada</Label>
+            <Input disabled={true} type="text" value={new Date(visitDate).toLocaleString('pt-BR')} />
           </InputContainer>
-        )}
+          
+          {exitDate ? (
+            <InputContainer>
+              <Label>Data de Saída</Label>
+              <Input disabled={true} type="text" value={new Date(exitDate).toLocaleString('pt-BR')} />
+            </InputContainer>
+          ):(
+            <InputContainer>
+              <Label>Previsão de Saída</Label>
+              <DatePicker
+                selected={expectedExit}
+                onChange={(date) => setExpectedExit(date)}
+                dateFormat="dd/MM/yyyy HH:mm"
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={30}
+                timeCaption="Hora"
+                placeholderText="Selecione a data e hora"
+                className="custom-datepicker"
+              />
+            </InputContainer>
+          )}
+        </div>
+        
         <InputContainer>
           <Label>Documento (CPF/RG)</Label>
           <Input disabled={true} type="text" value={document} onChange={(e) => setDocument(e.target.value)} />
@@ -421,7 +478,7 @@ const VisitorEditModal = ({ visitor, onClose, fetchVisitors, condominium }) => {
               Registrar Saída
             </Button>
           )}
-          <Button onClick={onClose}>Fechar</Button>
+          <Button onClick={handleUpdateExpectedExit}>Salvar Previsão de Saída</Button>
         </ButtonRow>
       </ModalContent>
     </ModalOverlay>
