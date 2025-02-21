@@ -6,6 +6,7 @@ import axios from "axios";
 import Webcam from "react-webcam";
 import { FaCamera, FaFileUpload, FaTrash } from "react-icons/fa";
 import { formatCPF } from "../../utils/regex";
+import GuestFormCookie from "../../components/QrCodeForm/ModalConfirmTermsOfUse"
 
 const API_URL = process.env.REACT_APP_API_URL;
 const SECRET_KEY = process.env.REACT_APP_QRCODE_SECRET || "your-secret-key";
@@ -167,7 +168,6 @@ const WebcamCapture = styled(Webcam)`
   height: auto;
   border-radius: 10px;
 `;
-
 
 const GuestForm = () => {
   const navigate = useNavigate();
@@ -610,6 +610,8 @@ const GuestForm = () => {
           {isSubmitting ? "Enviando..." : "Enviar Dados"}
         </Button>
       </form>
+
+      <GuestFormCookie/> 
     </Container>
   );
 };
