@@ -353,7 +353,7 @@ const ReservationsPage = ({ profile }) => {
     } else if (filterType === "All") {
       filtered = data;
     } else if (filterType === "Future") {
-      filtered = data.filter((res) => !res.checkin_at && !res.checkout_at);
+      filtered = data.filter((res) => (!res.checkin_at && !res.checkout_at) && res.active);
     } else if (filterType === "Canceled") {
       filtered = data.filter((res) => !res.active);
     } else if (filterType === "Pending") {

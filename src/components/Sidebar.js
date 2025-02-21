@@ -622,7 +622,7 @@ const Sidebar = ({ profile }) => {
                     <NavItem>
                         <NavButton
                         onClick={handleOpenModal}>
-                        <FaHeadset size={24} /> 
+                        <FaHeadset /> 
                         Fale Conosco
                         </NavButton>
                     </NavItem>
