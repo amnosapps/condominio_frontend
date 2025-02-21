@@ -76,7 +76,7 @@ function ApartmentCard({ apartment, onClick }) {
     const isReservationActive = (reservation) => {
         const checkin = new Date(reservation.checkin);
         const checkout = new Date(reservation.checkout);
-        return reservation.active && (today >= checkin && today <= checkout);
+        return reservation.active && (today >= checkin && today <= checkout) && (reservation.checkin_at && !reservation.checkout_at);
     };
 
     const activeReservation = apartment?.last_reservations?.find(isReservationActive);
