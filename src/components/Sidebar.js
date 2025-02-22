@@ -543,10 +543,10 @@ const Sidebar = ({ profile }) => {
                         </NavButton>
                         {isReportsDropdownOpen && (
                             <div style={{ marginLeft: "30px", marginTop: "10px" }}>
-                                <NavButton
+                                {/* <NavButton
                                     onClick={() => handleNavigation(`/${selectedCondominium}/reports`)}
                                     active={location.pathname.includes(`${selectedCondominium}/reports`)}
-                                >Geral</NavButton>
+                                >Geral</NavButton> */}
                                 <NavButton
                                     onClick={() => handleNavigation(`/${selectedCondominium}/reservations`)}
                                     active={location.pathname.includes(`${selectedCondominium}/reservations`)}
@@ -579,9 +579,15 @@ const Sidebar = ({ profile }) => {
                                 <NavButton
                                     onClick={() => handleNavigation(`/${selectedCondominium}/visitors`)}
                                     active={location.pathname.includes(`${selectedCondominium}/visitors`)}
-                                    style={{ paddingBottom: '10px' }}
                                 >
                                     Visitantes
+                                </NavButton>
+                                <NavButton
+                                    onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
+                                    active={location.pathname.includes(`${selectedCondominium}/soon`)}
+                                    style={{ paddingBottom: '10px' }}
+                                >
+                                    Hóspedes
                                 </NavButton>
                             </div>
                         )}

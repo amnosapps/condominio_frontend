@@ -139,7 +139,7 @@ const Label = styled.span`
   align-self: flex-start;
 
   color: ${(props) => (props.isToday ? "white" : "#fff")};
-  background-color: ${(props) => (props.isToday ? "#4caf50" : "#ffa500")}; /* Green for today, orange for pending */
+  background-color: ${(props) => (props.isToday ? "#4caf50" : "#1E90FF")}; /* Green for today, orange for pending */
 `;
 
 // ReservationsWidget Component

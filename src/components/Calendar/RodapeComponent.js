@@ -32,35 +32,21 @@ const LegendText = styled.span`
 const RodapeCalendar = () => {
   return (
     <LegendContainer>
-      {/* Future booking (green) */}
       <LegendItem>
-        <ColorBlock color="#63c967" />
+        <ColorBlock color="#FF9800" />
         <LegendText>Reserva Futura</LegendText>
       </LegendItem>
 
-      {/* Expired check-in (red) */}
       <LegendItem>
-        <ColorBlock color="#FF5722" />
+        <ColorBlock color="#1E90FF" />
         <LegendText>Checkin Pendente</LegendText>
       </LegendItem>
 
-      {/* Active reservation (orange) */}
       <LegendItem>
-        <ColorBlock color="#FF9800" />
+        <ColorBlock color="#539e56" />
         <LegendText>Reserva Vigente</LegendText>
       </LegendItem>
-
-      {/* Pending checkout (black) (ongoing hosting) */}
-      <LegendItem>
-        <ColorBlock color="#000" />
-        <LegendText>Checkout Pendente</LegendText>
-      </LegendItem>
-
-      {/* Closed reservation (grey) */}
-      <LegendItem>
-        <ColorBlock color="#9E9E9E" />
-        <LegendText>Reserva Encerrada</LegendText>
-      </LegendItem>
+      
     </LegendContainer>
   );
 };

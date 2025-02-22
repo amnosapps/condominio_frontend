@@ -305,22 +305,22 @@ const ReservationBar = styled.div`
   background-color: ${(props) => {
     // checkin proximo (reserva futura)
     if (!props.checkinAt && isToday(props.checkin)) {
-      return '#539e56'; // Green for future reservation
+      return '#FF9800'; // orange
     }
 
     // checkin pendente
     else if (!props.checkinAt && isAfter(new Date(), props.checkin)) {
-      return '#FF5722'; // Red for expired (no check-in)
+      return '#1E90FF'; // blue
     }
 
     // reserva vigente (hospedagem em curso)
     else if (props.checkinAt && !props.checkoutAt && isBefore(new Date(), props.checkout)) {
-      return '#FF9800'; // Orange for current reservations (confirmed)
+      return '#539e56'; // green
     }
 
     // checkout pendente (hospedagem em curso)
     else if (props.checkinAt && !props.checkoutAt && isAfter(new Date(), props.checkout)) {
-      return '#000'; // black for ongoing stay
+      return '#539e56'; // green
     }
 
     // reserva encerrada
@@ -328,7 +328,7 @@ const ReservationBar = styled.div`
       return '#9E9E9E'; // Grey if checked in and checked out
     }
 
-    return '#539e56'; // futuras reservas
+    return '#FF9800'; // futuras reservas
   }};
   color: white;
   padding: 5px 8px;

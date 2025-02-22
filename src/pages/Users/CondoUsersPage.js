@@ -102,7 +102,7 @@ const ProfileImage = styled.img`
         return "#28a745"; // Green for residents
       case "Proprietário":
         return "#ffc107"; // Yellow for owners
-      case "Gestor":
+      case "Agência":
         return "#6f42c1"; // Purple for managers
       default:
         return "#ccc"; // Default gray
@@ -183,6 +183,7 @@ const WarningMessage = styled.div`
   margin-top: 10px;
   text-align: center;
   font-weight: bold;
+  opacity: 0.7;
 `;
 
 const NoUsersMessage = styled.div`
@@ -198,7 +199,7 @@ const roleTranslations = {
   worker: "Colaborador",
   resident: "Residente",
   owner: "Proprietário",
-  manager: "Gestor",
+  manager: "Agência",
 };
 
 const roleColors = {
@@ -300,7 +301,7 @@ const UsersPage = ({ profile, condominium }) => {
           <option value="worker">Colaborador</option>
           <option value="resident">Residente</option>
           <option value="owner">Proprietário</option>
-          <option value="manager">Gestor</option>
+          <option value="manager">Agência</option>
         </Select>
         <CreateButton onClick={() => setIsCreationModalOpen(true)}>
           <FaUserPlus /> Adicionar Usuário
@@ -354,7 +355,7 @@ const UsersPage = ({ profile, condominium }) => {
                 
                 {(userType != "manager") && (!user.user_device || !user.image_base64) && (
                   <WarningMessage>
-                    <FaExclamationTriangle color="#856404" style={{ marginRight: "5px" }} /> Usuário sem facial
+                    <FaExclamationTriangle color="#856404" style={{ marginRight: "5px" }} /> Facial Pendente
                   </WarningMessage>
                 )}
               </UserCard>

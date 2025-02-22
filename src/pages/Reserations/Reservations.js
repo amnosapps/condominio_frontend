@@ -618,7 +618,7 @@ const ReservationsPage = ({ profile }) => {
                       </Badge>
                     )}
                     {reservation.pendingStatus === "NoShow" && (
-                      <Badge status="Canceled" style={{ background: "#f57c00" }}>
+                      <Badge status="Canceled" style={{ background: "#1E90FF" }}>
                         NoShow
                       </Badge>
                     )}

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import axios from "axios";
-import { FaCamera, FaFileImage, FaTimes } from "react-icons/fa";
+import { FaBuilding, FaCamera, FaFileImage, FaTimes } from "react-icons/fa";
 
 // Styled Components
 const ModalOverlay = styled.div`
@@ -391,7 +391,7 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium, availableApartmen
             <option value="worker">Colaborador</option>
             <option value="resident">Residente</option>
             <option value="owner">Proprietário</option>
-            <option value="manager">Gestor</option>
+            <option value="manager">Agência</option>
         </SelectStyled>
 
         <Input type="text" placeholder="Nome" value={name} onChange={(e) => setName(e.target.value)} />
@@ -404,7 +404,7 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium, availableApartmen
             <SelectStyled value={apartment} onChange={handleApartmentChange}>
             <option value="" disabled>Selecione a Unidade</option>
             {availableApartments.map((apt) => (
-                <option key={apt.id} value={apt.id}>Unidade {apt.number}</option>
+                <option key={apt.id} value={apt.id}>{apt.number}</option>
             ))}
             </SelectStyled>
         )}
@@ -417,13 +417,13 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium, availableApartmen
                     {availableApartments
                     .filter((apt) => !apartments.includes(apt.id))
                     .map((apt) => (
-                        <option key={apt.id} value={apt.number}>Unidade {apt.number}</option>
+                        <option key={apt.id} value={apt.number}>{apt.number}</option>
                     ))}
                 </SelectStyled>
                 <TagContainer>
                     {apartments.map((apt) => (
                     <Tag key={apt}>
-                        Unidade {apt} <RemoveIcon onClick={() => removeApartment(apt)} />
+                        <FaBuilding color="#fff" /> {apt} <RemoveIcon onClick={() => removeApartment(apt)} />
                     </Tag>
                     ))}
                 </TagContainer>

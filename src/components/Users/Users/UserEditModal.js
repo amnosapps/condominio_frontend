@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import axios from "axios";
-import { FaCamera, FaFileImage, FaTimes } from "react-icons/fa";
+import { FaBuilding, FaCamera, FaFileImage, FaTimes } from "react-icons/fa";
 
 // Styled Components
 const ModalOverlay = styled.div`
@@ -397,7 +397,7 @@ const UserEditModal = ({ user, onClose, fetchUsers, condominium, availableApartm
             <option value="" disabled>Selecione a Unidade</option>
             {availableApartments.map((apt) => (
               <option key={apt.id} value={apt.id}>
-                Unidade {apt.number}
+                {apt.number}
               </option>
             ))}
           </Select>
@@ -415,7 +415,7 @@ const UserEditModal = ({ user, onClose, fetchUsers, condominium, availableApartm
               {availableApartments
                 .filter((apt) => !apartments.includes(Number(apt.id))) // Ensure apt.id is compared as a number
                 .map((apt) => (
-                  <option key={apt.id} value={apt.id}>Unidade {apt.number}</option>
+                  <option key={apt.id} value={apt.id}>{apt.number}</option>
               ))}
             </Select>
 
@@ -425,7 +425,7 @@ const UserEditModal = ({ user, onClose, fetchUsers, condominium, availableApartm
                 console.log(aptId)
                 return (
                   <Tag key={aptId}>
-                    Unidade {apt?.number}
+                    <FaBuilding color="#fff" /> {apt?.number}
                     <RemoveIcon onClick={() => setApartments(apartments.filter(a => a !== aptId))} />
                   </Tag>
                 );
