@@ -253,8 +253,6 @@ const VisitorsPage = ({ profile, condominium }) => {
     setIsEditModalOpen(false);
   };
 
-  
-
   return (
     <Container>
       {/* Filters */}
@@ -322,8 +320,10 @@ const VisitorsPage = ({ profile, condominium }) => {
           .map((visitor) => {
             const hasMissedExit =
               visitor.exit &&
-              new Date(visitor.exit) < new Date() && // Exit date is in the past
+              new Date(visitor.exit) <= new Date() && // Exit date is in the past
               !visitor.exit_at; // But no actual exit recorded
+
+            console.log(visitor.exit, visitor.exit_at)
             
             return (
               <VisitorCard
@@ -370,9 +370,6 @@ const VisitorsPage = ({ profile, condominium }) => {
     ) : (
       <NoVisitorsMessage>Nenhum visitante encontrado.</NoVisitorsMessage>
     )}
-
-
-
       {isCreationModalOpen && <VisitorCreationModal onClose={toggleCreationModal} fetchVisitors={fetchVisitors} condominium={condominium} apartments={apartments} />}
       {isEditModalOpen && <VisitorEditModal visitor={selectedVisitor} onClose={toggleEditModal} fetchVisitors={fetchVisitors} condominium={condominium} />}
     </Container>

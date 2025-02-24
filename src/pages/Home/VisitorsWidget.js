@@ -148,7 +148,7 @@ const VisitorsWidget = ({ visitors, fetchVisitors, selectedCondominium, apartmen
   };
 
   // **FILTERING VISITORS WHO HAVE NOT EXITED**
-  const activeVisitors = visitors.filter((visitor) => visitor.entry && !visitor.exit);
+  const activeVisitors = visitors.filter((visitor) => visitor.entry && !visitor.exit_at);
 
   return (
     <Widget>
