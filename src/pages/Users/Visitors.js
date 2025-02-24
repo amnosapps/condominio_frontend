@@ -150,6 +150,7 @@ const VisitorsPage = ({ profile, condominium }) => {
   const [selectedVisitor, setSelectedVisitor] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
+   const [apartments, setApartments] = useState([]);
 
   // Date Filter - Default: Last Week to Today
   const today = new Date().toISOString().split("T")[0];
@@ -190,8 +191,25 @@ const VisitorsPage = ({ profile, condominium }) => {
     }
   };
 
+  const fetchApartments = async () => {
+    const token = localStorage.getItem("accessToken");
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/apartments/`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { condominium: condominium.name },
+        }
+      );
+      setApartments(response.data);
+    } catch (error) {
+      console.error("Error fetching apartments:", error.response?.data || error);
+    }
+  };
+
   useEffect(() => {
     fetchVisitors();
+    fetchApartments();
   }, [startDate, endDate]);
 
   const handleSearchChange = (e) => {
@@ -355,7 +373,7 @@ const VisitorsPage = ({ profile, condominium }) => {
 
 
 
-      {isCreationModalOpen && <VisitorCreationModal onClose={toggleCreationModal} fetchVisitors={fetchVisitors} condominium={condominium} />}
+      {isCreationModalOpen && <VisitorCreationModal onClose={toggleCreationModal} fetchVisitors={fetchVisitors} condominium={condominium} apartments={apartments} />}
       {isEditModalOpen && <VisitorEditModal visitor={selectedVisitor} onClose={toggleEditModal} fetchVisitors={fetchVisitors} condominium={condominium} />}
     </Container>
   );

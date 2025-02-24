@@ -132,7 +132,7 @@ const ChevronIcon = styled.span`
   cursor: pointer;
 `;
 
-const VisitorsWidget = ({ visitors, fetchVisitors, selectedCondominium }) => {
+const VisitorsWidget = ({ visitors, fetchVisitors, selectedCondominium, apartments }) => {
   const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
   const [selectedVisitor, setSelectedVisitor] = useState(null);
 
@@ -184,6 +184,7 @@ const VisitorsWidget = ({ visitors, fetchVisitors, selectedCondominium }) => {
           onClose={closeCreationModal}
           fetchVisitors={fetchVisitors}
           selectedCondominium={selectedCondominium}
+          apartments={apartments}
         />
       )}
 

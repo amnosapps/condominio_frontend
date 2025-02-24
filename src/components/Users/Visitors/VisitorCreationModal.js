@@ -183,7 +183,7 @@ const CaptureButton = styled(Button)`
   }
 `;
 
-const VisitorCreationModal = ({ onClose, fetchVisitors, condominium }) => {
+const VisitorCreationModal = ({ onClose, fetchVisitors, condominium, apartments }) => {
   const [name, setName] = useState("");
   const [unit, setUnit] = useState("");
   const [exit, setExit] = useState("");
@@ -193,33 +193,11 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium }) => {
   const [image, setImage] = useState(null);
   const [role, setRole] = useState(1); 
 
-  const [apartments, setApartments] = useState([]);
   const [showCamera, setShowCamera] = useState(false);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
   
-
-  useEffect(() => {
-    const fetchApartments = async () => {
-      const token = localStorage.getItem("accessToken");
-      try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/apartments/`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { condominium: condominium.name },
-          }
-        );
-        setApartments(response.data);
-      } catch (error) {
-        console.error("Error fetching apartments:", error.response?.data || error);
-      }
-    };
-
-    fetchApartments();
-  }, [condominium]);
-
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     const reader = new FileReader();
@@ -374,7 +352,7 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium }) => {
           <option value="" disabled>
             Selecione a Unidade
           </option>
-          {apartments.map((apartment) => (
+          {apartments?.map((apartment) => (
             <option key={apartment.id} value={apartment.id}>
               Unidade {apartment.number}
             </option>

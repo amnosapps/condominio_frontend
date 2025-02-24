@@ -385,7 +385,7 @@ const Dashboard = ({ profile }) => {
             </Column>
 
             <Column>
-            <VisitorsWidget visitors={visitors} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} />
+            <VisitorsWidget visitors={visitors} fetchVisitors={fetchVisitors} selectedCondominium={selectedCondominium} apartments={apartments} />
             <Widget>
                 <WidgetTitle>Atalhos</WidgetTitle>
                     <ShortcutList>

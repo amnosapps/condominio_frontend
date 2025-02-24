@@ -143,10 +143,13 @@ const NavList = styled.ul`
 
 const NavItem = styled.li`
     margin-bottom: 1rem;
+    opacity: ${(props) => (props.staff ? '0.6' : '1.0')};
+    cursor: pointer;
 `;
 
 const NavButton = styled.button`
     color: ${(props) => (props.active ? '#F46600' : '#737373')};
+    opacity: ${(props) => (props.staff ? '0.7' : '1.0')};
     text-decoration: none;
     font-size: 18px;
     transition: color 0.3s;
@@ -158,7 +161,7 @@ const NavButton = styled.button`
 
     &:hover {
         color: #F46600;
-        cursor: pointer;
+        cursor: ${(props) => (props.staff ? 'pointer' : 'block')};
     }
 `;
 
@@ -599,6 +602,7 @@ const Sidebar = ({ profile }) => {
                             borderRadius: "10px",
                             backgroundColor: isUsersDropdownOpen ? "#f7f7f7" : "#fff",
                         }}
+                        staff={profile.user_type}
                     >
                         <NavButton onClick={toggleAccessControlDropdown}>
                             <FaUnlockAlt />
@@ -607,9 +611,12 @@ const Sidebar = ({ profile }) => {
                         </NavButton>
                         {isAccessControlDropdownOpen && (
                             <div style={{ marginLeft: "30px", marginTop: "10px" }}>
+                                {profile.staff}
                                 <NavButton
                                     onClick={() => handleNavigation(`/${selectedCondominium}/access/devices`)}
                                     active={location.pathname.includes(`${selectedCondominium}/access/devices`)}
+                                    disabled={profile.user_type != 'staff'}
+                                    staff={profile.user_type}
                                 >
                                     Dispositivos
                                 </NavButton>
@@ -617,6 +624,8 @@ const Sidebar = ({ profile }) => {
                                     onClick={() => handleNavigation(`/${selectedCondominium}/access/users`)}
                                     active={location.pathname.includes(`${selectedCondominium}/access/users`)}
                                     style={{ paddingBottom: '10px' }}
+                                    disabled={profile.user_type != 'staff'}
+                                    staff={profile.user_type}
                                 >
                                     Usuários
                                 </NavButton>

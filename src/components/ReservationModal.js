@@ -755,25 +755,7 @@ const ReservationModal = ({
       { field: reservationData.checkout, label: "Checkout" },
     ];
   
-    const requiredAddressFields = [
-      { field: address.endereco, label: "Endereço" },
-      { field: address.bairro, label: "Bairro" },
-      { field: address.cep, label: "CEP" },
-      { field: address.cidade, label: "Cidade" },
-      { field: address.estado, label: "Estado" },
-      { field: address.pais, label: "País" },
-    ];
-  
     const missingFields = requiredFields.filter((item) => !item.field);
-    const missingAddressFields = requiredAddressFields.filter((item) => !item.field);
-  
-    if (missingFields.length > 0 || missingAddressFields.length > 0) {
-      const missingFieldLabels = [...missingFields, ...missingAddressFields]
-        .map((item) => item.label)
-        .join(", ");
-      alert(`Os seguintes campos são obrigatórios: ${missingFieldLabels}`);
-      return;
-    }
   
     const confirmMessage = reservationData.checkin_at
       ? "Você tem certeza que deseja atualizar as informações?"
