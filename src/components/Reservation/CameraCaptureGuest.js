@@ -156,6 +156,8 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
         setIsUploading(true);
         const token = localStorage.getItem("accessToken");
         const formData = new FormData();
+
+        formData.append("update_device", "true");
     
         if (guestType === "main") {
             formData.append("image_base64", imageBase64);
