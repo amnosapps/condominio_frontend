@@ -293,7 +293,7 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium, apartments 
         '.' + String(now.getMilliseconds()).padStart(3, '0') +
         `${sign}${offsetHours}:${offsetMins}`;
 
-
+    console.log(condominium)
     const newVisitor = {
       name,
       condominium: condominium.name,
