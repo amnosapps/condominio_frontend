@@ -219,7 +219,7 @@ const UserDeviceManagement = ({ condominium }) => {
                         {userDevices?.map((user) => (
                             <tr key={user.id}>
                                 <td>{user.name}</td>
-                                <td>{user.user_device}</td>
+                                <td>{user.id}</td>
                                 <td>{user.type_display}</td>
                                 <td>{user.authority_display}</td>
                                 <td>
