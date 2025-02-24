@@ -465,7 +465,6 @@ const ReservationModal = ({
     apartment_owner: selectedReservation?.apartment_owner || "", // Optional apartment owner name
     hasChildren: selectedReservation?.hasChildren || "no",
     photos: selectedReservation?.photos || "", // Main photo URL
-    additional_photos: selectedReservation?.additional_photos || [], // Additional photos array
     hour_checkin: selectedReservation.hour_checkin ? selectedReservation.hour_checkin : "15:00",
     hour_checkout: selectedReservation.hour_checkout ? selectedReservation.hour_checkout : "12:00",
     checkin_at: selectedReservation?.checkin_at || null, // Check-in timestamp
@@ -488,36 +487,27 @@ const ReservationModal = ({
   const [vehiclePlate, setVehiclePlate] = useState(
     selectedReservation?.vehicle_plate || ""
   );
-  
+
   const [additionalGuests, setAdditionalGuests] = useState(() => {
-    const qty = selectedReservation?.guests_qty ? selectedReservation.guests_qty : 0;
-    const uniqueGuests = new Map(); // To store unique guests
+    const expectedGuests = selectedReservation?.guests_qty || 1; // Ensure it at least accounts for the main guest
+    const existingGuests = selectedReservation?.additional_guests || [];
   
-    selectedReservation?.additional_guests.forEach((guest) => {
-      uniqueGuests.set(guest.document, {
-        name: guest.name || "",
-        document: guest.document || "",
-        document_type: guest.document_type || "",
-        age: guest.age || 0,
-        is_child: guest.is_child || false,
-        image_base64: guest.image_base64 || "", 
-      });
-    });
+    // If existingGuests is fewer than expected, fill the rest with empty guest slots
+    if (existingGuests.length < expectedGuests - 1) {
+      const additionalSlots = Array.from({ length: expectedGuests - 1 - existingGuests.length }, () => ({
+        name: "",
+        document: "",
+        document_type: "",
+        age: 0,
+        is_child: false,
+      }));
+      return [...existingGuests, ...additionalSlots];
+    }
   
-    return qty > 0
-      ? Array.from(uniqueGuests.values())
-      : Array.from({ length: qty }, () => ({
-          name: "",
-          document: "",
-          document_type: "",
-          age: 0,
-          is_child: false,
-          image_base64: "",
-        }));
+    return existingGuests;
   });
 
   const [profileImage, setProfileImage] = useState(selectedReservation?.image_base64 || "");
-  const [additionalPhotos, setAdditionalPhotos] = useState(selectedReservation?.additional_photos || []);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [selectedGuest, setSelectedGuest] = useState({ type: null, index: null });
 
@@ -529,6 +519,14 @@ const ReservationModal = ({
   const [isEditing, setIsEditing] = useState(false);
 
   const [isQrCodeOpen, setIsQrCodeOpen] = useState(false);
+
+  useEffect(() => {
+    console.log("Updated additionalGuests:", additionalGuests);
+    setReservationData((prev) => ({
+      ...prev,
+      guests_qty: additionalGuests.length, // Main guest + additional guests
+    }));
+  }, [additionalGuests]);
 
   const fetchLogs = async () => {
     try {
@@ -632,14 +630,14 @@ const ReservationModal = ({
 
   const removeAdditionalGuest = (index) => {
     setAdditionalGuests((prevGuests) => {
-      const updatedGuests = prevGuests.filter((_, i) => i !== index);
-      return updatedGuests; // Ensure a new array is returned
+        const updatedGuests = prevGuests.filter((_, i) => i !== index);
+        return updatedGuests;
     });
-  
-    // Update guests count
+
     setReservationData((prev) => ({
-      ...prev,
-      guests_qty: Math.max(prev.guests_qty - 1, 0),
+        ...prev,
+        guests_qty: Math.max(prev.guests_qty - 1, 0),
+        additional_guests: prev.additional_guests.filter((_, i) => i !== index)
     }));
   };
 
@@ -709,9 +707,9 @@ const ReservationModal = ({
     }
   
     // Append additional guests
-    console.log("Additional Guests:", additionalGuests);
+    console.log(addAdditionalGuest)
     formData.append("additional_guests", JSON.stringify(additionalGuests));
-  
+
     // Debugging FormData Content
     console.log("FormData Content:");
     formData.forEach((value, key) => {
@@ -782,12 +780,6 @@ const ReservationModal = ({
   
     const hasChildren = additionalGuests.some((guest) => guest.is_child);
   
-    if (hasChildren && reservationData.additional_photos.length === 0) {
-      alert("Você deve adicionar pelo menos uma foto se houver crianças na reserva.");
-      setIsSubmitting(false);
-      return;
-    }
-  
     // Append reservation data to formData
     formData.append("observations", reservationData.observations);
     formData.append("guest_name", reservationData.guest_name);
@@ -808,8 +800,7 @@ const ReservationModal = ({
   
     // Append Additional Guests
     formData.append("additional_guests", JSON.stringify(additionalGuests));
-    formData.append("additional_photos", JSON.stringify(additionalPhotos));
-  
+
     try {
       const response = await api.patch(
         `/api/reservations/${selectedReservation.id}/`,
@@ -931,13 +922,6 @@ const ReservationModal = ({
     }));
   };
 
-  const updatePhotos = (photos) => {
-    setReservationData((prev) => ({
-      ...prev,
-      additional_photos: photos,
-    }));
-  };
-
   const closeModal1 = () => {
     closeModal();
   };
@@ -996,7 +980,7 @@ const ReservationModal = ({
     doc.setLineWidth(0.5);
     doc.line(10, 115, 200, 115);
     
-    // Add basic information
+// Add basic information
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
     doc.text("Informações Gerais", 10, 125); 
@@ -1218,7 +1202,7 @@ const ReservationModal = ({
     const selectedDate = isValidDate
       ? new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, minute)
       : new Date(); // Fallback to today
-  
+
     return (
       <DatePicker
         selected={selectedDate}
@@ -1242,6 +1226,36 @@ const ReservationModal = ({
     );
   };
 
+  const handleImageCaptured = (newImage, guestType, guestIndex) => {
+    if (guestType === "main") {
+        setReservationData((prev) => ({
+            ...prev,
+            image_base64: newImage,
+        }));
+    } else if (guestType === "additional") {
+        setAdditionalGuests((prevGuests) =>
+            prevGuests.map((guest, i) =>
+                i === guestIndex ? { ...guest, image_base64: newImage } : guest
+            )
+        );
+    }
+  };
+
+  // useEffect(() => {
+  //   if (selectedReservation?.additional_guests) {
+  //       setAdditionalGuests(
+  //           selectedReservation.additional_guests.map((guest) => ({
+  //               name: guest.name || "",
+  //               document: guest.document || "",
+  //               document_type: guest.document_type || "",
+  //               age: guest.age || 0,
+  //               is_child: guest.is_child || false,
+  //               image_base64: guest.image_base64 || "",
+  //           }))
+  //       );
+  //   }
+  // }, [selectedReservation]);
+
   return (
     <ModalOverlay onClick={closeModal1}>
       <ModalContainer onClick={(e) => e.stopPropagation()} className="modal-container">
@@ -1253,6 +1267,7 @@ const ReservationModal = ({
             guestIndex={selectedGuest.index}
             additionalGuests={additionalGuests}
             fetchReservations={fetchReservations}
+            onImageCaptured={handleImageCaptured}
           />
         )}
         <div style={{ display: 'flex', alignContent: 'center', alignItems: 'center', justifyContent: "space-between" }}>
@@ -1381,7 +1396,7 @@ const ReservationModal = ({
         ) : (
           <Row style={{ alignItems: "center", gap: "2px" }}>
             <ColumnProfile onClick={() => {
-              setSelectedGuest({ type: "main", index: null });
+              setSelectedGuest({ type: "main", index: null, img: reservationData.image_base64 });
               setIsCameraOpen(true);
             }}>
               {reservationData.image_base64 ? (
@@ -1657,7 +1672,7 @@ const ReservationModal = ({
         </Row>
             
         <div>
-          {additionalGuests.map((guest, index) => (
+          {additionalGuests?.map((guest, index) => (
             <div key={index} style={{ margin: '15px 0' }}>
               <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <strong>Hóspede Adicional:</strong>

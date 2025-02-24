@@ -78,7 +78,7 @@ const LoadingSpinner = styled.div`
   justify-content: center;
 `;
 
-const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, additionalGuests, fetchReservations }) => {
+const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, additionalGuests, fetchReservations, onImageCaptured }) => {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const [stream, setStream] = useState(null);
@@ -156,11 +156,10 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
         setIsUploading(true);
         const token = localStorage.getItem("accessToken");
         const formData = new FormData();
-
+    
         if (guestType === "main") {
             formData.append("image_base64", imageBase64);
         } else if (guestType === "additional") {
-            // Ensure guestIndex is within bounds
             if (guestIndex >= 0 && guestIndex < additionalGuests.length) {
                 additionalGuests[guestIndex].image_base64 = imageBase64;
             } else {
@@ -169,11 +168,10 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
                 setIsUploading(false);
                 return;
             }
-
-            // Append the updated list of guests
+    
             formData.append("additional_guests", JSON.stringify(additionalGuests));
         }
-
+    
         try {
             const response = await axios.patch(
                 `${process.env.REACT_APP_API_URL}/api/reservations/${reservationId}/`,
@@ -185,17 +183,13 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
                     },
                 }
             );
-
-            if (response.status === 200) {
-                alert("Imagem atualizada com sucesso!");
-                fetchReservations(); // Refresh data
-                onClose();
-                setIsUploading(false);
-            } else {
-                alert("Falha ao atualizar a imagem.");
-            }
+    
+            onClose();
+            fetchReservations();
+            onImageCaptured(imageBase64, guestType, guestIndex);
+            setIsUploading(false);
         } catch (error) {
-            console.error("Erro ao atualizar imagem:", error);
+            setIsUploading(false);
             alert("Erro ao atualizar a imagem. Tente novamente.");
         } finally {
             setIsUploading(false);
