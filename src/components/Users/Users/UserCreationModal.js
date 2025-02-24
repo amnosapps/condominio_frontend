@@ -311,7 +311,7 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium, availableApartmen
       } else {
           newUser = {
               ...newUser,
-              entry: new Date().toISOString(),
+              entry: new Date().toLocaleString(),
               condominium: condominium.id,
               apartment
           };

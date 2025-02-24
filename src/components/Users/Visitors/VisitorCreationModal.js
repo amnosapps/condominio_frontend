@@ -285,8 +285,8 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium, apartments 
       document,
       phone,
       role,
-      entry: new Date().toISOString(), // Set entry as the current date/time
-      entry_at: new Date().toISOString(), // Set entry as the current date/time
+      entry: new Date().toLocaleString(), // Set entry as the current date/time
+      entry_at: new Date().toLocaleString(), // Set entry as the current date/time
       exit: exit,
       image_base64: image,
     };

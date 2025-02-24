@@ -320,7 +320,7 @@ const VisitorEditModal = ({ visitor, onClose, fetchVisitors, condominium }) => {
 
   const handleRegisterExit = async () => {
     const token = localStorage.getItem("accessToken");
-    const now = new Date().toISOString();
+    const now = new Date().toLocaleString()
     setExitDate(now);
 
     try {
