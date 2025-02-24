@@ -491,22 +491,28 @@ const ReservationModal = ({
   
   const [additionalGuests, setAdditionalGuests] = useState(() => {
     const qty = selectedReservation?.guests_qty ? selectedReservation.guests_qty : 0;
-    return selectedReservation?.additional_guests.length > 0
-      ? selectedReservation.additional_guests.map((guest) => ({
-          name: guest.name || "",
-          document: guest.document || "",
-          document_type: guest.document_type || "",
-          age: guest.age || 0,
-          is_child: guest.is_child || false,
-          image_base64: guest.image_base64 || "", // Store guest profile image
-        }))
+    const uniqueGuests = new Map(); // To store unique guests
+  
+    selectedReservation?.additional_guests.forEach((guest) => {
+      uniqueGuests.set(guest.document, {
+        name: guest.name || "",
+        document: guest.document || "",
+        document_type: guest.document_type || "",
+        age: guest.age || 0,
+        is_child: guest.is_child || false,
+        image_base64: guest.image_base64 || "", 
+      });
+    });
+  
+    return qty > 0
+      ? Array.from(uniqueGuests.values())
       : Array.from({ length: qty }, () => ({
           name: "",
           document: "",
           document_type: "",
           age: 0,
           is_child: false,
-          image_base64: "", // Initialize empty profile image field
+          image_base64: "",
         }));
   });
 
@@ -625,9 +631,12 @@ const ReservationModal = ({
   };
 
   const removeAdditionalGuest = (index) => {
-    setAdditionalGuests((prev) => prev.filter((_, i) => i !== index));
+    setAdditionalGuests((prevGuests) => {
+      const updatedGuests = prevGuests.filter((_, i) => i !== index);
+      return updatedGuests; // Ensure a new array is returned
+    });
   
-    // Update the guests_qty count (ensure it doesn't go below zero)
+    // Update guests count
     setReservationData((prev) => ({
       ...prev,
       guests_qty: Math.max(prev.guests_qty - 1, 0),
