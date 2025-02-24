@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import axios from "axios";
 import { FaBuilding, FaCamera, FaFileImage, FaTimes } from "react-icons/fa";
 
@@ -175,6 +175,31 @@ const Button = styled.button`
   }
 `;
 
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+`;
+
+const LoadingSpinner = styled.div`
+  border: 3px solid #e05a00;
+  border-top: 3px solid white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: ${spin} 1s linear infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+
 const CaptureButton = styled(Button)`
   background: #f46600;
   margin-top: 1px;
@@ -195,7 +220,7 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium, availableApartmen
     const [userType, setUserType] = useState("");
     const [apartment, setApartment] = useState(""); // Single apartment for resident/visitor
     const [apartments, setApartments] = useState([]); // Multiple apartments for owner/manager
-
+    const [isUploading, setIsUploading] = useState(false);
     const [showCamera, setShowCamera] = useState(false);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
@@ -287,15 +312,16 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium, availableApartmen
     };
 
     const handleCreateUser = async () => {
-        const token = localStorage.getItem("accessToken");
+      setIsUploading(true);
+      const token = localStorage.getItem("accessToken");
 
-        let newUser = {
-          name,
-          document,
-          user_type: userType,
-          phone,
-          email,
-          image_base64: image
+      let newUser = {
+        name,
+        document,
+        user_type: userType,
+        phone,
+        email,
+        image_base64: image
       };
   
       if (["admin", "worker", "owner", "manager"].includes(userType)) {
@@ -318,20 +344,21 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium, availableApartmen
       }
 
         try {
-        await axios.post(
-            `${process.env.REACT_APP_API_URL}/api/condominium-users/`,
-            newUser,
-            {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-            params: { condominium: condominium.name, user_type: userType },
-            }
-        );
+          await axios.post(
+              `${process.env.REACT_APP_API_URL}/api/condominium-users/`,
+              newUser,
+              {
+              headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+              },
+              params: { condominium: condominium.name, user_type: userType },
+              }
+          );
 
-        fetchUsers();
-        onClose();
+          fetchUsers();
+          onClose();
+          setIsUploading(false);
         } catch (error) {
         console.error("Error creating user:", error);
         alert("Failed to create user. Please try again.");
@@ -438,7 +465,9 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium, availableApartmen
           </Select>
         )}
 
-        <Button onClick={handleCreateUser}>Criar Usuário</Button>
+      <ButtonContainer>
+        {isUploading ? <LoadingSpinner /> : <Button onClick={handleCreateUser}>Criar Usuário</Button>}
+      </ButtonContainer>
       </ModalContent>
     </ModalOverlay>
   );

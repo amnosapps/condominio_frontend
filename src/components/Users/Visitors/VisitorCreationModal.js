@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import axios from "axios";
 import { FaCamera, FaFileImage } from "react-icons/fa";
 import DatePicker from "react-datepicker";
@@ -158,6 +158,13 @@ const Select = styled.select`
   font-size: 14px;
 `;
 
+const ButtonContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+`;
+
 const Button = styled.button`
   width: 100%;
   padding: 10px;
@@ -183,6 +190,23 @@ const CaptureButton = styled(Button)`
   }
 `;
 
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+const LoadingSpinner = styled.div`
+  border: 3px solid #e05a00;
+  border-top: 3px solid white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: ${spin} 1s linear infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
 const VisitorCreationModal = ({ onClose, fetchVisitors, condominium, apartments }) => {
   const [name, setName] = useState("");
   const [unit, setUnit] = useState("");
@@ -192,6 +216,7 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium, apartments 
   const [phone, setPhone] = useState("");
   const [image, setImage] = useState(null);
   const [role, setRole] = useState(1); 
+  const [isUploading, setIsUploading] = useState(false);
 
   const [showCamera, setShowCamera] = useState(false);
   const videoRef = useRef(null);
@@ -275,6 +300,7 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium, apartments 
   };  
 
   const handleCreateVisitor = async () => {
+    setIsUploading(true);
     const token = localStorage.getItem("accessToken");
 
     // Get timezone offset in minutes and convert to hours/minutes format
@@ -323,6 +349,7 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium, apartments 
       console.log("Visitor created:", response.data);
       fetchVisitors();
       onClose();
+      setIsUploading(false);
     } catch (error) {
       console.error("Error creating visitor:", error.response?.data || error);
       alert("Failed to create visitor. Please check the details and try again.");
@@ -432,8 +459,9 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium, apartments 
             }}
           />
         </InputContainer>
-        
-        <Button onClick={handleCreateVisitor}>Registrar Entrada</Button>
+        <ButtonContainer>
+          {isUploading ? <LoadingSpinner /> : <Button onClick={handleCreateVisitor}>Registrar Entrada</Button>}
+        </ButtonContainer>
       </ModalContent>
     </ModalOverlay>
   );

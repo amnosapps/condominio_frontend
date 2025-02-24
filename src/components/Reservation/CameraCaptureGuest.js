@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { FaCamera, FaTimes } from "react-icons/fa";
 import axios from "axios";
 
@@ -59,6 +59,23 @@ const CaptureButton = styled.button`
   &:hover {
     background: #e05a00;
   }
+`;
+
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+const LoadingSpinner = styled.div`
+  border: 3px solid #e05a00;
+  border-top: 3px solid white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: ${spin} 1s linear infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, additionalGuests, fetchReservations }) => {
@@ -140,8 +157,6 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
         const token = localStorage.getItem("accessToken");
         const formData = new FormData();
 
-        console.log(guestType)
-
         if (guestType === "main") {
             formData.append("image_base64", imageBase64);
         } else if (guestType === "additional") {
@@ -159,8 +174,6 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
             formData.append("additional_guests", JSON.stringify(additionalGuests));
         }
 
-        console.log(additionalGuests)
-
         try {
             const response = await axios.patch(
                 `${process.env.REACT_APP_API_URL}/api/reservations/${reservationId}/`,
@@ -177,6 +190,7 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
                 alert("Imagem atualizada com sucesso!");
                 fetchReservations(); // Refresh data
                 onClose();
+                setIsUploading(false);
             } else {
                 alert("Falha ao atualizar a imagem.");
             }
@@ -198,7 +212,7 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
                 <Video ref={videoRef} autoPlay />
                 <canvas ref={canvasRef} style={{ display: "none" }} />
                 <CaptureButton onClick={captureImage} disabled={isUploading}>
-                    <FaCamera style={{ marginRight: "7px" }} /> {isUploading ? "Enviando..." : "Capturar"}
+                    <FaCamera style={{ marginRight: "7px" }} /> {isUploading ? <LoadingSpinner /> : "Capturar"}
                 </CaptureButton>
             </ModalContent>
         </ModalOverlay>
