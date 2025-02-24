@@ -277,23 +277,22 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium, apartments 
   const handleCreateVisitor = async () => {
     const token = localStorage.getItem("accessToken");
 
-    const now = new Date();
-
     // Get timezone offset in minutes and convert to hours/minutes format
-    const offsetMinutes = now.getTimezoneOffset(); // Returns difference in minutes from UTC
-    const offsetHours = Math.abs(Math.floor(offsetMinutes / 60)).toString().padStart(2, '0');
-    const offsetMins = Math.abs(offsetMinutes % 60).toString().padStart(2, '0');
+    const now = new Date();
+    const offsetMinutes = now.getTimezoneOffset(); // Returns offset in minutes (e.g., 180 for UTC-3)
+    const offsetHours = String(Math.abs(Math.floor(offsetMinutes / 60))).padStart(2, '0');
+    const offsetMins = String(Math.abs(offsetMinutes % 60)).padStart(2, '0');
     const sign = offsetMinutes > 0 ? '-' : '+'; // Reverse sign because getTimezoneOffset() gives minutes to subtract from UTC
 
-    // Format local time in ISO 8601 with timezone offset
     const localISOTime = now.getFullYear() +
-        '-' + (now.getMonth() + 1).toString().padStart(2, '0') +
-        '-' + now.getDate().toString().padStart(2, '0') +
-        'T' + now.getHours().toString().padStart(2, '0') +
-        ':' + now.getMinutes().toString().padStart(2, '0') +
-        ':' + now.getSeconds().toString().padStart(2, '0') +
-        '.' + now.getMilliseconds().toString().padStart(3, '0') +
+        '-' + String(now.getMonth() + 1).padStart(2, '0') +
+        '-' + String(now.getDate()).padStart(2, '0') +
+        'T' + String(now.getHours()).padStart(2, '0') +
+        ':' + String(now.getMinutes()).padStart(2, '0') +
+        ':' + String(now.getSeconds()).padStart(2, '0') +
+        '.' + String(now.getMilliseconds()).padStart(3, '0') +
         `${sign}${offsetHours}:${offsetMins}`;
+
 
     const newVisitor = {
       name,

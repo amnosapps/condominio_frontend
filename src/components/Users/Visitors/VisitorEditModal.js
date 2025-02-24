@@ -320,8 +320,23 @@ const VisitorEditModal = ({ visitor, onClose, fetchVisitors, condominium }) => {
 
   const handleRegisterExit = async () => {
     const token = localStorage.getItem("accessToken");
-    const now = new Date().toISOString();
-    setExitDate(now);
+    
+    const now = new Date();
+    const offsetMinutes = now.getTimezoneOffset(); // Difference from UTC in minutes
+    const offsetHours = Math.abs(Math.floor(offsetMinutes / 60)).toString().padStart(2, '0');
+    const offsetMins = Math.abs(offsetMinutes % 60).toString().padStart(2, '0');
+    const sign = offsetMinutes > 0 ? '-' : '+'; // Reverse sign because getTimezoneOffset() gives minutes to subtract from UTC
+
+    const localISOTime = now.getFullYear() +
+        '-' + (now.getMonth() + 1).toString().padStart(2, '0') +
+        '-' + now.getDate().toString().padStart(2, '0') +
+        'T' + now.getHours().toString().padStart(2, '0') +
+        ':' + now.getMinutes().toString().padStart(2, '0') +
+        ':' + now.getSeconds().toString().padStart(2, '0') +
+        '.' + now.getMilliseconds().toString().padStart(3, '0') +
+        `${sign}${offsetHours}:${offsetMins}`;
+
+    setExitDate(localISOTime);
 
     try {
       const response = await axios.patch(
