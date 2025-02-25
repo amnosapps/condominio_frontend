@@ -61,6 +61,15 @@ const CaptureButton = styled.button`
   }
 `;
 
+const CameraSelect = styled.select`
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+`;
+
 const spin = keyframes`
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -73,9 +82,6 @@ const LoadingSpinner = styled.div`
   width: 16px;
   height: 16px;
   animation: ${spin} 1s linear infinite;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 `;
 
 const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, additionalGuests, fetchReservations, onImageCaptured }) => {
@@ -83,72 +89,90 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
     const canvasRef = useRef(null);
     const [stream, setStream] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [devices, setDevices] = useState([]);
+    const [selectedDevice, setSelectedDevice] = useState("");
 
     useEffect(() => {
-        async function startCamera() {
+        async function getCameras() {
             try {
-                const videoStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "user" },
-                });
-                setStream(videoStream);
-                if (videoRef.current) videoRef.current.srcObject = videoStream;
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === "videoinput");
+                setDevices(videoDevices);
+                if (videoDevices.length > 0) {
+                    setSelectedDevice(videoDevices[0].deviceId);
+                    startCamera(videoDevices[0].deviceId);
+                }
             } catch (error) {
-                console.error("Camera access error:", error);
-                alert("Erro ao acessar a câmera.");
+                console.error("Error fetching cameras:", error);
+                alert("Erro ao acessar as câmeras.");
                 onClose();
             }
         }
 
-        startCamera();
+        getCameras();
 
-        return () => {
-            if (stream) {
-                stream.getTracks().forEach((track) => track.stop());
-            }
-        };
-    }, [onClose]);
+        return () => stopCamera();
+    }, []);
+
+    const startCamera = async (deviceId) => {
+        stopCamera(); // Stop any existing stream before starting a new one
+
+        try {
+            const videoStream = await navigator.mediaDevices.getUserMedia({
+                video: { deviceId: { exact: deviceId } },
+            });
+            setStream(videoStream);
+            if (videoRef.current) videoRef.current.srcObject = videoStream;
+        } catch (error) {
+            console.error("Camera access error:", error);
+            alert("Erro ao acessar a câmera.");
+            onClose();
+        }
+    };
+
+    const stopCamera = () => {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            setStream(null);
+        }
+        if (videoRef.current) {
+            videoRef.current.srcObject = null;
+        }
+    };
 
     const captureImage = async () => {
         if (!videoRef.current || !canvasRef.current) return;
-  
+
         const canvas = canvasRef.current;
         const context = canvas.getContext("2d");
-    
-        // Set fixed size to 500x500
-        const TARGET_WIDTH = 500;
-        const TARGET_HEIGHT = 500;
-        canvas.width = TARGET_WIDTH;
-        canvas.height = TARGET_HEIGHT;
-    
-        // Get the original video feed dimensions
+
+        canvas.width = 500;
+        canvas.height = 500;
+
         const videoWidth = videoRef.current.videoWidth;
         const videoHeight = videoRef.current.videoHeight;
-    
-        // Determine scaling for best fit (crop if necessary)
-        const scale = Math.max(TARGET_WIDTH / videoWidth, TARGET_HEIGHT / videoHeight);
+
+        const scale = Math.max(500 / videoWidth, 500 / videoHeight);
         const scaledWidth = videoWidth * scale;
         const scaledHeight = videoHeight * scale;
-        const offsetX = (scaledWidth - TARGET_WIDTH) / 2;
-        const offsetY = (scaledHeight - TARGET_HEIGHT) / 2;
-    
-        // Draw the resized and cropped image onto the canvas
+        const offsetX = (scaledWidth - 500) / 2;
+        const offsetY = (scaledHeight - 500) / 2;
+
         context.drawImage(videoRef.current, -offsetX, -offsetY, scaledWidth, scaledHeight);
-    
-        // Convert to Base64 JPEG (compressed)
-        const compressedImageBase64 = canvas.toDataURL("image/jpeg", 0.8); // 80% quality
-    
-        // Validate file size before setting state
+
+        const compressedImageBase64 = canvas.toDataURL("image/jpeg", 0.8);
+
         fetch(compressedImageBase64)
-            .then((res) => res.blob())
-            .then((blob) => {
+            .then(res => res.blob())
+            .then(blob => {
                 console.log(`Final Image Size: ${(blob.size / 1024).toFixed(2)} KB`);
-                if (blob.size > 100 * 1024) { // 100KB limit
+                if (blob.size > 100 * 1024) {
                     alert("O tamanho do arquivo não pode exceder 100KB.");
                     return;
                 }
             })
-            .catch((err) => console.error("Erro ao validar a imagem:", err));
-        // Send the image update request
+            .catch(err => console.error("Erro ao validar a imagem:", err));
+
         await updateGuestImage(compressedImageBase64);
     };
 
@@ -158,7 +182,7 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
         const formData = new FormData();
 
         formData.append("update_device", "true");
-    
+
         if (guestType === "main") {
             formData.append("image_base64", imageBase64);
         } else if (guestType === "additional") {
@@ -170,26 +194,24 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
                 setIsUploading(false);
                 return;
             }
-    
+
             formData.append("additional_guests", JSON.stringify(additionalGuests));
         }
-    
+
         try {
-            const response = await axios.patch(
-                `${process.env.REACT_APP_API_URL}/api/reservations/${reservationId}/`,
-                formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "multipart/form-data",
-                    },
-                }
-            );
-    
+            stopCamera(); // Stop camera before closing modal
             onClose();
             fetchReservations();
             onImageCaptured(imageBase64, guestType, guestIndex);
             setIsUploading(false);
+
+            await axios.patch(`${process.env.REACT_APP_API_URL}/api/reservations/${reservationId}/`, formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+
         } catch (error) {
             setIsUploading(false);
             alert("Erro ao atualizar a imagem. Tente novamente.");
@@ -201,10 +223,17 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
     return (
         <ModalOverlay>
             <ModalContent>
-                <CloseButton onClick={onClose}>
+                <CloseButton onClick={() => { stopCamera(); onClose(); }}>
                     <FaTimes />
                 </CloseButton>
                 <h3>Capturar Foto</h3>
+                <CameraSelect onChange={(e) => startCamera(e.target.value)} value={selectedDevice}>
+                    {devices.map((device) => (
+                        <option key={device.deviceId} value={device.deviceId}>
+                            {device.label || `Camera ${device.deviceId}`}
+                        </option>
+                    ))}
+                </CameraSelect>
                 <Video ref={videoRef} autoPlay />
                 <canvas ref={canvasRef} style={{ display: "none" }} />
                 <CaptureButton onClick={captureImage} disabled={isUploading}>

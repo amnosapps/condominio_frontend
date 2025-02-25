@@ -1239,6 +1239,8 @@ const ReservationModal = ({
             )
         );
     }
+
+    setIsCameraOpen(false)
   };
 
   // useEffect(() => {
