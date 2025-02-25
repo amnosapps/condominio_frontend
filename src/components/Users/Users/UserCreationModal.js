@@ -361,7 +361,7 @@ const UserCreationModal = ({ onClose, fetchUsers, condominium, availableApartmen
           setIsUploading(false);
         } catch (error) {
         console.error("Error creating user:", error);
-        alert("Failed to create user. Please try again.");
+        alert("Erro ao tentar criar usuário. Tente novamente!");
         }
     };
 

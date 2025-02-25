@@ -352,7 +352,8 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium, apartments 
       setIsUploading(false);
     } catch (error) {
       console.error("Error creating visitor:", error.response?.data || error);
-      alert("Failed to create visitor. Please check the details and try again.");
+      alert("Falha ao criar visitante.");
+      setIsUploading(false)
     }
   };
 
