@@ -720,7 +720,7 @@ const ReservationCalendar = ({ profile }) => {
 
     var total_guests = reservations.filter((reservation) => reservation.active &&
       normalizeDate(day) >= normalizeDate(reservation.checkin) && 
-      normalizeDate(day) <= normalizeDate(reservation.checkout))
+      normalizeDate(day) <= normalizeDate(reservation.checkout) && !reservation.checkout_at)
     .reduce((totalGuests, reservation) => totalGuests + (reservation.guests_qty + 1),0);
 
     return total_guests
