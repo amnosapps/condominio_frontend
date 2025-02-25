@@ -46,7 +46,11 @@ const generateLineChartData = (reservations, visitors) => {
 
   // Function to count total visitors for a specific day
   const getTotalVisitorsForDay = (day) => {
-    return visitors.length;
+    return visitors.filter(
+      (visitor) =>
+        normalizeDate(day) >= normalizeDate(visitor.entry_at) &&
+        normalizeDate(day) <= normalizeDate(visitor.exit_at)
+    ).length;
   };
 
   // Generate data for guests and visitors
