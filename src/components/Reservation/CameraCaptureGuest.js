@@ -246,6 +246,7 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
 
         } catch (error) {
             setIsUploading(false);
+            console.log(error)
             alert("Erro ao atualizar a imagem. Tente novamente.");
         } finally {
             setIsUploading(false);
