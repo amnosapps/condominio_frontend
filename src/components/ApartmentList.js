@@ -219,6 +219,7 @@ function ApartmentList({ profile }) {
     const [statusFilter, setStatusFilter] = useState('');
     const [checkinTodayFilter, setCheckinTodayFilter] = useState(false);
     const [createModalOpen, setCreateModalOpen] = useState(false);
+    const [filterBy, setFilterBy] = useState('number');
 
     const fetchApartments = async () => {
         const token = localStorage.getItem('accessToken');
@@ -272,13 +273,19 @@ function ApartmentList({ profile }) {
     
     // Apply filters and search
     const filteredApartments = apartments.filter((apartment) => {
-        const matchesSearch = search === '' || apartment.number.includes(search);
+        const matchesSearch = search === '' || (
+            filterBy === 'number'
+                ? apartment.number.includes(search) // Search by apartment number
+                : apartment.manager_details?.name?.toLowerCase().includes(search.toLowerCase()) ?? false // Search by manager name
+        );
+    
         const matchesType = typeFilter === '' || apartment.type_name === typeFilter;
         const matchesStatus = statusFilter === '' || apartment.status === parseInt(statusFilter, 10);
         const matchesCustomFilter = filter ? filter(apartment) : true;
-
+    
         return matchesSearch && matchesType && matchesStatus && matchesCustomFilter;
     });
+    
 
     const clearFilters = (currentFilter = '') => {
         setSearch('');
@@ -303,10 +310,15 @@ function ApartmentList({ profile }) {
                         </ClearFiltersButton>
                         <SearchInput
                             type="text"
-                            placeholder="Buscar por número"
+                            placeholder={`Buscar por ${filterBy === 'number' ? 'Número' : 'Gestor'}`}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
+
+                        <FilterSelect value={filterBy} onChange={(e) => setFilterBy(e.target.value)}>
+                            <option value="number">Buscar por Número</option>
+                            <option value="manager">Buscar por Gestor</option>
+                        </FilterSelect>
                         
                         {profile.user_type === 'admin' && (
                             <CreateButton onClick={() => setCreateModalOpen(true)}>+ Apartamento</CreateButton>
