@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import { useParams } from "react-router-dom";
@@ -274,7 +274,7 @@ const ReservationsPage = ({ profile }) => {
   const [selectedReservation, setSelectedReservation] = useState(null);
   const [apartments, setApartments] = useState([]);
   const [FilteredApartments, setFilteredApartments] = useState([]);
-  const [filterType, setFilterType] = useState("Todos");
+  const [filterType, setFilterType] = useState("name");
 
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -382,17 +382,33 @@ const ReservationsPage = ({ profile }) => {
     if (value.trim() !== "") {
       filtered = reservations.filter((res) => {
         if (filterType === "name") {
-          return res.guest_name.toLowerCase().includes(value.toLowerCase());
+          const additionalGuestNames = res.additional_guests?.map((guest) => {
+            if (typeof guest === 'string') {
+              return guest.toLowerCase();
+            } else if (guest && typeof guest.name === 'string') {
+              return guest.name.toLowerCase();
+            }
+            return '';
+          }) || [];
+    
+          const matchesMainGuest = res.guest_name.toLowerCase().includes(value.toLowerCase());
+          const matchesAdditionalGuest = additionalGuestNames.some((guestName) =>
+            guestName.includes(value.toLowerCase())
+          );
+    
+          return matchesMainGuest || matchesAdditionalGuest;
         } else if (filterType === "apartment") {
           return res.apt_number.toString().includes(value);
         } else if (filterType === "reservation") {
           return res.id.toString().includes(value);
         } else if (filterType === "plate") {
           return res.vehicle_plate?.toString().toLowerCase().includes(value.toLowerCase()) ?? false;
-        } 
+        }
         return false;
       });
     }
+    
+    
   
     setFilteredReservations(filtered);
   };
@@ -401,7 +417,8 @@ const ReservationsPage = ({ profile }) => {
     const [startDate, endDate] = dates;
     setSelectedDateRange({ startDate, endDate });
     if (startDate && endDate) {
-      fetchReservations(); // Refetch reservations with the new date range
+      fetchReservations(); // Update reservations with the new date range
+      setShowDatePicker(false); // Closes DatePicker when selecting a second date
     }
   };
 
@@ -429,6 +446,21 @@ const ReservationsPage = ({ profile }) => {
       fetchReservations();
       fetchApartments();
     }, [selectedDateRange]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (datePickerRef.current && !datePickerRef.current.contains(event.target)) {
+        setShowDatePicker(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const datePickerRef = useRef(null); // Ref to detect clicks out
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
@@ -541,20 +573,21 @@ const ReservationsPage = ({ profile }) => {
       </FiltersRow>
 
       {/* Date Picker */}
-      <DatePickerContainer>
-      {showDatePicker && (
-        <DatePicker
-          selected={selectedDateRange.startDate}
-          onChange={handleDateRangeChange}
-          startDate={selectedDateRange.startDate}
-          endDate={selectedDateRange.endDate}
-          selectsRange
-          inline
-          dateFormat="dd/MM/yyyy"
-          locale="pt-BR"
-        />
-      )}
-      </DatePickerContainer>
+        {showDatePicker && (
+          <DatePickerContainer>
+            <DatePicker
+              selected={selectedDateRange.startDate}
+              onChange={handleDateRangeChange}
+              startDate={selectedDateRange.startDate}
+              endDate={selectedDateRange.endDate}
+              selectsRange
+              inline
+              dateFormat="dd/MM/yyyy"
+              locale="pt-BR"
+              onClickOutside={() => setShowDatePicker(false)}
+            />
+          </DatePickerContainer>
+        )}
 
       {/* Table */}
       <TableContainer>
