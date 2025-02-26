@@ -274,7 +274,7 @@ const ReservationsPage = ({ profile }) => {
   const [selectedReservation, setSelectedReservation] = useState(null);
   const [apartments, setApartments] = useState([]);
   const [FilteredApartments, setFilteredApartments] = useState([]);
-  const [filterType, setFilterType] = useState("Todos");
+  const [filterType, setFilterType] = useState("name");
 
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -382,17 +382,33 @@ const ReservationsPage = ({ profile }) => {
     if (value.trim() !== "") {
       filtered = reservations.filter((res) => {
         if (filterType === "name") {
-          return res.guest_name.toLowerCase().includes(value.toLowerCase());
+          const additionalGuestNames = res.additional_guests?.map((guest) => {
+            if (typeof guest === 'string') {
+              return guest.toLowerCase();
+            } else if (guest && typeof guest.name === 'string') {
+              return guest.name.toLowerCase();
+            }
+            return '';
+          }) || [];
+    
+          const matchesMainGuest = res.guest_name.toLowerCase().includes(value.toLowerCase());
+          const matchesAdditionalGuest = additionalGuestNames.some((guestName) =>
+            guestName.includes(value.toLowerCase())
+          );
+    
+          return matchesMainGuest || matchesAdditionalGuest;
         } else if (filterType === "apartment") {
           return res.apt_number.toString().includes(value);
         } else if (filterType === "reservation") {
           return res.id.toString().includes(value);
         } else if (filterType === "plate") {
           return res.vehicle_plate?.toString().toLowerCase().includes(value.toLowerCase()) ?? false;
-        } 
+        }
         return false;
       });
     }
+    
+    
   
     setFilteredReservations(filtered);
   };
