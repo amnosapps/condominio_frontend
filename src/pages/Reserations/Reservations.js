@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import { useParams } from "react-router-dom";
@@ -401,7 +401,8 @@ const ReservationsPage = ({ profile }) => {
     const [startDate, endDate] = dates;
     setSelectedDateRange({ startDate, endDate });
     if (startDate && endDate) {
-      fetchReservations(); // Refetch reservations with the new date range
+      fetchReservations(); // Update reservations with the new date range
+      setShowDatePicker(false); // Closes DatePicker when selecting a second date
     }
   };
 
@@ -429,6 +430,21 @@ const ReservationsPage = ({ profile }) => {
       fetchReservations();
       fetchApartments();
     }, [selectedDateRange]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (datePickerRef.current && !datePickerRef.current.contains(event.target)) {
+        setShowDatePicker(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const datePickerRef = useRef(null); // Ref to detect clicks out
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
@@ -541,20 +557,21 @@ const ReservationsPage = ({ profile }) => {
       </FiltersRow>
 
       {/* Date Picker */}
-      <DatePickerContainer>
-      {showDatePicker && (
-        <DatePicker
-          selected={selectedDateRange.startDate}
-          onChange={handleDateRangeChange}
-          startDate={selectedDateRange.startDate}
-          endDate={selectedDateRange.endDate}
-          selectsRange
-          inline
-          dateFormat="dd/MM/yyyy"
-          locale="pt-BR"
-        />
-      )}
-      </DatePickerContainer>
+        {showDatePicker && (
+          <DatePickerContainer>
+            <DatePicker
+              selected={selectedDateRange.startDate}
+              onChange={handleDateRangeChange}
+              startDate={selectedDateRange.startDate}
+              endDate={selectedDateRange.endDate}
+              selectsRange
+              inline
+              dateFormat="dd/MM/yyyy"
+              locale="pt-BR"
+              onClickOutside={() => setShowDatePicker(false)}
+            />
+          </DatePickerContainer>
+        )}
 
       {/* Table */}
       <TableContainer>
