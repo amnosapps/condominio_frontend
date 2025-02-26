@@ -233,7 +233,6 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
         try {
             stopCamera(); // Stop camera before closing modal
             onClose();
-            fetchReservations();
             onImageCaptured(imageBase64, guestType, guestIndex);
             setIsUploading(false);
 
