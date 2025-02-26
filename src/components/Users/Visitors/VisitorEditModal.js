@@ -22,13 +22,17 @@ const ModalContent = styled.div`
   padding: 20px;
   border-radius: 8px;
   width: 400px;
-  max-height: 90vh;
-  overflow-y: visible;
+  max-height: 80vh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Ensures content is aligned */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   position: relative;
+  overflow-x: hidden;
 
   &::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
   }
   &::-webkit-scrollbar-thumb {
     background: #888;
@@ -521,7 +525,7 @@ const VisitorEditModal = ({ visitor, onClose, fetchVisitors, condominium }) => {
             onChange={(e) => setObservations(e.target.value)}
             rows="3"
             style={{
-              width: "100%",
+              width: "95%",
               padding: "10px",
               border: "1px solid #ccc",
               borderRadius: "4px",
@@ -532,11 +536,13 @@ const VisitorEditModal = ({ visitor, onClose, fetchVisitors, condominium }) => {
         </InputContainer>
         <ButtonRow>
           {!exitDate && (
-            <Button className="red" onClick={handleRegisterExit}>
-              Registrar Saída
-            </Button>
+            <>
+              <Button className="red" onClick={handleRegisterExit}>
+                Registrar Saída
+              </Button>
+              <Button onClick={handleUpdateExpectedExit}>Salvar Previsão de Saída</Button>
+            </>
           )}
-          <Button onClick={handleUpdateExpectedExit}>Salvar Previsão de Saída</Button>
         </ButtonRow>
       </ModalContent>
     </ModalOverlay>

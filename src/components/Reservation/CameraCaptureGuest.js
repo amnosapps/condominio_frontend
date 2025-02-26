@@ -92,6 +92,16 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
     const [devices, setDevices] = useState([]);
     const [selectedDevice, setSelectedDevice] = useState("");
 
+    async function checkCameraPermissions() {
+        const result = await navigator.permissions.query({ name: "camera" });
+        if (result.state === "denied") {
+            alert("O acesso à câmera foi negado. Habilite nas configurações do navegador.");
+            return false;
+        }
+        return true;
+    }
+    
+
     useEffect(() => {
         async function getCameras() {
             try {
@@ -108,38 +118,54 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
                 onClose();
             }
         }
-
+    
         getCameras();
-
-        return () => stopCamera();
+    
+        return () => {
+            console.log("Component unmounting, stopping camera...");
+            stopCamera(); // Ensure camera stops when component unmounts
+        };
     }, []);
+    
 
     const startCamera = async (deviceId) => {
-        stopCamera(); // Stop any existing stream before starting a new one
-
         try {
-            const videoStream = await navigator.mediaDevices.getUserMedia({
-                video: { deviceId: { exact: deviceId } },
-            });
+            const hasPermission = await checkCameraPermissions();
+            if (!hasPermission) {
+                return;
+            }
+    
+            stopCamera();
+            const constraints = {
+                video: deviceId ? { deviceId: { ideal: deviceId } } : true
+            };
+            const videoStream = await navigator.mediaDevices.getUserMedia(constraints);
             setStream(videoStream);
             if (videoRef.current) videoRef.current.srcObject = videoStream;
         } catch (error) {
             console.error("Camera access error:", error);
-            alert("Erro ao acessar a câmera.");
+            if (error.name === "NotAllowedError") {
+                alert("Permissão de câmera negada. Habilite nas configurações do navegador.");
+            } else if (error.name === "NotFoundError") {
+                alert("Nenhuma câmera foi encontrada.");
+            } else if (error.name === "OverconstrainedError") {
+                alert("Nenhuma câmera disponível atende aos requisitos.");
+            } else {
+                alert("Erro ao acessar a câmera.");
+            }
             onClose();
         }
     };
+    
 
     const stopCamera = () => {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            setStream(null);
+        console.log("Stopping camera...");
+        if (videoRef.current && videoRef.current.srcObject) {
+          videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+          videoRef.current.srcObject = null;
         }
-        if (videoRef.current) {
-            videoRef.current.srcObject = null;
-        }
-    };
-
+      };
+      
     const captureImage = async () => {
         if (!videoRef.current || !canvasRef.current) return;
 
@@ -172,6 +198,12 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
                 }
             })
             .catch(err => console.error("Erro ao validar a imagem:", err));
+
+        
+        if (videoRef.current.srcObject) {
+            videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+            videoRef.current.srcObject = null;
+        }
 
         await updateGuestImage(compressedImageBase64);
     };
@@ -220,10 +252,16 @@ const CameraCaptureModal = ({ onClose, reservationId, guestType, guestIndex, add
         }
     };
 
+    const handleClose = () => {
+        console.log("Closing modal, stopping camera...");
+        stopCamera(); // Stop the camera before closing the modal
+        onClose();
+      };
+
     return (
         <ModalOverlay>
             <ModalContent>
-                <CloseButton onClick={() => { stopCamera(); onClose(); }}>
+                <CloseButton  onClick={handleClose}>
                     <FaTimes />
                 </CloseButton>
                 <h3>Capturar Foto</h3>

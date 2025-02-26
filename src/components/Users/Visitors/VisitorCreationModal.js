@@ -23,13 +23,17 @@ const ModalContent = styled.div`
   padding: 20px;
   border-radius: 8px;
   width: 400px;
-  max-height: 90vh;
-  overflow-y: visible;
+  max-height: 80vh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Ensures content is aligned */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   position: relative;
+  overflow-x: hidden;
 
   &::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
   }
   &::-webkit-scrollbar-thumb {
     background: #888;
@@ -163,17 +167,20 @@ const ButtonContainer = styled.div`
   align-items: center;
   justify-content: center;
   width: 100%;
+  margin-top: auto; /* Pushes the button to the bottom */
 `;
 
 const Button = styled.button`
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   background: #09801d;
   color: white;
   border: none;
   border-radius: 4px;
   font-size: 14px;
   cursor: pointer;
+  text-align: center;
+  margin-bottom: 10px; /* Prevents overlapping */
 
   &:hover {
     background:#05440f;
@@ -451,7 +458,7 @@ const VisitorCreationModal = ({ onClose, fetchVisitors, condominium, apartments 
             onChange={(e) => setObservations(e.target.value)}
             rows="3"
             style={{
-              width: "100%",
+              width: "95%",
               padding: "10px",
               border: "1px solid #ccc",
               borderRadius: "4px",

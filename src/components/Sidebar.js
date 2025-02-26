@@ -575,6 +575,7 @@ const Sidebar = ({ profile }) => {
                                 <NavButton
                                     onClick={() => handleNavigation(`/${selectedCondominium}/users`)}
                                     active={location.pathname.includes(`${selectedCondominium}/users`)}
+                                    disabled={profile.user_type === "owner" || profile.user_type === "manager"}
                                 >
                                     Usuários
                                 </NavButton>
