@@ -7,7 +7,7 @@ import { format, subMonths, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ReservationModal from '../ReservationModal';
 import ReservationCreationModal from '../Reservation/ReservationCreation';
-import { FaCommentAlt, FaHouseUser, FaUserEdit } from 'react-icons/fa';
+import { FaCommentAlt, FaEnvelope, FaHouseUser, FaPhone, FaUserEdit } from 'react-icons/fa';
 import OwnerDetailsSection, { OwnerDetailsSidebar } from './OwnerDetailsSection';
 import api from '../../services/api';
 
@@ -35,6 +35,32 @@ const Container = styled.div`
     width: 1000px;
     max-height: 80vh;
     overflow: hidden;
+`;
+
+const ProfileCell = styled.div`
+  /* display: flex; */
+  align-items: center;
+
+  .profile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .info {
+    margin-left: 5%;
+    > p {
+        display: flex;
+        justify-content: space-between;
+    }
+  }
+`;
+
+const ProfileImage = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
 `;
 
 const ModalContainer = styled.div`
@@ -933,16 +959,47 @@ function Modal({ selectedApartment, profile, onClose, fetchApartments }) {
 
                 {isOwnerSidebarOpen && (
                     <OwnerDetailsSidebar>
-                        <OwnerDetailsSection
-                            ownerDetails={ownerDetails}
-                            ownerToAdd={ownerToAdd}
-                            setOwnerToAdd={setOwnerToAdd}
-                            handleAddOwner={handleAddOwner}
-                            handleRemoveOwner={handleAddOwner}
-                            SaveButton={SaveButton}
-                            RemoveButton={RemoveButton}
-                            profile={profile}
-                        />
+                        <h4>Proprietário</h4>
+                        <ProfileCell>
+                            <div className='profile'>
+                                {selectedApartment.owner_details?.image_base64 ? (
+                                    <ProfileImage src={selectedApartment.owner_details.image_base64} alt="Owner Profile" />
+                                ) : (
+                                    <ProfileImage
+                                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(selectedApartment.owner_details?.name || 'Owner')}`}
+                                        alt={selectedApartment.owner_details?.name}
+                                    />
+                                )}
+                                {selectedApartment.owner_details?.name}
+                            </div>
+                            <div className='info'>
+                                <p><FaEnvelope color='#B94D00' /> {ownerDetails.email || 'N/A'}</p>
+                                <p><FaPhone color='#B94D00' /> {ownerDetails.phone || 'N/A'}</p>
+                            </div>
+                            
+                        </ProfileCell>
+                        <h4>Gestor Responsável</h4>
+                        {selectedApartment.manager_details ? (
+                            <ProfileCell>
+                                <div className='profile'>
+                                    {selectedApartment.manager_details.image_base64 ? (
+                                        <ProfileImage src={selectedApartment.manager_details.image_base64} alt="Manager Profile" />
+                                    ) : (
+                                        <ProfileImage
+                                            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(selectedApartment.manager_details?.name || 'Manager')}`}
+                                            alt={selectedApartment.manager_details?.name}
+                                        />
+                                    )}
+                                    {selectedApartment.manager_details?.name}
+                                </div>
+                                <div className='info'>
+                                    <p><FaEnvelope color='#B94D00' /> {selectedApartment.manager_details.email || 'N/A'}</p>
+                                    <p><FaPhone color='#B94D00' /> {selectedApartment.manager_details.phone || 'N/A'}</p>
+                                </div>
+                            </ProfileCell>
+                        ) : (
+                            <p>Nenhum gestor atribuído</p>
+                        )}
                     </OwnerDetailsSidebar>
                 )}
             </Container>

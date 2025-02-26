@@ -6,7 +6,7 @@ export const OwnerDetailsSidebar = styled.div`
     flex: 1.5; /* Same width as the messages sidebar */
     background: #F8F9FA; /* Light gray background for distinction */
     border-left: 1px solid #e9ecef;
-    padding: 1rem;
+    padding: 1rem 2rem;
     overflow-y: auto;
 `;
 
