@@ -509,7 +509,7 @@ const GuestForm = () => {
           required
         />
 
-        <div style={{ display: "flex", alignItems: "center"}}>
+        {/* <div style={{ display: "flex", alignItems: "center"}}>
           <SmallButton>
             <FaFileUpload />
             <input type="file" accept="image/*" hidden onChange={handleImageUpload} />
@@ -531,7 +531,7 @@ const GuestForm = () => {
               </Button>
             </>
           )}
-        </WebcamContainer>
+        </WebcamContainer> */}
 
         {/* Additional Guests Section */}
         <div style={{ marginTop: '15px' }}>
@@ -572,7 +572,7 @@ const GuestForm = () => {
                 onChange={(e) => updateGuestDetails(index, "document", e.target.value)}
               />
 
-              <div style={{ display: "flex", alignItems: "center"}}>
+              {/* <div style={{ display: "flex", alignItems: "center"}}>
                 <SmallButton>
                   <FaFileUpload />
                   <input type="file" accept="image/*" hidden onChange={(e) => handleGuestImageUpload(e, index)} />
@@ -596,7 +596,7 @@ const GuestForm = () => {
                     Capturar Foto
                   </Button>
                 </>
-              )}
+              )} */}
 
               
             </div>
