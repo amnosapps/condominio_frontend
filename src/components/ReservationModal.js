@@ -422,6 +422,39 @@ const CopyButton = styled.button`
   }
 `;
 
+const NavList = styled.ul`
+    background-color: #FFF8D2; 
+    border-left: 5px solid #FFCD00; 
+    padding: 10px 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    font-size: 13px;
+    margin-bottom: 15px;
+    max-width: 500px;
+    width: 100%;
+`;
+
+const NavItem = styled.li`
+    margin-bottom: 1rem;
+    cursor: pointer;
+`;
+
+const AlertIcon = styled.span`
+    margin-right: 10px; 
+    font-size: 18px; 
+    color: #FFCD00; 
+    display: inline-block;
+`;
+
+const YellowText = styled.p`
+    color: #9C7E00;
+    font-size: 13px; 
+    line-height: 1.4;
+    margin: 0;
+`;
+
 const ReservationModal = ({
   closeModal,
   selectedReservation,
@@ -1749,7 +1782,7 @@ const ReservationModal = ({
                       </StyledSelect>
                     </Column>
                   )}
-                </Column>
+                </Column>                  
               </Row>
               <div>
                 <CheckboxContainer>
@@ -1769,6 +1802,17 @@ const ReservationModal = ({
                   />
                   <Label>É menor de idade?</Label>
                 </CheckboxContainer>
+                {guest.is_child && (
+                  <NavList>
+                    <NavItem>
+                    <AlertIcon>⚠️</AlertIcon>
+                      <YellowText>
+                        Ao cadastrar um menor de idade, o representante legal declara estar ciente e permitir o uso dos dados e da imagem do menor de idade no sistema para todos os fins necessários à hospedagem e arquivamento das informações referente a relatórios internos.
+                      </YellowText>
+                    </NavItem>
+                  </NavList>
+                )}
+
               </div>
             </div>
           ))}
