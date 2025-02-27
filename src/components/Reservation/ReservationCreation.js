@@ -222,6 +222,7 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments, fetc
 
   const [additionalGuests, setAdditionalGuests] = useState([]);
   const [maxGuests, setMaxGuests] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -267,6 +268,7 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments, fetc
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const token = localStorage.getItem("accessToken");
 
@@ -305,6 +307,7 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments, fetc
       });
 
       alert("Reserva criada com sucesso!");
+      setLoading(false);
       onClose();
 
       if (fetchReservations) {
@@ -319,6 +322,7 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments, fetc
       alert(
         "Falha ao criar reserva. Por favor, verifique os dados e tente novamente."
       );
+      setLoading(false);
     }
   };
 
@@ -459,7 +463,9 @@ function ReservationCreationModal({ onClose, fetchReservations, apartments, fetc
               />
             </Column> */}
           </Row>
-          <SubmitButton type="submit">Criar Reserva</SubmitButton>
+          <SubmitButton type="submit" disabled={loading}>
+            {loading ? "Criando..." : "Criar Reserva"}
+          </SubmitButton>
         </form>
       </ModalContainer>
     </ModalOverlay>
