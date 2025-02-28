@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
 import api from '../services/api';
-import { FaAngleDown, FaBell, FaCalendarAlt, FaChartLine, FaCity, FaCloudSun, FaCog, FaCommentAlt, FaHome, FaKey, FaMoneyCheckAlt, FaPoll, FaRegCommentAlt, FaUnlockAlt, FaUsers } from 'react-icons/fa';
+import { FaAngleDown, FaBell, FaCalendarAlt, FaChartLine, FaCity, FaCloudSun, FaCog, FaCommentAlt, FaDoorOpen, FaHome, FaKey, FaMoneyCheckAlt, FaPoll, FaRegCommentAlt, FaUnlockAlt, FaUsers } from 'react-icons/fa';
 import { FaHeadset } from "react-icons/fa";
 import Modal from "./ModalSideBar/ModalSideBar"
 
@@ -148,7 +148,7 @@ const NavItem = styled.li`
 
 const NavButton = styled.button`
     color: ${(props) => (props.active ? '#F46600' : '#737373')};
-    /* opacity: ${(props) => (props.staff ? '1.0' : '0.')}; */
+    opacity: ${(props) => (props.disabled ? '0.4' : '1.0')};
     text-decoration: none;
     font-size: 18px;
     transition: color 0.3s;
@@ -597,20 +597,24 @@ const Sidebar = ({ profile }) => {
                     </NavItem>
                     <NavItem
                         style={{
-                            // paddingBottom: "10px",
-                            // paddingTop: "10px",
                             borderRadius: "10px",
-                            backgroundColor: isUsersDropdownOpen ? "#f7f7f7" : "#fff",
+                            backgroundColor: isAccessControlDropdownOpen ? "#f7f7f7" : "#fff",
                         }}
                         staff={profile.is_staff}
                     >
                         <NavButton onClick={toggleAccessControlDropdown}>
-                            <FaUnlockAlt />
+                            <FaDoorOpen />
                             Controle de Acesso
                             <FaAngleDown />
                         </NavButton>
                         {isAccessControlDropdownOpen && (
                             <div style={{ marginLeft: "30px", marginTop: "10px" }}>
+                                <NavButton
+                                    onClick={() => handleNavigation(`/${selectedCondominium}/access/commands`)}
+                                    active={location.pathname.includes(`${selectedCondominium}/access/commands`)}
+                                >
+                                    Portaria
+                                </NavButton>
                                 <NavButton
                                     onClick={() => handleNavigation(`/${selectedCondominium}/access/devices`)}
                                     active={location.pathname.includes(`${selectedCondominium}/access/devices`)}
