@@ -20,6 +20,7 @@ import SuccessPage from './pages/Guest/SuccessPage';
 import DeviceManagement from './pages/Access/Devices';
 import UserDeviceManagement from './pages/Access/UsersDevice';
 import UsersPage from './pages/Users/CondoUsersPage';
+import DeviceCommandPage from './pages/Access/CommandsDevice';
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('accessToken'));
@@ -135,6 +136,7 @@ function App() {
                     <Route path="users" element={<UsersPage profile={profile} condominium={selectedCondominium} />} />
                     <Route path="visitors" element={<VisitorsPage profile={profile} condominium={selectedCondominium} />} />
                     <Route path="access/devices" element={<DeviceManagement profile={profile} condominium={selectedCondominium} />} />
+                    <Route path="access/commands" element={<DeviceCommandPage profile={profile} condominium={selectedCondominium} />} />
                     <Route path="access/users" element={<UserDeviceManagement condominium={selectedCondominium} />} />
                 </Route>
 
