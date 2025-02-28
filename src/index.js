@@ -4,6 +4,13 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+import * as Sentry from "@sentry/react";
+
+Sentry.init({
+  dsn: "https://758469a483eab58df25214f1c1cf90be@o4504209991794688.ingest.us.sentry.io/4508898489991168",
+  integrations: [],
+});
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
