@@ -230,8 +230,8 @@ const LandingPage = () => {
 
             <Footer>
                 <p>
-                    © {new Date().getFullYear()} Desenvolvido por{' '}
-                    <a href="https://www.instagram.com/amnosapps/">Amnos Apps 🚀</a>
+                    © {new Date().getFullYear()}    
+                    {" "}Desenvolvido por iGoove
                 </p>
             </Footer>
         </Container>
