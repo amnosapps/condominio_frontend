@@ -378,7 +378,6 @@ const ReservationsPage = ({ profile }) => {
     setSearchTerm(value);
   
     let filtered = reservations;
-  
     if (value.trim() !== "") {
       filtered = reservations.filter((res) => {
         if (filterType === "name") {
@@ -403,6 +402,9 @@ const ReservationsPage = ({ profile }) => {
           return res.id.toString().includes(value);
         } else if (filterType === "plate") {
           return res.vehicle_plate?.toString().toLowerCase().includes(value.toLowerCase()) ?? false;
+        } else if (filterType === "manager") {
+          const filtered_apartments = apartments.filter(apto => apto?.manager_details?.name.toLowerCase() === value.toLowerCase());
+          return filtered_apartments.some(apto => apto.id === res.apartment);
         }
         return false;
       });
@@ -550,6 +552,7 @@ const ReservationsPage = ({ profile }) => {
               <option value="apartment">Apto</option>
               <option value="reservation">Reserva</option>
               <option value="plate">Placa do Veículo</option>
+              <option value="manager">Gestor</option>
             </select>
 
             <SearchInput
@@ -560,6 +563,8 @@ const ReservationsPage = ({ profile }) => {
                   ? "Buscar Apto"
                   : filterType === "plate"
                   ? "Buscar Placa do Veículo"
+                  : filterType === "manager"
+                  ? "Buscar pelo Gestor"
                   : "Buscar Reserva"
               }
               value={searchTerm}
