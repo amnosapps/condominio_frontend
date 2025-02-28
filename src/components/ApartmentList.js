@@ -96,7 +96,7 @@ const SearchInput = styled.input`
 
 const FilterSelect = styled.select`
     padding: 0.5rem;
-    font-size: 1rem;
+    font-size: 0.875rem;;
     border: 1px solid #cccccc;
     border-radius: 8px;
     width: 200px;
@@ -275,9 +275,13 @@ function ApartmentList({ profile }) {
     const filteredApartments = apartments.filter((apartment) => {
         const matchesSearch = search === '' || (
             filterBy === 'number'
-                ? apartment.number.includes(search) // Search by apartment number
-                : apartment.manager_details?.name?.toLowerCase().includes(search.toLowerCase()) ?? false // Search by manager name
-        );
+            ? apartment.number.includes(search) // Search by apartment number
+            : filterBy === 'manager'
+            ? apartment.manager_details?.name?.toLowerCase().includes(search.toLowerCase()) ?? false // Search by manager name
+            : filterBy === 'owner'
+            ? apartment.owner_details?.name?.toLowerCase().includes(search.toLowerCase()) ?? false // Search by owner name
+            : false
+    );
     
         const matchesType = typeFilter === '' || apartment.type_name === typeFilter;
         const matchesStatus = statusFilter === '' || apartment.status === parseInt(statusFilter, 10);
@@ -310,14 +314,15 @@ function ApartmentList({ profile }) {
                         </ClearFiltersButton>
                         <SearchInput
                             type="text"
-                            placeholder={`Buscar por ${filterBy === 'number' ? 'Número' : 'Gestor'}`}
+                            placeholder={`Buscar por ${filterBy === 'number' ? 'Número' : filterBy === 'manager' ? 'Gestor' : 'Proprietário'}`}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                        />
+                        />  
 
                         <FilterSelect value={filterBy} onChange={(e) => setFilterBy(e.target.value)}>
                             <option value="number">Buscar por Número</option>
                             <option value="manager">Buscar por Gestor</option>
+                            <option value="owner">Buscar pelo Proprietário</option>
                         </FilterSelect>
                         
                         {profile.user_type === 'admin' && (
