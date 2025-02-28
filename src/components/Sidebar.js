@@ -613,7 +613,7 @@ const Sidebar = ({ profile }) => {
                                     onClick={() => handleNavigation(`/${selectedCondominium}/access/commands`)}
                                     active={location.pathname.includes(`${selectedCondominium}/access/commands`)}
                                 >
-                                    Abrir Portas
+                                    Portaria
                                 </NavButton>
                                 <NavButton
                                     onClick={() => handleNavigation(`/${selectedCondominium}/access/devices`)}
