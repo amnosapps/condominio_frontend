@@ -1298,7 +1298,7 @@ const ReservationModal = ({
           )}
         </div>
 
-        {profile?.user_type === 'owner' || profile?.user_type === 'admin' ? (
+        {profile?.user_type === 'worker'|| profile?.user_type === 'owner' || profile?.user_type === 'admin' ? (
           <>
               <Row style={{
                 display: "flex",
@@ -1848,7 +1848,7 @@ const ReservationModal = ({
               Imprimir
           </PrintButton>
 
-          {profile?.user_type === "owner" || profile?.user_type === "admin" ? (
+          {profile?.user_type === "worker" ||profile?.user_type === "owner" || profile?.user_type === "admin" ? (
             !selectedReservation.active ? (
               <GreenButton 
                 onClick={handleReactivateReservation} 
