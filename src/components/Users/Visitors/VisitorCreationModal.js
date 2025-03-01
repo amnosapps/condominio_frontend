@@ -214,7 +214,7 @@ const LoadingSpinner = styled.div`
   justify-content: center;
 `;
 
-const VisitorCreationModal = ({ onClose, fetchVisitors, condominium, apartments }) => {
+const VisitorCreationModal = ({ onClose, fetchVisitors, condominium , apartments }) => {
   const [name, setName] = useState("");
   const [unit, setUnit] = useState("");
   const [exit, setExit] = useState("");

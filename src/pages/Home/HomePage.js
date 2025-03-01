@@ -214,9 +214,9 @@ const LoadingText = styled.p`
 `;
 
 // Component
-const Dashboard = ({ profile }) => {
+const Dashboard = ({ profile, condominium }) => {
     const params = useParams();
-    const selectedCondominium = params.condominium;
+    const selectedCondominium = condominium;
 
     const [reservations, setReservations] = useState([]);
     const [reservationsCheckin, setReservationsCheckin] = useState([]);

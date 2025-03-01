@@ -248,6 +248,8 @@ const VisitorEditModal = ({ visitor, onClose, fetchVisitors, condominium }) => {
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
 
+  console.log(condominium)
+
   useEffect(() => {
     const fetchApartments = async () => {
       const token = localStorage.getItem("accessToken");

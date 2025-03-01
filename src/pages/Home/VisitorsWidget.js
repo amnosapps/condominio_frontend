@@ -150,6 +150,8 @@ const VisitorsWidget = ({ visitors, fetchVisitors, selectedCondominium, apartmen
   // **FILTERING VISITORS WHO HAVE NOT EXITED**
   const activeVisitors = visitors.filter((visitor) => visitor.entry && !visitor.exit_at);
 
+  console.log(selectedCondominium)
+
   return (
     <Widget>
       <Header>
@@ -183,7 +185,7 @@ const VisitorsWidget = ({ visitors, fetchVisitors, selectedCondominium, apartmen
         <VisitorCreationModal
           onClose={closeCreationModal}
           fetchVisitors={fetchVisitors}
-          selectedCondominium={selectedCondominium}
+          condominium={selectedCondominium}
           apartments={apartments}
         />
       )}
@@ -194,7 +196,7 @@ const VisitorsWidget = ({ visitors, fetchVisitors, selectedCondominium, apartmen
           visitor={selectedVisitor}
           onClose={closeEditModal}
           fetchVisitors={fetchVisitors}
-          selectedCondominium={selectedCondominium}
+          condominium={selectedCondominium}
         />
       )}
     </Widget>
