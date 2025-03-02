@@ -253,7 +253,7 @@ const Dashboard = ({ profile, condominium }) => {
             {
                 headers: { Authorization: `Bearer ${token}` },
                 params: {
-                    condominium: selectedCondominium, // Replace with actual value
+                    condominium: selectedCondominium.name, // Replace with actual value
                     start_date: new Date(new Date().setDate(new Date().getDate() - 10)).toISOString(),
                     end_date: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
                 },
@@ -298,7 +298,7 @@ const Dashboard = ({ profile, condominium }) => {
         `${process.env.REACT_APP_API_URL}/api/visitors/`,
         {
           headers: { Authorization: `Bearer ${token}` },
-          params: { condominium: selectedCondominium },
+          params: { condominium: selectedCondominium.name },
         }
       );
 
@@ -313,7 +313,7 @@ const Dashboard = ({ profile, condominium }) => {
     try {
       const response = await api.get(`/api/apartments/`, {
         headers: { Authorization: `Bearer ${token}` },
-        params: { condominium: selectedCondominium },
+        params: { condominium: selectedCondominium.name },
       });
 
       const filteredApartments = response.data.filter((apartment) =>

@@ -969,7 +969,7 @@ const ReservationModal = ({
     doc.setFontSize(14);
     doc.text("Condomínio", 10, 80); 
     doc.setFont("helvetica", "normal");
-    doc.text(`Condomínio: ${selectedCondominium || "N/A"}`, 10, 90); 
+    doc.text(`Condomínio: ${selectedCondominium.name || "N/A"}`, 10, 90); 
     doc.text(`Apartamento: ${apartment || "N/A"}`, 10, 100); 
     if (apartment_owner) {
       doc.text(`Proprietário: ${apartment_owner}`, 10, 110); 
@@ -1064,7 +1064,7 @@ const ReservationModal = ({
     );
     
     // Salvar o PDF
-    doc.save(`${selectedCondominium}_reserva_${selectedReservation.id}_${apartment}.pdf`);
+    doc.save(`${selectedCondominium.name}_reserva_${selectedReservation.id}_${apartment}.pdf`);
     
   };
 
