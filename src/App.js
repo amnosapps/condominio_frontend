@@ -66,6 +66,7 @@ function App() {
 
     const handleSelectCondominium = (condo) => {
         setSelectedCondominium(condo);
+        localStorage.setItem('selectedCondominium', JSON.stringify(condo)); // Save to localStorage
     };
 
     const ProtectedRoute = ({ children }) => {
@@ -90,6 +91,13 @@ function App() {
         if (!isAuthenticated) return <Navigate to="/login" />;
         return children;
     };
+
+    useEffect(() => {
+        const savedCondo = localStorage.getItem('selectedCondominium');
+        if (savedCondo) {
+            setSelectedCondominium(JSON.parse(savedCondo));
+        }
+    }, []);
 
     return (
         <Router>
@@ -120,13 +128,13 @@ function App() {
                     element={
                         <ProtectedRoute>
                             <CondoRoute>
-                                <DashboardLayout profile={profile} condominium={selectedCondominium} />
+                                <DashboardLayout profile={profile} selectedCondominium={selectedCondominium} />
                             </CondoRoute>
                         </ProtectedRoute>
                     }
                 >
                     <Route path="home" element={<HomePage profile={profile} condominium={selectedCondominium} />} />
-                    <Route path="occupation" element={<ReservationCalendar profile={profile} condominium={selectedCondominium} />} />
+                    <Route path="occupation" element={<ReservationCalendar profile={profile} selectedCondominium={selectedCondominium} />} />
                     <Route path="apartments" element={<ApartmentList profile={profile} condominium={selectedCondominium} />} />
                     <Route path="reports" element={<CondominiumReport profile={profile} condominium={selectedCondominium} />} />
                     <Route path="reservations" element={<ReservationsPage profile={profile} condominium={selectedCondominium} />} />

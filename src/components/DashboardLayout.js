@@ -54,7 +54,7 @@ const MainContent = styled.main`
     }
 `;
 
-const DashboardLayout = ({ profile }) => {
+const DashboardLayout = ({ profile, selectedCondominium }) => {
     const [isSidebarOpen, setSidebarOpen] = useState(false);
 
     const toggleSidebar = () => {
@@ -63,7 +63,7 @@ const DashboardLayout = ({ profile }) => {
 
     return (
         <LayoutContainer>
-            <Sidebar profile={profile} isOpen={isSidebarOpen} onToggle={setSidebarOpen} />
+            <Sidebar profile={profile} isOpen={isSidebarOpen} onToggle={setSidebarOpen} selectedCondominium={selectedCondominium}  />
             <MainContent>
                 <Outlet />
             </MainContent>

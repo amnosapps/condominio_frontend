@@ -354,11 +354,10 @@ const UnreadCount = styled.span`
     display: ${(props) => (props.count > 0 ? "inline" : "none")};
 `;
 
-const Sidebar = ({ profile }) => {
+const Sidebar = ({ profile, selectedCondominium }) => {
     const navigate = useNavigate();
     const location = useLocation()
     const params = useParams();
-    const selectedCondominium = params.condominium;
 
     const condominiums = profile.condominiums
 
@@ -512,8 +511,8 @@ const Sidebar = ({ profile }) => {
                     <ImgLogo src="/IMG_0659.PNG" alt="home" />
                     <NavItem>
                         <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium}/home`)}
-                            active={location.pathname.includes(`${selectedCondominium}/home`)}
+                            onClick={() => handleNavigation(`/${selectedCondominium.name}/home`)}
+                            active={location.pathname.includes(`${selectedCondominium.name}/home`)}
                         >
                             <FaHome />
                             Início
@@ -521,8 +520,8 @@ const Sidebar = ({ profile }) => {
                     </NavItem>
                     <NavItem>
                         <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium}/occupation`)}
-                            active={location.pathname.includes(`${selectedCondominium}/occupation`)}
+                            onClick={() => handleNavigation(`/${selectedCondominium.name}/occupation`)}
+                            active={location.pathname.includes(`${selectedCondominium.name}/occupation`)}
                         >
                             <FaCalendarAlt />
                             Mapa de Ocupação
@@ -530,8 +529,8 @@ const Sidebar = ({ profile }) => {
                     </NavItem>
                     <NavItem>
                         <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium}/apartments`)}
-                            active={location.pathname.includes(`${selectedCondominium}/apartments`)}
+                            onClick={() => handleNavigation(`/${selectedCondominium.name}/apartments`)}
+                            active={location.pathname.includes(`${selectedCondominium.name}/apartments`)}
                         >
                             <FaKey />
                             Apartamentos
@@ -546,12 +545,12 @@ const Sidebar = ({ profile }) => {
                         {isReportsDropdownOpen && (
                             <div style={{ marginLeft: "30px", marginTop: "10px" }}>
                                 {/* <NavButton
-                                    onClick={() => handleNavigation(`/${selectedCondominium}/reports`)}
-                                    active={location.pathname.includes(`${selectedCondominium}/reports`)}
+                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/reports`)}
+                                    active={location.pathname.includes(`${selectedCondominium.name}/reports`)}
                                 >Geral</NavButton> */}
                                 <NavButton
-                                    onClick={() => handleNavigation(`/${selectedCondominium}/reservations`)}
-                                    active={location.pathname.includes(`${selectedCondominium}/reservations`)}
+                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/reservations`)}
+                                    active={location.pathname.includes(`${selectedCondominium.name}/reservations`)}
                                     style={{ paddingBottom: '10px' }}
                                 >Reservas</NavButton>
                             </div>
@@ -573,21 +572,21 @@ const Sidebar = ({ profile }) => {
                         {isUsersDropdownOpen && (
                             <div style={{ marginLeft: "30px", marginTop: "10px" }}>
                                 <NavButton
-                                    onClick={() => handleNavigation(`/${selectedCondominium}/users`)}
-                                    active={location.pathname.includes(`${selectedCondominium}/users`)}
+                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/users`)}
+                                    active={location.pathname.includes(`${selectedCondominium.name}/users`)}
                                     disabled={profile.user_type === "owner" || profile.user_type === "manager"}
                                 >
                                     Usuários
                                 </NavButton>
                                 <NavButton
-                                    onClick={() => handleNavigation(`/${selectedCondominium}/visitors`)}
-                                    active={location.pathname.includes(`${selectedCondominium}/visitors`)}
+                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/visitors`)}
+                                    active={location.pathname.includes(`${selectedCondominium.name}/visitors`)}
                                 >
                                     Visitantes
                                 </NavButton>
                                 <NavButton
-                                    onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
-                                    active={location.pathname.includes(`${selectedCondominium}/soon`)}
+                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
+                                    active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
                                     style={{ paddingBottom: '10px' }}
                                 >
                                     Hóspedes
@@ -610,21 +609,21 @@ const Sidebar = ({ profile }) => {
                         {isAccessControlDropdownOpen && (
                             <div style={{ marginLeft: "30px", marginTop: "10px" }}>
                                 <NavButton
-                                    onClick={() => handleNavigation(`/${selectedCondominium}/access/commands`)}
-                                    active={location.pathname.includes(`${selectedCondominium}/access/commands`)}
+                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/access/commands`)}
+                                    active={location.pathname.includes(`${selectedCondominium.name}/access/commands`)}
                                 >
                                     Portaria
                                 </NavButton>
                                 <NavButton
-                                    onClick={() => handleNavigation(`/${selectedCondominium}/access/devices`)}
-                                    active={location.pathname.includes(`${selectedCondominium}/access/devices`)}
+                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/access/devices`)}
+                                    active={location.pathname.includes(`${selectedCondominium.name}/access/devices`)}
                                     disabled={!profile.is_staff}
                                 >
                                     Dispositivos
                                 </NavButton>
                                 <NavButton
-                                    onClick={() => handleNavigation(`/${selectedCondominium}/access/users`)}
-                                    active={location.pathname.includes(`${selectedCondominium}/access/users`)}
+                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/access/users`)}
+                                    active={location.pathname.includes(`${selectedCondominium.name}/access/users`)}
                                     style={{ paddingBottom: '10px' }}
                                     disabled={!profile.is_staff}
                                 >
@@ -648,8 +647,8 @@ const Sidebar = ({ profile }) => {
                     
                     {/* <NavItem>
                         <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
-                            // active={location.pathname.includes(`${selectedCondominium}/soon`)}
+                            onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
+                            // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
                         >
                             <FaCloudSun />
                             Espaço
@@ -657,8 +656,8 @@ const Sidebar = ({ profile }) => {
                     </NavItem>
                     <NavItem>
                         <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
-                            // active={location.pathname.includes(`${selectedCondominium}/soon`)}
+                            onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
+                            // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
                         >
                         <FaCog />
                         Serviços
@@ -666,8 +665,8 @@ const Sidebar = ({ profile }) => {
                     </NavItem>
                     <NavItem>
                         <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
-                            // active={location.pathname.includes(`${selectedCondominium}/soon`)}
+                            onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
+                            // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
                         >
                         <FaMoneyCheckAlt />
                         Financeiro
@@ -675,8 +674,8 @@ const Sidebar = ({ profile }) => {
                     </NavItem>
                     <NavItem>
                         <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
-                            // active={location.pathname.includes(`${selectedCondominium}/soon`)}
+                            onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
+                            // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
                         >
                         <FaCity />
                         Condomínio
@@ -685,8 +684,8 @@ const Sidebar = ({ profile }) => {
                     
                     <NavItem>
                         <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
-                            // active={location.pathname.includes(`${selectedCondominium}/soon`)}
+                            onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
+                            // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
                         >
                         <FaCommentAlt />
                         Mensagens
@@ -694,8 +693,8 @@ const Sidebar = ({ profile }) => {
                     </NavItem>
                     <NavItem>
                         <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium}/soon`)}
-                            // active={location.pathname.includes(`${selectedCondominium}/soon`)}
+                            onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
+                            // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
                         >
                         <FaBell />
                         Notificações
@@ -750,7 +749,7 @@ const Sidebar = ({ profile }) => {
                             </Avatar>
                             <ProfileInfo>
                                 <UserName>Olá, {profile.name || "Usuário Desconhecido"}!</UserName>
-                                <StyledSelect value={selectedCondominium} onChange={handleCondominiumChange}>
+                                <StyledSelect value={selectedCondominium.name} onChange={handleCondominiumChange}>
                                     {condominiums?.map((condo) => (
                                         <option key={condo.id} value={condo.name}>
                                             {condo.name}

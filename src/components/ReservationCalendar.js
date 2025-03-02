@@ -530,9 +530,8 @@ const monthNames = [
 ];
 
 // Main component
-const ReservationCalendar = ({ profile }) => {
+const ReservationCalendar = ({ profile, selectedCondominium }) => {
   const params = useParams();
-  const selectedCondominium = params.condominium;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loadingNavigation, setLoadingNavigation] = useState(false);
@@ -542,6 +541,7 @@ const ReservationCalendar = ({ profile }) => {
   const [apartments, setApartments] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingApartments, setLoadingApartments] = useState(false);
 
   const [hoveredReservation, setHoveredReservation] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
@@ -580,10 +580,11 @@ const ReservationCalendar = ({ profile }) => {
 
   const fetchApartments = async () => {
     const token = localStorage.getItem("accessToken");
+    setLoadingApartments(true); // Start loading
     try {
       const response = await api.get(`/api/apartments/`, {
         headers: { Authorization: `Bearer ${token}` },
-        params: { condominium: selectedCondominium },
+        params: { condominium: selectedCondominium.name },
       });
 
       const filteredApartments = response.data.filter((apartment) =>
@@ -591,6 +592,7 @@ const ReservationCalendar = ({ profile }) => {
       );
 
       setApartments(filteredApartments);
+      setLoadingApartments(false);
     } catch (error) {
       console.error("Error fetching apartments:", error);
     }
@@ -632,7 +634,7 @@ const ReservationCalendar = ({ profile }) => {
       const response = await api.get(`/api/reservations/`, {
         headers: { Authorization: `Bearer ${token}` },
         params: {
-          condominium: selectedCondominium,
+          condominium: selectedCondominium.name,
           start_date: formattedStartDate,
           end_date: formattedEndDate,
         },
@@ -686,9 +688,13 @@ const ReservationCalendar = ({ profile }) => {
   };
   
   const loadData = async () => {
-    await Promise.all([fetchApartments(), fetchReservations(currentPage)]);
+    await Promise.all([fetchReservations(currentPage)]);
     setLoading(false);
   };
+
+  useEffect(() => {
+    fetchApartments();
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -977,12 +983,12 @@ const ReservationCalendar = ({ profile }) => {
           + Criar Reserva
         </CreateReservationButton>
         <FiltersWrapper>
-          <FilterInput
+          {/* <FilterInput
             type="text"
             placeholder="Busque uma reserva"
             value={guestFilter}
             onChange={(e) => setGuestFilter(e.target.value)}
-          />
+          /> */}
           <FilterDropdown value={filterType} onChange={handleFilterTypeChange}>
             <option value="Temporada">Temporada</option>
             <option value="Todos">Todos</option>
@@ -1059,7 +1065,7 @@ const ReservationCalendar = ({ profile }) => {
           </select>
         </div>
       </CalendarHeader>
-      {loading ? (
+      {loadingApartments ? (
         <LoadingSpinner />
       ) : (
         <CalendarContainer>
