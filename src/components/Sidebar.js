@@ -499,6 +499,8 @@ const Sidebar = ({ profile, selectedCondominium }) => {
         setIsModalOpen(true);
       };
 
+    // console.log(selectedCondominium)
+
     return (
         <>
              {isMobile && (

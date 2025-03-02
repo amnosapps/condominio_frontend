@@ -78,6 +78,14 @@ function App() {
     const CondoRoute = ({ children }) => {
         const { condominium } = useParams();
         
+        console.log('---- 1', condominium, condominiums)
+
+        if (condominiums.length === 1) {
+            console.log("🔹 Only one condominium found. Setting it as selected:", condominiums[0]);
+            setSelectedCondominium(condominiums[0]);
+            localStorage.setItem('selectedCondominium', JSON.stringify(condominiums[0]));
+        }
+        
         useEffect(() => {
             if (condominium && condominiums.length > 0) {
                 const foundCondo = condominiums.find(condo => condo.name === condominium);
@@ -93,11 +101,20 @@ function App() {
     };
 
     useEffect(() => {
+        console.log('teste')
         const savedCondo = localStorage.getItem('selectedCondominium');
         if (savedCondo) {
             setSelectedCondominium(JSON.parse(savedCondo));
         }
     }, []);
+
+    useEffect(() => {
+        if (condominiums.length === 1) {
+            console.log("🔹 Only one condominium found. Setting it as selected:", condominiums[0]);
+            setSelectedCondominium(condominiums[0]);
+            localStorage.setItem('selectedCondominium', JSON.stringify(condominiums[0]));
+        }
+    }, [condominiums]);
 
     return (
         <Router>

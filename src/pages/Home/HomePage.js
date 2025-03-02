@@ -254,7 +254,7 @@ const Dashboard = ({ profile, condominium }) => {
                 headers: { Authorization: `Bearer ${token}` },
                 params: {
                     condominium: selectedCondominium.name, // Replace with actual value
-                    start_date: new Date(new Date().setDate(new Date().getDate() - 10)).toISOString(),
+                    start_date: new Date(new Date().setDate(new Date().getDate() - 3)).toISOString(),
                     end_date: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
                 },
             }
