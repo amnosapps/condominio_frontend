@@ -693,12 +693,16 @@ const ReservationCalendar = ({ profile, selectedCondominium }) => {
   };
 
   useEffect(() => {
-    fetchApartments();
-  }, []);
+    if (selectedCondominium) {
+      fetchApartments();
+    }
+  }, [selectedCondominium]);
 
   useEffect(() => {
-    loadData();
-  }, [currentPage, filterType]);
+    if (selectedCondominium) {
+      loadData();
+    }
+  }, [selectedCondominium, currentPage, filterType]);  
 
   const handleFilterTypeChange = (e) => {
     setFilterType(e.target.value); // Update the filter type
@@ -1088,9 +1092,7 @@ const ReservationCalendar = ({ profile, selectedCondominium }) => {
                   fetchApartments={fetchApartments}
               />
             )}
-              {/* {apartments.filter((apartment) => 
-              daysInView.some((day) => getReservationBars(apartment.number, day).length > 0)
-            ) */}
+              
             {apartments.map(apartment => (
               <RoomRow key={apartment.id} daysInView={daysInView.length}>
                 <RoomLabel

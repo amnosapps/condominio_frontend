@@ -503,269 +503,274 @@ const Sidebar = ({ profile, selectedCondominium }) => {
 
     return (
         <>
-             {isMobile && (
-                <HamburgerButton onClick={() => setIsOpen((prev) => !prev)}>
-                    ☰
-                </HamburgerButton>
-            )}
-            <SidebarContainer isOpen={isOpen} isMobile={isMobile}>
-                <NavList isMobile={isMobile} isOpen={isOpen}>
-                    <ImgLogo src="/IMG_0659.PNG" alt="home" />
-                    <NavItem>
-                        <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium.name}/home`)}
-                            active={location.pathname.includes(`${selectedCondominium.name}/home`)}
-                        >
-                            <FaHome />
-                            Início
-                        </NavButton>
-                    </NavItem>
-                    <NavItem>
-                        <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium.name}/occupation`)}
-                            active={location.pathname.includes(`${selectedCondominium.name}/occupation`)}
-                        >
-                            <FaCalendarAlt />
-                            Mapa de Ocupação
-                        </NavButton>
-                    </NavItem>
-                    <NavItem>
-                        <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium.name}/apartments`)}
-                            active={location.pathname.includes(`${selectedCondominium.name}/apartments`)}
-                        >
-                            <FaKey />
-                            Apartamentos
-                        </NavButton>
-                    </NavItem>
-                    <NavItem style={{ borderRadius: '10px' , backgroundColor: isReportsDropdownOpen ? '#f7f7f7' : '#fff' }}>
-                        <NavButton onClick={toggleReportsDropdown}>
-                            <FaChartLine />
-                            Relatórios
-                            <FaAngleDown />
-                        </NavButton>
-                        {isReportsDropdownOpen && (
-                            <div style={{ marginLeft: "30px", marginTop: "10px" }}>
-                                {/* <NavButton
-                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/reports`)}
-                                    active={location.pathname.includes(`${selectedCondominium.name}/reports`)}
-                                >Geral</NavButton> */}
+        {selectedCondominium && (
+                <>
+                    {isMobile && (
+                        <HamburgerButton onClick={() => setIsOpen((prev) => !prev)}>
+                            ☰
+                        </HamburgerButton>
+                    )}
+                    
+                    <SidebarContainer isOpen={isOpen} isMobile={isMobile}>
+                        <NavList isMobile={isMobile} isOpen={isOpen}>
+                            <ImgLogo src="/IMG_0659.PNG" alt="home" />
+                            <NavItem>
                                 <NavButton
-                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/reservations`)}
-                                    active={location.pathname.includes(`${selectedCondominium.name}/reservations`)}
-                                    style={{ paddingBottom: '10px' }}
-                                >Reservas</NavButton>
-                            </div>
-                        )}
-                    </NavItem>
-                    <NavItem
-                        style={{
-                            // paddingBottom: "10px",
-                            // paddingTop: "10px",
-                            borderRadius: "10px",
-                            backgroundColor: isUsersDropdownOpen ? "#f7f7f7" : "#fff",
-                        }}
-                    >
-                        <NavButton onClick={toggleUsersDropdown}>
-                            <FaUsers />
-                            Pessoas
-                            <FaAngleDown />
-                        </NavButton>
-                        {isUsersDropdownOpen && (
-                            <div style={{ marginLeft: "30px", marginTop: "10px" }}>
-                                <NavButton
-                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/users`)}
-                                    active={location.pathname.includes(`${selectedCondominium.name}/users`)}
-                                    disabled={profile.user_type === "owner" || profile.user_type === "manager"}
+                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/home`)}
+                                    active={location.pathname.includes(`${selectedCondominium.name}/home`)}
                                 >
-                                    Usuários
+                                    <FaHome />
+                                    Início
                                 </NavButton>
+                            </NavItem>
+                            <NavItem>
                                 <NavButton
-                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/visitors`)}
-                                    active={location.pathname.includes(`${selectedCondominium.name}/visitors`)}
+                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/occupation`)}
+                                    active={location.pathname.includes(`${selectedCondominium.name}/occupation`)}
                                 >
-                                    Visitantes
+                                    <FaCalendarAlt />
+                                    Mapa de Ocupação
                                 </NavButton>
+                            </NavItem>
+                            <NavItem>
+                                <NavButton
+                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/apartments`)}
+                                    active={location.pathname.includes(`${selectedCondominium.name}/apartments`)}
+                                >
+                                    <FaKey />
+                                    Apartamentos
+                                </NavButton>
+                            </NavItem>
+                            <NavItem style={{ borderRadius: '10px' , backgroundColor: isReportsDropdownOpen ? '#f7f7f7' : '#fff' }}>
+                                <NavButton onClick={toggleReportsDropdown}>
+                                    <FaChartLine />
+                                    Relatórios
+                                    <FaAngleDown />
+                                </NavButton>
+                                {isReportsDropdownOpen && (
+                                    <div style={{ marginLeft: "30px", marginTop: "10px" }}>
+                                        {/* <NavButton
+                                            onClick={() => handleNavigation(`/${selectedCondominium.name}/reports`)}
+                                            active={location.pathname.includes(`${selectedCondominium.name}/reports`)}
+                                        >Geral</NavButton> */}
+                                        <NavButton
+                                            onClick={() => handleNavigation(`/${selectedCondominium.name}/reservations`)}
+                                            active={location.pathname.includes(`${selectedCondominium.name}/reservations`)}
+                                            style={{ paddingBottom: '10px' }}
+                                        >Reservas</NavButton>
+                                    </div>
+                                )}
+                            </NavItem>
+                            <NavItem
+                                style={{
+                                    // paddingBottom: "10px",
+                                    // paddingTop: "10px",
+                                    borderRadius: "10px",
+                                    backgroundColor: isUsersDropdownOpen ? "#f7f7f7" : "#fff",
+                                }}
+                            >
+                                <NavButton onClick={toggleUsersDropdown}>
+                                    <FaUsers />
+                                    Pessoas
+                                    <FaAngleDown />
+                                </NavButton>
+                                {isUsersDropdownOpen && (
+                                    <div style={{ marginLeft: "30px", marginTop: "10px" }}>
+                                        <NavButton
+                                            onClick={() => handleNavigation(`/${selectedCondominium.name}/users`)}
+                                            active={location.pathname.includes(`${selectedCondominium.name}/users`)}
+                                            disabled={profile.user_type === "owner" || profile.user_type === "manager"}
+                                        >
+                                            Usuários
+                                        </NavButton>
+                                        <NavButton
+                                            onClick={() => handleNavigation(`/${selectedCondominium.name}/visitors`)}
+                                            active={location.pathname.includes(`${selectedCondominium.name}/visitors`)}
+                                        >
+                                            Visitantes
+                                        </NavButton>
+                                        <NavButton
+                                            onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
+                                            active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
+                                            style={{ paddingBottom: '10px' }}
+                                        >
+                                            Hóspedes
+                                        </NavButton>
+                                    </div>
+                                )}
+                            </NavItem>
+                            <NavItem
+                                style={{
+                                    borderRadius: "10px",
+                                    backgroundColor: isAccessControlDropdownOpen ? "#f7f7f7" : "#fff",
+                                }}
+                                staff={profile.is_staff}
+                            >
+                                <NavButton onClick={toggleAccessControlDropdown}>
+                                    <FaDoorOpen />
+                                    Controle de Acesso
+                                    <FaAngleDown />
+                                </NavButton>
+                                {isAccessControlDropdownOpen && (
+                                    <div style={{ marginLeft: "30px", marginTop: "10px" }}>
+                                        <NavButton
+                                            onClick={() => handleNavigation(`/${selectedCondominium.name}/access/commands`)}
+                                            active={location.pathname.includes(`${selectedCondominium.name}/access/commands`)}
+                                        >
+                                            Portaria
+                                        </NavButton>
+                                        <NavButton
+                                            onClick={() => handleNavigation(`/${selectedCondominium.name}/access/devices`)}
+                                            active={location.pathname.includes(`${selectedCondominium.name}/access/devices`)}
+                                            disabled={!profile.is_staff}
+                                        >
+                                            Dispositivos
+                                        </NavButton>
+                                        <NavButton
+                                            onClick={() => handleNavigation(`/${selectedCondominium.name}/access/users`)}
+                                            active={location.pathname.includes(`${selectedCondominium.name}/access/users`)}
+                                            style={{ paddingBottom: '10px' }}
+                                            disabled={!profile.is_staff}
+                                        >
+                                            Usuários
+                                        </NavButton>
+                                    </div>
+                                )}
+                            </NavItem>
+
+                            <>
+                            <NavItem>
+                                <NavButton
+                                onClick={handleOpenModal}>
+                                <FaHeadset /> 
+                                Fale Conosco
+                                </NavButton>
+                            </NavItem>
+
+                            {isModalOpen && <Modal onClose={() => setIsModalOpen(false)} />} 
+                            </>
+                            
+                            {/* <NavItem>
                                 <NavButton
                                     onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
-                                    active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
-                                    style={{ paddingBottom: '10px' }}
+                                    // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
                                 >
-                                    Hóspedes
+                                    <FaCloudSun />
+                                    Espaço
                                 </NavButton>
-                            </div>
-                        )}
-                    </NavItem>
-                    <NavItem
-                        style={{
-                            borderRadius: "10px",
-                            backgroundColor: isAccessControlDropdownOpen ? "#f7f7f7" : "#fff",
-                        }}
-                        staff={profile.is_staff}
-                    >
-                        <NavButton onClick={toggleAccessControlDropdown}>
-                            <FaDoorOpen />
-                            Controle de Acesso
-                            <FaAngleDown />
-                        </NavButton>
-                        {isAccessControlDropdownOpen && (
-                            <div style={{ marginLeft: "30px", marginTop: "10px" }}>
+                            </NavItem>
+                            <NavItem>
                                 <NavButton
-                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/access/commands`)}
-                                    active={location.pathname.includes(`${selectedCondominium.name}/access/commands`)}
+                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
+                                    // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
                                 >
-                                    Portaria
+                                <FaCog />
+                                Serviços
                                 </NavButton>
+                            </NavItem>
+                            <NavItem>
                                 <NavButton
-                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/access/devices`)}
-                                    active={location.pathname.includes(`${selectedCondominium.name}/access/devices`)}
-                                    disabled={!profile.is_staff}
+                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
+                                    // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
                                 >
-                                    Dispositivos
+                                <FaMoneyCheckAlt />
+                                Financeiro
                                 </NavButton>
+                            </NavItem>
+                            <NavItem>
                                 <NavButton
-                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/access/users`)}
-                                    active={location.pathname.includes(`${selectedCondominium.name}/access/users`)}
-                                    style={{ paddingBottom: '10px' }}
-                                    disabled={!profile.is_staff}
+                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
+                                    // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
                                 >
-                                    Usuários
+                                <FaCity />
+                                Condomínio
                                 </NavButton>
-                            </div>
-                        )}
-                    </NavItem>
-
-                    <>
-                    <NavItem>
-                        <NavButton
-                        onClick={handleOpenModal}>
-                        <FaHeadset /> 
-                        Fale Conosco
-                        </NavButton>
-                    </NavItem>
-
-                    {isModalOpen && <Modal onClose={() => setIsModalOpen(false)} />} 
-                    </>
-                    
-                    {/* <NavItem>
-                        <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
-                            // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
-                        >
-                            <FaCloudSun />
-                            Espaço
-                        </NavButton>
-                    </NavItem>
-                    <NavItem>
-                        <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
-                            // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
-                        >
-                        <FaCog />
-                        Serviços
-                        </NavButton>
-                    </NavItem>
-                    <NavItem>
-                        <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
-                            // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
-                        >
-                        <FaMoneyCheckAlt />
-                        Financeiro
-                        </NavButton>
-                    </NavItem>
-                    <NavItem>
-                        <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
-                            // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
-                        >
-                        <FaCity />
-                        Condomínio
-                        </NavButton>
-                    </NavItem>
-                    
-                    <NavItem>
-                        <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
-                            // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
-                        >
-                        <FaCommentAlt />
-                        Mensagens
-                        </NavButton>
-                    </NavItem>
-                    <NavItem>
-                        <NavButton
-                            onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
-                            // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
-                        >
-                        <FaBell />
-                        Notificações
-                        </NavButton>
-                    </NavItem> */}
-                </NavList>
-                
-                <ProfileAndLogoutContainer>
-                    {profile && (
-                        <ProfileContainer>
-                            <Avatar>
-                                {profile.name?.charAt(0).toUpperCase() || "?"}
-                                    {/* <NotificationBellContainer onClick={toggleNotifications}>
-                                        <BellIcon>🔔</BellIcon>
-                                        <UnreadCount count={unreadCount}>{unreadCount}</UnreadCount>
-                                    </NotificationBellContainer> */}
-                                    {showNotifications && (
-                                        <NotificationContainer>
-                                            <NotificationListContainer>
-                                                <NotificationHeader>
-                                                    Notificações
-                                                    <span onClick={markAllNotificationsAsRead} style={{ cursor: 'pointer', fontSize: 12 }}>
-                                                        Marcar todos como lido
-                                                    </span>
-                                                </NotificationHeader>
-                                                <NotificationBody>
-                                                    {notifications.length > 0 ? (
-                                                        notifications.map((notif) => (
-                                                            <NotificationItem
-                                                                key={notif.id}
-                                                                unread={!notif.is_read}
-                                                                onClick={() => {
-                                                                    markNotificationAsRead(notif.id);
-                                                                }}
-                                                            >
-                                                                <NotificationTitle>{notif.title}</NotificationTitle>
-                                                                <NotificationMessage>{notif.message}</NotificationMessage>
-                                                                <NotificationTime>{formatTime(notif.created_at)}</NotificationTime>
-                                                            </NotificationItem>
-                                                        ))
-                                                    ) : (
-                                                        <p style={{ padding: '15px', textAlign: 'center' }}>No notifications</p>
-                                                    )}
-                                                </NotificationBody>
-                                                    
-                                                <NotificationFooter onClick={toggleNotifications}>
-                                                    <>Fechar</>
-                                                </NotificationFooter>
-                                            </NotificationListContainer>
-                                        </NotificationContainer>
-                                    )}
-                            </Avatar>
-                            <ProfileInfo>
-                                <UserName>Olá, {profile.name || "Usuário Desconhecido"}!</UserName>
-                                <StyledSelect value={selectedCondominium.name} onChange={handleCondominiumChange}>
-                                    {condominiums?.map((condo) => (
-                                        <option key={condo.id} value={condo.name}>
-                                            {condo.name}
-                                        </option>
-                                    ))}
-                                </StyledSelect>
-                            </ProfileInfo>
-                        </ProfileContainer>
-                    )}
-                    <LogoutButton onClick={handleLogout}>
-                        Sair
-                    </LogoutButton>
-                </ProfileAndLogoutContainer>
-            </SidebarContainer>
+                            </NavItem>
+                            
+                            <NavItem>
+                                <NavButton
+                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
+                                    // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
+                                >
+                                <FaCommentAlt />
+                                Mensagens
+                                </NavButton>
+                            </NavItem>
+                            <NavItem>
+                                <NavButton
+                                    onClick={() => handleNavigation(`/${selectedCondominium.name}/soon`)}
+                                    // active={location.pathname.includes(`${selectedCondominium.name}/soon`)}
+                                >
+                                <FaBell />
+                                Notificações
+                                </NavButton>
+                            </NavItem> */}
+                        </NavList>
+                        
+                        <ProfileAndLogoutContainer>
+                            {profile && (
+                                <ProfileContainer>
+                                    <Avatar>
+                                        {profile.name?.charAt(0).toUpperCase() || "?"}
+                                            {/* <NotificationBellContainer onClick={toggleNotifications}>
+                                                <BellIcon>🔔</BellIcon>
+                                                <UnreadCount count={unreadCount}>{unreadCount}</UnreadCount>
+                                            </NotificationBellContainer> */}
+                                            {showNotifications && (
+                                                <NotificationContainer>
+                                                    <NotificationListContainer>
+                                                        <NotificationHeader>
+                                                            Notificações
+                                                            <span onClick={markAllNotificationsAsRead} style={{ cursor: 'pointer', fontSize: 12 }}>
+                                                                Marcar todos como lido
+                                                            </span>
+                                                        </NotificationHeader>
+                                                        <NotificationBody>
+                                                            {notifications.length > 0 ? (
+                                                                notifications.map((notif) => (
+                                                                    <NotificationItem
+                                                                        key={notif.id}
+                                                                        unread={!notif.is_read}
+                                                                        onClick={() => {
+                                                                            markNotificationAsRead(notif.id);
+                                                                        }}
+                                                                    >
+                                                                        <NotificationTitle>{notif.title}</NotificationTitle>
+                                                                        <NotificationMessage>{notif.message}</NotificationMessage>
+                                                                        <NotificationTime>{formatTime(notif.created_at)}</NotificationTime>
+                                                                    </NotificationItem>
+                                                                ))
+                                                            ) : (
+                                                                <p style={{ padding: '15px', textAlign: 'center' }}>No notifications</p>
+                                                            )}
+                                                        </NotificationBody>
+                                                            
+                                                        <NotificationFooter onClick={toggleNotifications}>
+                                                            <>Fechar</>
+                                                        </NotificationFooter>
+                                                    </NotificationListContainer>
+                                                </NotificationContainer>
+                                            )}
+                                    </Avatar>
+                                    <ProfileInfo>
+                                        <UserName>Olá, {profile.name || "Usuário Desconhecido"}!</UserName>
+                                        <StyledSelect value={selectedCondominium.name} onChange={handleCondominiumChange}>
+                                            {condominiums?.map((condo) => (
+                                                <option key={condo.id} value={condo.name}>
+                                                    {condo.name}
+                                                </option>
+                                            ))}
+                                        </StyledSelect>
+                                    </ProfileInfo>
+                                </ProfileContainer>
+                            )}
+                            <LogoutButton onClick={handleLogout}>
+                                Sair
+                            </LogoutButton>
+                        </ProfileAndLogoutContainer>
+                    </SidebarContainer>
+                </>
+            )}
         </>
     );
 };

@@ -78,8 +78,6 @@ function App() {
     const CondoRoute = ({ children }) => {
         const { condominium } = useParams();
         
-        console.log('---- 1', condominium, condominiums)
-
         if (condominiums.length === 1) {
             console.log("🔹 Only one condominium found. Setting it as selected:", condominiums[0]);
             setSelectedCondominium(condominiums[0]);
@@ -101,7 +99,6 @@ function App() {
     };
 
     useEffect(() => {
-        console.log('teste')
         const savedCondo = localStorage.getItem('selectedCondominium');
         if (savedCondo) {
             setSelectedCondominium(JSON.parse(savedCondo));

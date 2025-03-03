@@ -229,11 +229,10 @@ function ApartmentList({ profile }) {
                 params: { condominium: selectedCondominium },
             });
             setApartments(response.data);
+            setLoading(false);
         } catch (error) {
             console.error('Error fetching apartments:', error);
-        } finally {
-            setLoading(false);
-        }
+        } 
     };
 
     useEffect(() => {

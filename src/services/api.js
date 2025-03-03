@@ -5,7 +5,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 // Create an Axios instance
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     'ngrok-skip-browser-warning': 'true'
   },

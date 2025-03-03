@@ -299,6 +299,7 @@ const Dashboard = ({ profile, condominium }) => {
         {
           headers: { Authorization: `Bearer ${token}` },
           params: { condominium: selectedCondominium.name },
+          timeout: 30000,
         }
       );
 
@@ -332,7 +333,7 @@ const Dashboard = ({ profile, condominium }) => {
     fetchApartments()
     fetchNotifications()
     fetchVisitors()
-  }, []);
+  }, [selectedCondominium]);
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
