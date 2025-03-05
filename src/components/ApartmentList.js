@@ -219,27 +219,40 @@ function ApartmentList({ profile }) {
     const [statusFilter, setStatusFilter] = useState('');
     const [checkinTodayFilter, setCheckinTodayFilter] = useState(false);
     const [createModalOpen, setCreateModalOpen] = useState(false);
-    const [filterBy, setFilterBy] = useState('number');
+    const [filterBy, setFilterBy] = useState("manager");
 
     const fetchApartments = async () => {
         const token = localStorage.getItem('accessToken');
+        const params = new URLSearchParams();
+    
+        params.append("condominium", selectedCondominium);
+    
+        // Pass the appropriate filter parameters to the backend
+        if (search && filterBy === "manager") {
+            params.append("manager_name", search);
+        }
+    
+        if (typeFilter) params.append("type", typeFilter);
+        if (statusFilter) params.append("status", statusFilter);
+        if (checkinTodayFilter) params.append("checkin_today", true);
+    
         try {
             const response = await api.get(`/api/apartments/`, {
                 headers: { Authorization: `Bearer ${token}` },
-                params: { condominium: selectedCondominium },
+                params,
             });
             setApartments(response.data);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching apartments:', error);
-        } 
+        }
     };
 
     useEffect(() => {
         if (selectedCondominium) {
             fetchApartments();
         }
-    }, [selectedCondominium]);
+    }, [search, filterBy]);
 
     const handleEditClick = (apartment) => {
         setSelectedApartment(apartment);
@@ -271,19 +284,19 @@ function ApartmentList({ profile }) {
     };
     
     // Apply filters and search
-    const filteredApartments = apartments.filter((apartment) => {
-        const matchesSearch = search === '' || (
-            filterBy === 'number'
-                ? apartment.number.includes(search) // Search by apartment number
-                : apartment.manager_details?.name?.toLowerCase().includes(search.toLowerCase()) ?? false // Search by manager name
-        );
+    const filteredApartments = apartments?.filter((apartment) => {
+        // Only apply local filtering when searching by number
+        const matchesSearch = 
+            search === '' || (filterBy === 'number' && apartment.number.includes(search));
     
         const matchesType = typeFilter === '' || apartment.type_name === typeFilter;
         const matchesStatus = statusFilter === '' || apartment.status === parseInt(statusFilter, 10);
         const matchesCustomFilter = filter ? filter(apartment) : true;
     
-        return matchesSearch && matchesType && matchesStatus && matchesCustomFilter;
+        // If filtering by manager, do not apply matchesSearch (API already filters it)
+        return (filterBy === 'manager' || matchesSearch) && matchesType && matchesStatus && matchesCustomFilter;
     });
+    
     
 
     const clearFilters = (currentFilter = '') => {
@@ -328,7 +341,7 @@ function ApartmentList({ profile }) {
                         onChartClick={handleChartClick}
                     />
                     <ApartmentListContainer>
-                        {filteredApartments.map((apartment) => (
+                        {filteredApartments?.map((apartment) => (
                             <ApartmentCard
                                 key={apartment.id}
                                 apartment={apartment}

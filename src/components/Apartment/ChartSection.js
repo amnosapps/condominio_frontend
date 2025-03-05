@@ -48,32 +48,9 @@ function ChartSection({ apartments, onChartClick }) {
     );
 
     const calculateCheckinCheckoutCounts = () => {
-        const today = new Date();
-        const todayStart = startOfDay(today);
-        const todayEnd = endOfDay(today);
-    
-        let checkinsToday = [];
-        let checkoutsToday = [];
-    
-        apartments.forEach((apartment) => {
-            if (apartment.last_reservations) {
-                apartment.last_reservations.forEach((reservation) => {
-                    const checkinDate = reservation.checkin ? parseISO(reservation.checkin) : null;
-                    const checkoutDate = reservation.checkout ? parseISO(reservation.checkout) : null;
-    
-                    // Check if checkinDate falls within today
-                    if (checkinDate && isWithinInterval(checkinDate, { start: todayStart, end: todayEnd }) && !reservation.checkin_at && reservation.active) {
-                        checkinsToday.push(apartment);
-                    }
-    
-                    // Check if checkoutDate falls within today
-                    if (checkoutDate && isWithinInterval(checkoutDate, { start: todayStart, end: todayEnd }) && reservation.checkin_at && !reservation.checkout_at) {
-                        checkoutsToday.push(apartment);
-                    }
-                });
-            }
-        });
-    
+        const checkinsToday = apartments.filter(apartment => apartment.has_checkin_today);
+        const checkoutsToday = apartments.filter(apartment => apartment.has_checkout_today);
+
         return { checkinsToday, checkoutsToday };
     };
 

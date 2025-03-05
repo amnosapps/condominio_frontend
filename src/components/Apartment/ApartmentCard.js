@@ -12,8 +12,8 @@ const ApartmentCardContainer = styled.div`
     padding: 0.5rem;
     border: 1px solid #e3e7ed;
     border-radius: 8px;
-    width: 130px; /* Slightly wider */
-    height: 160px; /* Adjusted height */
+    width: 100px; /* Slightly wider */
+    height: 130px; /* Adjusted height */
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s, box-shadow 0.3s;
     cursor: pointer;
@@ -96,7 +96,7 @@ function ApartmentCard({ apartment, onClick }) {
                     <FaHome />
                     {apartment.type_name}
                 </div>
-                {apartment.type_name === 'Moradia' && (
+                {/* {apartment.type_name === 'Moradia' && (
                     <div>
                         <FaUsers />
                         Pessoas: {apartment.residents?.length || 0}
@@ -107,7 +107,7 @@ function ApartmentCard({ apartment, onClick }) {
                         <FaUsers />
                         Pessoas: {apartment.status_name === "Ocupado" ? guestCount : 0}
                     </div>
-                )}
+                )} */}
             </InfoContainer>
         </ApartmentCardContainer>
     );
