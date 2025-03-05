@@ -393,6 +393,37 @@ const SidebarToggleButton = styled.button`
     margin-right: 20px;
 `;
 
+const SidebarButtonWrapper = styled.div`
+  position: relative;
+  display: inline-block;
+  margin: 10px;
+`;
+
+const Tooltip = styled.div`
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  pointer-events: none;
+  z-index: 1000;
+  white-space: nowrap;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  ${SidebarButtonWrapper}:hover & {
+    visibility: visible;
+    opacity: 1;
+  }
+`;
+
+
 function Modal({ selectedApartment, profile, onClose, fetchApartments }) {
     const [residentToAdd, setResidentToAdd] = useState({ name: '', email: '', phone: '' });
     const [ownerToAdd, setOwnerToAdd] = useState({ name: '', email: '', phone: '', username: '', password: '' });
@@ -751,17 +782,23 @@ function Modal({ selectedApartment, profile, onClose, fetchApartments }) {
                             </div>
                         </div>
                         <div>
-                            <SidebarToggleButton
-                                onClick={() => setIsSidebarOpen((prev) => !prev)}
-                            >
-                                <FaCommentAlt />
-                            </SidebarToggleButton>
-                            <SidebarToggleButton
-                                onClick={() => setIsOwnerSidebarOpen((prev) => !prev)}
-                            >
-                                <FaUserEdit />
-                            </SidebarToggleButton>
-                            <CloseButton onClick={onClose}>&times;</CloseButton>
+                            <div>
+                                <SidebarButtonWrapper onClick={() => setIsSidebarOpen((prev) => !prev)}>
+                                    <SidebarToggleButton>
+                                        <FaCommentAlt />
+                                    </SidebarToggleButton>
+                                    <Tooltip>Comente aqui ou faça observações</Tooltip>
+                                </SidebarButtonWrapper>
+
+                                <SidebarButtonWrapper onClick={() => setIsOwnerSidebarOpen((prev) => !prev)}>
+                                    <SidebarToggleButton>
+                                        <FaUserEdit />
+                                    </SidebarToggleButton>
+                                    <Tooltip>Proprietário</Tooltip>
+                                </SidebarButtonWrapper>
+
+                                <CloseButton onClick={onClose}>&times;</CloseButton>
+                            </div>
                         </div>
                     </ModalHeader>
                     <ModalContent>
